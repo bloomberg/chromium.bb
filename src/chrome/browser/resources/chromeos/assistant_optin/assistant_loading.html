@@ -1,0 +1,46 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
+<dom-module id="assistant-loading">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="assistant_loading.css">
+    <link rel="stylesheet" href="assistant_shared_styles.css">
+    <oobe-dialog id="loading-dialog" role="dialog" has-buttons hide-shadow
+        no-footer-padding no-header>
+      <div slot="footer">
+        <div class="container" id="error-container">
+          <img id="logo" src="assistant_logo.png"
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
+          <div class="title">
+            [[i18nDynamic(locale, 'assistantOptinLoadErrorTitle')]]
+          </div>
+          <div class="sub-title">
+            [[i18nDynamic(locale, 'assistantOptinLoadErrorMessage')]]
+          </div>
+        </div>
+        <div class="container" id="loading-container">
+          <div id="loading-content" class="content">
+            <div>
+              [[i18nDynamic(locale, 'assistantOptinLoading')]]
+            </div>
+            <paper-progress class="slow" indeterminate></paper-progress>
+          </div>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button id="skip-button" on-tap="onSkipTap_"
+            disabled="[[buttonsDisabled]]" text-key="assistantOptinSkipButton">
+        </oobe-text-button>
+        <oobe-text-button id="retry-button" inverse on-tap="onRetryTap_"
+            disabled="[[buttonsDisabled]]" text-key="assistantOptinRetryButton">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

@@ -1,0 +1,53 @@
+    <style include="settings-shared">
+      #headers {
+        display: flex;
+        padding: 10px 0;
+      }
+
+      #headers .name,
+      #headers .keyword {
+        flex: 3;
+      }
+
+      #headers .url {
+        flex: 4;
+      }
+
+      settings-search-engine-entry {
+        border-top: var(--cr-separator-line);
+      }
+
+      :host([fixed-height]) #container {
+        /* Max items we show before scrolling is 6. Adding a 7th item to the
+         * list will add a scroll bar to the container. */
+        max-height: calc((var(--settings-row-min-height) +
+                          var(--cr-separator-height)) * 6);
+      }
+
+      .icon-placeholder {
+        margin-inline-end: 0;
+        margin-inline-start: var(--cr-icon-button-margin-start);
+        width: var(--cr-icon-ripple-size);
+      }
+    </style>
+    <div id="outer" class="list-frame">
+      <div id="headers" class="column-header">
+        <div class="name">$i18n{searchEnginesSearchEngine}</div>
+        <div class="keyword">$i18n{searchEnginesKeyword}</div>
+        <div class="url">$i18n{searchEnginesQueryURL}</div>
+        <div class="icon-placeholder"></div>
+      </div>
+      <div id="container" class="scroll-container"
+          scrollable$="[[fixedHeight]]">
+        <iron-list items="[[engines]]" scroll-target="[[scrollTarget]]"
+            scroll-offset="[[scrollOffset]]" preserve-focus risk-selection>
+          <template>
+            <settings-search-engine-entry engine="[[item]]"
+                focus-row-index="[[index]]"
+                tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
+                last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}">
+            </settings-search-engine-entry>
+          </template>
+        </iron-list>
+      </div>
+    </div>

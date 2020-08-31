@@ -1,0 +1,171 @@
+    <style include="settings-shared">
+      img {
+        width: 100%;
+      }
+
+      #generalControls {
+        padding: 0 var(--cr-section-padding);
+      }
+
+      .bullet-line {
+        align-items: center;
+        display: flex;
+        min-height: var(--settings-row-two-line-min-height);
+      }
+
+      .bullet-line.one-line {
+        min-height: var(--settings-row-min-height);
+      }
+
+      .bullet-line > div {
+        padding-inline-start: var(--cr-radio-button-size);
+      }
+
+      settings-collapse-radio-button {
+        --settings-collapse-toggle-min-height: var(--settings-row-min-height);
+      }
+
+      settings-collapse-radio-button:not(:first-of-type) {
+        --settings-collapse-separator-line: var(--cr-separator-line);
+      }
+
+      settings-collapse-radio-button .bullet-line:last-child {
+        padding-bottom: 12px;
+      }
+    </style>
+    <picture>
+      <source
+          srcset="chrome://settings/images/cookies_banner_dark.svg"
+          media="(prefers-color-scheme: dark">
+      <img id="banner" alt=""
+          src="chrome://settings/images/cookies_banner.svg">
+    </picture>
+    <div id="generalControls">
+      <h2>$i18n{cookiePageGeneralControls}</h2>
+      <cr-radio-group selected="[[cookiesControlRadioSelected_]]"
+          selectable-elements="cr-radio-button, settings-collapse-radio-button"
+          on-selected-changed="onCookiesControlRadioChange_">
+        <settings-collapse-radio-button id="allowAll"
+            name="[[cookiesControlEnum_.ALLOW_ALL]]"
+            label="$i18n{cookiePageAllowAll}"
+            disabled="[[cookieControlsManagedState_.allowAll.disabled]]"
+            policy-indicator-type=
+                    "[[cookieControlsManagedState_.allowAll.indicator]]">
+          <div slot="collapse">
+            <div class="bullet-line">
+              <iron-icon icon="settings:cookie"></iron-icon>
+              <div class="secondary">$i18n{cookiePageAllowAllBulOne}</div>
+            </div>
+            <div class="bullet-line">
+              <iron-icon icon="settings:cookie"></iron-icon>
+              <div class="secondary">$i18n{cookiePageAllowAllBulTwo}</div>
+            </div>
+          </div>
+        </settings-collapse-radio-button>
+        <template is="dom-if" if="[[improvedCookieControlsEnabled_]]">
+          <settings-collapse-radio-button id="blockThirdPartyIncognito"
+              name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
+              label="$i18n{cookiePageBlockThirdIncognito}"
+              disabled="[[
+                  cookieControlsManagedState_.blockThirdPartyIncognito.disabled
+                  ]]"
+              policy-indicator-type="[[
+                  cookieControlsManagedState_.blockThirdPartyIncognito.indicator
+                  ]]">
+            <div slot="collapse">
+              <div class="bullet-line">
+                <iron-icon icon="settings:cookie"></iron-icon>
+                <div class="secondary">
+                      $i18n{cookiePageBlockThirdIncognitoBulOne}
+                </div>
+              </div>
+              <div class="bullet-line">
+                <iron-icon icon="settings:block"></iron-icon>
+                <div class="secondary">
+                      $i18n{cookiePageBlockThirdIncognitoBulTwo}
+                </div>
+              </div>
+            </div>
+          </settings-collapse-radio-button>
+        </template>
+        <settings-collapse-radio-button id="blockThirdParty"
+            name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY]]"
+            label="$i18n{cookiePageBlockThird}"
+            disabled="[[cookieControlsManagedState_.blockThirdParty.disabled]]"
+            policy-indicator-type="[[
+                cookieControlsManagedState_.blockThirdParty.indicator]]">
+          <div slot="collapse">
+            <div class="bullet-line">
+              <iron-icon icon="settings:cookie"></iron-icon>
+              <div class="secondary">$i18n{cookiePageBlockThirdBulOne}</div>
+            </div>
+            <div class="bullet-line">
+              <iron-icon icon="settings:block"></iron-icon>
+              <div class="secondary">$i18n{cookiePageBlockThirdBulTwo}</div>
+            </div>
+          </div>
+        </settings-collapse-radio-button>
+        <settings-collapse-radio-button id="blockAll"
+            name="[[cookiesControlEnum_.BLOCK_ALL]]"
+            label="$i18n{cookiePageBlockAll}"
+            disabled="[[cookieControlsManagedState_.blockAll.disabled]]"
+            policy-indicator-type="[[
+                cookieControlsManagedState_.blockAll.indicator]]">
+          <div slot="collapse">
+            <div class="bullet-line">
+              <iron-icon icon="settings:block"></iron-icon>
+              <div class="secondary">$i18n{cookiePageBlockAllBulOne}</div>
+            </div>
+            <div class="bullet-line">
+              <iron-icon icon="settings:block"></iron-icon>
+              <div class="secondary">$i18n{cookiePageBlockAllBulTwo}</div>
+            </div>
+            <div class="bullet-line one-line">
+              <iron-icon icon="settings:block"></iron-icon>
+              <div class="secondary">$i18n{cookiePageBlockAllBulThree}</div>
+            </div>
+          </div>
+        </settings-collapse-radio-button>
+      </cr-radio-group>
+    </div>
+    <settings-toggle-button id="clearOnExit" class="hr" no-set-pref
+        pref="{{clearOnExitPref_}}" label="$i18n{deleteDataPostSession}"
+        disabled$="[[clearOnExitDisabled_]]"
+        on-settings-boolean-control-change="onClearOnExitChange_">
+    </settings-toggle-button>
+    <settings-do-not-track-toggle id="doNotTrack"
+        prefs="{{prefs}}">
+    </settings-do-not-track-toggle>
+    <settings-toggle-button id="networkPrediction"
+        class="hr"
+        hidden="[[!pageVisibility.networkPrediction]]"
+        label="$i18n{networkPredictionEnabled}"
+        sub-label="$i18n{networkPredictionEnabledDescCookiesPage}"
+        pref="{{prefs.net.network_prediction_options}}"
+        numeric-unchecked-value="[[networkPredictionUncheckedValue_]]"
+        on-settings-boolean-control-change="onNetworkPredictionChange_">
+    </settings-toggle-button>
+    <cr-link-row id="site-data-trigger" class="hr"
+        on-click="onSiteDataClick_" label="$i18n{siteSettingsCookieLink}">
+    </cr-link-row>
+    <site-list id="allowExceptionsList"
+        category="[[cookiesContentSettingType_]]"
+        category-subtype="[[contentSetting_.ALLOW]]"
+        category-header="$i18n{cookiePageAllowExceptions}"
+        read-only-list="[[exceptionListsReadOnly_]]"
+        search-filter="[[searchTerm]]">
+    </site-list>
+    <site-list id="sessionOnlyExceptionsList"
+        category="[[cookiesContentSettingType_]]"
+        category-subtype="[[contentSetting_.SESSION_ONLY]]"
+        category-header="$i18n{cookiePageSessionOnlyExceptions}"
+        read-only-list="[[exceptionListsReadOnly_]]"
+        search-filter="[[searchTerm]]">
+    </site-list>
+    <site-list id="blockExceptionsList"
+        category="[[cookiesContentSettingType_]]"
+        category-subtype="[[contentSetting_.BLOCK]]"
+        category-header="$i18n{cookiePageBlockExceptions}"
+        read-only-list="[[exceptionListsReadOnly_]]"
+        search-filter="[[searchTerm]]">
+    </site-list>

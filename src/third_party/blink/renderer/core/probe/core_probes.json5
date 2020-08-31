@@ -1,0 +1,250 @@
+{
+  settings: {
+    export_header: "third_party/blink/renderer/core/core_export.h",
+    export_symbol: "CORE_EXPORT",
+    include_path: "third_party/blink/renderer/core/inspector",
+    includes: [
+      "third_party/blink/renderer/bindings/core/v8/script_source_code.h",
+      "third_party/blink/renderer/core/animation/animation.h",
+      "third_party/blink/renderer/core/core_probe_sink.h",
+      "third_party/blink/renderer/core/dom/character_data.h",
+      "third_party/blink/renderer/core/dom/pseudo_element.h",
+      "third_party/blink/renderer/core/html/html_slot_element.h",
+      "third_party/blink/renderer/core/loader/frame_loader_types.h",
+      "third_party/blink/renderer/core/page/chrome_client.h",
+      "third_party/blink/renderer/core/probe/core_probes.h",
+      "third_party/blink/public/web/web_media_inspector.h",
+    ],
+  },
+  observers: {
+    AdTracker: {
+      include_path: "third_party/blink/renderer/core/frame",
+      probes: [
+        "CallFunction",
+        "ExecuteScript",
+      ]
+    },
+    InspectorAnimationAgent: {
+      probes: [
+        "AnimationPlayStateChanged",
+        "DidClearDocumentOfWindowObject",
+        "DidCreateAnimation",
+      ]
+    },
+    InspectorApplicationCacheAgent: {
+      probes: [
+        "NetworkStateChanged",
+        "UpdateApplicationCacheStatus",
+      ]
+    },
+    InspectorAuditsAgent: {
+      probes: [
+        "InspectorIssueAdded"
+      ]
+    },
+    InspectorCSSAgent: {
+      probes: [
+        "ActiveStyleSheetsUpdated",
+        "DocumentDetached",
+        "FontsUpdated",
+        "ForcePseudoState",
+        "MediaQueryResultChanged",
+        "WillChangeStyleElement",
+      ]
+    },
+    InspectorDOMAgent: {
+      probes: [
+        "CharacterDataModified",
+        "DidCommitLoad",
+        "DidInsertDOMNode",
+        "DidInvalidateStyleAttr",
+        "DidModifyDOMAttr",
+        "DidPerformElementShadowDistribution",
+        "DidPerformSlotDistribution",
+        "DidPushShadowRoot",
+        "DidRemoveDOMAttr",
+        "DomContentLoadedEventFired",
+        "FrameDocumentUpdated",
+        "FrameOwnerContentUpdated",
+        "NodeCreated",
+        "PseudoElementCreated",
+        "PseudoElementDestroyed",
+        "WillModifyDOMAttr",
+        "WillPopShadowRoot",
+        "WillRemoveDOMNode",
+        "PortalRemoteFrameCreated"
+      ]
+    },
+    InspectorDOMDebuggerAgent: {
+      probes: [
+        "BreakableLocation",
+        "DidCreateCanvasContext",
+        "DidFireWebGLError",
+        "DidFireWebGLErrorOrWarning",
+        "DidFireWebGLWarning",
+        "DidInsertDOMNode",
+        "DidInvalidateStyleAttr",
+        "ExecuteScript",
+        "ScriptExecutionBlockedByCSP",
+        "UserCallback",
+        "WillInsertDOMNode",
+        "WillModifyDOMAttr",
+        "WillRemoveDOMNode",
+        "WillSendXMLHttpOrFetchNetworkRequest",
+        "DidCreateAudioContext",
+        "DidCloseAudioContext",
+        "DidResumeAudioContext",
+        "DidSuspendAudioContext",
+      ]
+    },
+    InspectorDOMSnapshotAgent: {
+      probes: [
+        "CharacterDataModified",
+        "DidInsertDOMNode",
+     ]
+    },
+    InspectorEmulationAgent: {
+      probes: [
+        "ApplyAcceptLanguageOverride",
+        "ApplyUserAgentOverride",
+        "ApplyUserAgentMetadataOverride",
+        "FrameStartedLoading",
+        "PrepareRequest",
+      ]
+    },
+    InspectorLayerTreeAgent: {
+      probes: [
+        "LayerTreeDidChange",
+        "LayerTreePainted",
+      ]
+    },
+    InspectorLogAgent: {
+      probes: [
+        "ConsoleMessageAdded",
+      ]
+    },
+    InspectorMediaAgent: {
+      probes: [
+        "PlayerErrorsRaised",
+        "PlayerEventsAdded",
+        "PlayerMessagesLogged",
+        "PlayerPropertiesChanged",
+        "PlayersCreated"
+      ]
+    },
+    InspectorNetworkAgent: {
+      probes: [
+        "DidBlockRequest",
+        "DidChangeResourcePriority",
+        "DidCloseWebSocket",
+        "DidCommitLoad",
+        "DidCreateWebSocket",
+        "DidFailLoading",
+        "DidFinishLoading",
+        "DidFinishXHR",
+        "DidReceiveCorsRedirectResponse",
+        "DidReceiveData",
+        "DidReceiveBlob",
+        "DidReceiveEncodedDataLength",
+        "DidReceiveResourceResponse",
+        "DidReceiveScriptResponse",
+        "DidReceiveWebSocketMessage",
+        "DidReceiveWebSocketMessageError",
+        "DidReceiveWebSocketHandshakeResponse",
+        "DidSendWebSocketMessage",
+        "FrameClearedScheduledNavigation",
+        "FrameScheduledNavigation",
+        "MarkResourceAsCached",
+        "PrepareRequest",
+        "ScriptImported",
+        "ShouldBlockRequest",
+        "ShouldBypassServiceWorker",
+        "ShouldForceCorsPreflight",
+        "WillDispatchEventSourceEvent",
+        "WillLoadXHR",
+        "WillSendEventSourceRequest",
+        "WillSendRequest",
+        "WillSendNavigationRequest",
+        "WillSendWebSocketHandshakeRequest",
+        "SetDevToolsIds",
+      ]
+    },
+    InspectorPageAgent: {
+      probes: [
+        "ConsumeCompilationCache",
+        "DidChangeViewport",
+        "DidClearDocumentOfWindowObject",
+        "DidNavigateWithinDocument",
+        "WillCommitLoad",
+        "DidResizeMainFrame",
+        "DidRunJavaScriptDialog",
+        "DomContentLoadedEventFired",
+        "FileChooserOpened",
+        "FrameAttachedToParent",
+        "FrameClearedScheduledNavigation",
+        "FrameDetachedFromParent",
+        "FrameRequestedNavigation",
+        "FrameScheduledNavigation",
+        "FrameStartedLoading",
+        "FrameStoppedLoading",
+        "LifecycleEvent",
+        "LoadEventFired",
+        "PaintTiming",
+        "ProduceCompilationCache",
+        "RecalculateStyle",
+        "UpdateLayout",
+        "WillRunJavaScriptDialog",
+        "WindowOpen",
+      ]
+    },
+    PerformanceMonitor: {
+      include_path: "third_party/blink/renderer/core/frame",
+      probes: [
+        "CallFunction",
+        "ExecuteScript",
+        "RecalculateStyle",
+        "UpdateLayout",
+        "UserCallback",
+        "V8Compile",
+        "DocumentWriteFetchScript",
+      ]
+    },
+    InspectorPerformanceAgent: {
+      probes: [
+        "ConsoleTimeStamp",
+        "CallFunction",
+        "ExecuteScript",
+        "RecalculateStyle",
+        "UpdateLayout",
+        "V8Compile",
+        "WillStartDebuggerTask",
+        "DidFinishDebuggerTask",
+      ]
+    },
+    InspectorTraceEvents: {
+      probes: [
+        "CallFunction",
+        "ParseHTML",
+        "DidFailLoading",
+        "DidFinishLoading",
+        "DidReceiveData",
+        "DidReceiveResourceResponse",
+        "FrameStartedLoading",
+        "MarkResourceAsCached",
+        "PaintTiming",
+        "WillSendRequest",
+        "WillSendNavigationRequest",
+      ]
+    },
+    DevToolsSession: {
+      class: "DevToolsSession",
+      probes: [
+        "DidStartProvisionalLoad",
+        "DidFailProvisionalLoad",
+        "DidCommitLoad",
+        "PaintTiming",
+        "DomContentLoadedEventFired",
+      ]
+    },
+  }
+}

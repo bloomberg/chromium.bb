@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Picture-in-Picture iframe Test</title>
+</head>
+<body>
+  <video controls preload=auto src='../bigbuck.webm'></video>
+</body>
+<script>
+  const video = document.querySelector('video');
+
+  video.addEventListener('loadedmetadata', function() {
+    window.parent.postMessage({ loadedmetadata: true }, '*');
+  });
+
+  function enterPictureInPicture() {
+    video.requestPictureInPicture().then(() => {
+      domAutomationController.send(true);
+    });
+  }
+
+  function exitPictureInPicture() {
+    document.exitPictureInPicture().then(() => {
+      document.title = 'left';
+    });
+  }
+</script>
+</html>
+

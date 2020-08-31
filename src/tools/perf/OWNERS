@@ -1,0 +1,27 @@
+# Overall OWNERS
+johnchen@chromium.org
+wenbinzhang@google.com
+
+# For gtest perf tests, perf data upload, and functional tests
+bsheedy@chromium.org
+
+# Scheduling and builders.
+hypan@google.com
+
+# For changes related to ChromeOS.
+achuith@chromium.org
+
+# For expectations.config file format infrastructure changes.
+rmhasan@google.com
+
+# For system health stories.
+eyaich@chromium.org
+sullivan@chromium.org
+
+# For page_cycler and loading benchmarks related changes.
+kouhei@chromium.org
+
+# emeritus:
+# perezju@chromium.org
+
+# COMPONENT: Speed>Benchmarks

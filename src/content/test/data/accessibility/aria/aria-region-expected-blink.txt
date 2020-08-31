@@ -1,0 +1,6 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++region
+++++++++staticText name='This is an ARIA region.'
+++++++++++inlineTextBox name='This is an ARIA region.'

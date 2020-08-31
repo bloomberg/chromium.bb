@@ -1,0 +1,7 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer
+++++++staticText
+++++++++genericContainer invisible
+++++++staticText name='done'
+++++++++inlineTextBox name='done'

@@ -1,0 +1,36 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+
+<dom-module id="recommend-apps">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="recommend_apps.css">
+    <oobe-dialog id="recommend-apps-dialog" role="dialog" has-buttons
+        title-key="recommendAppsScreenTitle"
+        aria-label$="[[i18nDynamic(locale, 'recommendAppsScreenTitle')]]"
+        no-footer-padding footer-shrinkable class="recommend-apps-loading">
+      <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
+      </iron-icon>
+      <div id="subtitle" slot="subtitle"></div>
+      <div id="app-list-view-container" slot="footer">
+        <webview id="app-list-view"></webview>
+      </div>
+      <div class="app-list-loading" slot="footer">
+        <p>[[i18nDynamic(locale, 'recommendAppsLoading')]]</p>
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button id="recommend-apps-skip-button"
+            text-key="recommendAppsSkip" on-tap="onSkip_" border>
+        </oobe-text-button>
+        <oobe-next-button id="recommend-apps-install-button"
+            text-key="recommendAppsInstall" on-tap="onInstall_" inverse>
+        </oobe-next-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

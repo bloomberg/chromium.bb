@@ -1,0 +1,20 @@
+---
+---
+  Checks:          '-*,
+                    google-build-explicit-make-pair,
+                    google-explicit-constructor,
+                    google-readability-casting,
+                    modernize-loop-convert,
+                    modernize-make-shared,
+                    modernize-redundant-void-arg,
+                    modernize-replace-random-shuffle,
+                    modernize-shrink-to-fit,
+                    modernize-use-bool-literals,
+                    modernize-use-equals-default,
+                    modernize-use-equals-delete,
+                    modernize-use-nullptr,
+                    modernize-use-override,
+                    modernize-use-transparent-functors,
+                    readability-redundant-member-init'
+...
+

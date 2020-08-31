@@ -1,0 +1,93 @@
+    <style include="cr-shared-style settings-shared md-select">
+      cr-input {
+        --cr-input-error-display: none;
+        margin-bottom: var(--cr-form-field-bottom-spacing);
+        width: var(--settings-input-max-width);
+      }
+
+      .md-select + .md-select {
+        margin-inline-start: 8px;
+      }
+
+      /* Prevent focus-outline from being chopped by bottom of dialog body. */
+      .md-select {
+        margin-bottom: 2px;
+      }
+
+      #expired {
+        align-items: center;
+        background-color: var(--paper-red-50);
+        color: var(--settings-error-color);
+        display: flex;
+        height: 40px;
+        margin-top: 12px;
+        padding: 0 0 0 8px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        #expired {
+          background-color: unset;
+          font-weight: bold;
+          padding: 0;
+        }
+      }
+
+      #month {
+        width: 70px;
+      }
+
+      #saved-to-this-device-only-label {
+        margin-top: var(--cr-form-field-bottom-spacing);
+      }
+
+      #year {
+        width: 100px;
+      }
+    </style>
+    <cr-dialog id="dialog" close-text="$i18n{close}">
+      <div slot="title">[[title_]]</div>
+      <div slot="body">
+        <cr-input id="nameInput" label="$i18n{creditCardName}"
+            value="{{creditCard.name}}" autofocus spellcheck="false"
+            on-input="onCreditCardNameOrNumberChanged_">
+        </cr-input>
+        <cr-input id="numberInput" label="$i18n{creditCardNumber}"
+            value="{{creditCard.cardNumber}}"
+            on-input="onCreditCardNameOrNumberChanged_">
+        </cr-input>
+        <!-- aria-hidden for creditCardExpiration label since
+          creditCardExpirationMonth and creditCardExpirationYear provide
+          sufficient labeling. -->
+        <label class="cr-form-field-label" aria-hidden="true">
+          $i18n{creditCardExpiration}
+        </label>
+        <select class="md-select" id="month" value="[[expirationMonth_]]"
+            on-change="onMonthChange_"
+            aria-label="$i18n{creditCardExpirationMonth}">
+          <template is="dom-repeat" items="[[monthList_]]">
+            <option>[[item]]</option>
+          </template>
+        </select>
+        <select class="md-select" id="year" value="[[expirationYear_]]"
+            on-change="onYearChange_"
+            aria-label="$i18n{creditCardExpirationYear}">
+          <template is="dom-repeat" items="[[yearList_]]">
+            <option>[[item]]</option>
+          </template>
+        </select>
+        <span id="expired"
+            hidden="[[!checkIfCardExpired_(expirationMonth_, expirationYear_)]]"
+            >
+          $i18n{creditCardExpired}
+        </span>
+        <div id="saved-to-this-device-only-label">
+          $i18n{savedToThisDeviceOnly}
+        </div>
+      </div>
+      <div slot="button-container">
+        <cr-button id="cancelButton" class="cancel-button"
+            on-click="onCancelButtonTap_">$i18n{cancel}</cr-button>
+        <cr-button id="saveButton" class="action-button"
+            on-click="onSaveButtonTap_" disabled>$i18n{save}</cr-button>
+      </div>
+    </cr-dialog>

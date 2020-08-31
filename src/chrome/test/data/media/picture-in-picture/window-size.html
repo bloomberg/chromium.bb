@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Picture-in-Picture Window Size Test</title>
+</head>
+<body>
+  <video controls preload=auto src='../bigbuck.webm'></video>
+</body>
+<script>
+  const video = document.querySelector('video');
+
+  // This video is created here in order to be used in
+  // `secondPictureInPicture()`. Unfortunately, the `requestPictureInPicture()`
+  // method has to be called during a user activation event handler so it's not
+  // possible to load the video on-demand.
+  const secondVideo = document.createElement('video');
+  secondVideo.src = '../bigbuck.webm';
+  secondVideo.load();
+
+  function requestPictureInPictureAndDisable() {
+    enterPictureInPictureInternal();
+    video.disablePictureInPicture = true;
+  }
+
+  function enterPictureInPicture() {
+    enterPictureInPictureInternal();
+  }
+
+  function exitPictureInPicture() {
+    document.exitPictureInPicture();
+  }
+
+  function isInPictureInPicture() {
+    window.domAutomationController.send(document.pictureInPictureElement == video);
+  }
+
+  function isPaused() {
+    window.domAutomationController.send(video.paused);
+  }
+
+  function enterPictureInPictureInternal() {
+    video.requestPictureInPicture()
+    .then(win => {
+      win.addEventListener('resize', () => {
+        document.title = 'resized';
+      }, { once: true });
+
+      video.addEventListener('leavepictureinpicture', () => {
+        document.title = 'leavepictureinpicture';
+      }, { once: true });
+
+      window.domAutomationController.send(true);
+    })
+    .catch(e => {
+      window.domAutomationController.send(false);
+    });
+  }
+
+  function secondPictureInPicture() {
+    secondVideo.requestPictureInPicture();
+  }
+
+  function enterFullscreen() {
+    video.webkitRequestFullscreen();
+
+    video.addEventListener('webkitfullscreenchange', () => {
+      document.title = 'fullscreen';
+    }, { once: true });
+  }
+
+  function changeVideoSrc() {
+    if (video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop());
+      video.srcObject = null;
+    }
+    video.src = '../bigbuck.webm';
+    video.play()
+    .then(_ => { window.domAutomationController.send(true); })
+    .catch(e => { window.domAutomationController.send(false); });
+  }
+
+  function changeVideoSrcToMediaStream() {
+    const canvas = document.createElement('canvas');
+    canvas.getContext('2d').fillRect(0, 0, canvas.width, canvas.height);
+    video.srcObject = canvas.captureStream();
+    video.play()
+    .then(_ => { window.domAutomationController.send(true); })
+    .catch(e => { window.domAutomationController.send(false); });
+  }
+
+  function changeVideoSrcToNoAudioTrackVideo() {
+    video.src = '../engagement/engagement_no_audio_track.webm';
+    video.play()
+    .then(_ => { window.domAutomationController.send(true); })
+    .catch(e => { window.domAutomationController.send(false); });
+  }
+
+  function addVisibilityChangeEventListener() {
+    document.addEventListener('visibilitychange', () => {
+      document.title = document.visibilityState;
+    });
+  }
+
+  function addPauseEventListener() {
+    video.addEventListener('pause', () => {
+      document.title = 'pause';
+    });
+  }
+
+  function addPlayEventListener() {
+    video.addEventListener('play', () => {
+      document.title = 'play';
+    });
+  }
+
+  function setMediaSessionActionHandler(name) {
+    navigator.mediaSession.setActionHandler(name, _ => {
+      document.title = name;
+    });
+  }
+
+  function unsetMediaSessionActionHandler(name) {
+    navigator.mediaSession.setActionHandler(name, null);
+  }
+
+  function addPictureInPictureEventListeners() {
+    video.addEventListener('enterpictureinpicture', () => {
+      document.title = 'enterpictureinpicture';
+    });
+    video.addEventListener('leavepictureinpicture', () => {
+      document.title = 'leavepictureinpicture';
+    });
+  }
+
+  function tryToEnterPictureInPictureAfterLeaving() {
+    video.addEventListener('leavepictureinpicture', () => {
+      video.requestPictureInPicture()
+      .then(_ => { document.title = 'entered Picture-in-Picture after leaving'; })
+      .catch(e => { document.title = 'failed to enter Picture-in-Picture after leaving'; });
+    });
+  }
+
+  function resetVideo() {
+    video.addEventListener('emptied', () => {
+      document.title = 'emptied';
+    }, { once: true });
+    video.src = '';
+  }
+</script>
+</html>

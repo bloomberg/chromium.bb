@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<script>
+
+async function checkPermission() {
+  const is_persistent = await navigator.storage.persisted();
+  window.domAutomationController.send(is_persistent);
+}
+
+async function checkPermissionUsingPermissionApi() {
+  const status =
+    await navigator.permissions.query({name: 'persistent-storage'});
+  window.domAutomationController.send(status.state);
+}
+
+async function requestPermission() {
+  const is_persistent = await navigator.storage.persist()
+  window.domAutomationController.send(is_persistent);
+}
+</script>

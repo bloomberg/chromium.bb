@@ -1,0 +1,42 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<dom-module id="assistant-get-more">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="assistant_get_more.css">
+    <link rel="stylesheet" href="assistant_shared_styles.css">
+    <oobe-dialog id="get-more-dialog" role="dialog" has-buttons hide-shadow
+        no-footer-padding no-header
+        aria-label$="[[i18nDynamic(locale, 'assistantReadyTitle')]]">
+      <div slot="footer">
+        <div class="container">
+          <img id="logo" src="assistant_logo.png"
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
+          <div class="title">
+            [[i18nDynamic(locale, 'assistantReadyTitle')]]
+          </div>
+          <div class="content" id="intro-text">
+            [[i18nDynamic(locale, 'assistantReadyMessage')]]
+          </div>
+          <div class="flex layout horizontal center">
+            <div id="ready-image-container">
+              <img id="ready-img" class="oobe-illustration"
+                  src="assistant_ready.svg">
+            </div>
+            <div class="vertical-line"></div>
+            <div id="toggles-container"></div>
+          </div>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button id="next-button" inverse on-tap="onNextTap_"
+            disabled="[[buttonsDisabled]]" hidden="[[moreContents]]"
+            text-key="assistantReadyButton">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

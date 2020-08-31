@@ -1,0 +1,16 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
+# One portion of the image is offset.
+crbug.com/1002522 fast/canvas/canvas-toDataURL-webp.html [ Skip ]
+
+# Needs rebaseline.
+crbug.com/1039401 [ Linux ] css3/filters/effect-blur-hw.html [ Failure Pass ]
+
+# Flaky on Windows.
+crbug.com/1026375 [ Win ] media/video-currentTime-delay.html [ Timeout Pass ]
+crbug.com/1026375 [ Win ] media/encrypted-media/encrypted-media-playback-setmediakeys-before-src.html [ Timeout Pass ]
+crbug.com/1026375 [ Win ] media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Failure Pass ]
+crbug.com/1026375 [ Win ] media/video-pause-immediately.html [ Failure Pass ]

@@ -1,0 +1,5 @@
+[document web]
+++[section]
+++++[image map] name='pipe'
+++++++[link] name='pipe1'
+++++++[static] name='pipe2'

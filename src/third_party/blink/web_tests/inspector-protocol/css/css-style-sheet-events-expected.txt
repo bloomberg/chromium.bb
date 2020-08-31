@@ -1,0 +1,37 @@
+The test verifies events fire for adding, changing, and removing CSSStyleSheets.
+{
+    method : CSS.styleSheetAdded
+    params : {
+        header : {
+            disabled : false
+            endColumn : 6
+            endLine : 4
+            frameId : <string>
+            isInline : false
+            length : <number>
+            origin : regular
+            ownerNode : <number>
+            sourceURL : 
+            startColumn : 0
+            startLine : 0
+            styleSheetId : <string>
+            title : 
+        }
+    }
+    sessionId : <string>
+}
+{
+    method : CSS.styleSheetChanged
+    params : {
+        styleSheetId : <string>
+    }
+    sessionId : <string>
+}
+{
+    method : CSS.styleSheetRemoved
+    params : {
+        styleSheetId : <string>
+    }
+    sessionId : <string>
+}
+

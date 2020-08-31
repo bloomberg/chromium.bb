@@ -1,0 +1,42 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<dom-module id="supervision-transition-md">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="oobe_supervision_transition.css">
+    <oobe-dialog id="supervisionTransitionDialog" role="alert"
+        aria-label$="[[getDialogA11yTitle_(locale, isRemovingSupervision_)]]"
+        subtitle-key="supervisionTransitionIntroMessage">
+      <iron-icon src="chrome://oobe/supervision_icon.png" slot="oobe-icon"
+          class="supervision-icon" aria-hidden="true">
+      </iron-icon>
+      <h1 slot="title" id="supervisionTitle">
+        <div hidden="[[isRemovingSupervision_]]">
+          [[i18nDynamic(locale,'addingSupervisionTitle')]]
+        </div>
+        <div hidden="[[!isRemovingSupervision_]]">
+          [[i18nDynamic(locale,'removingSupervisionTitle')]]
+        </div>
+      </h1>
+      <div slot="footer" aria-live="off">
+        <paper-progress class="slow" aria-hidden="true" indeterminate>
+        </paper-progress>
+      </div>
+    </oobe-dialog>
+    <oobe-dialog id="supervisionTransitionErrorDialog" role="alert"
+        title-key="supervisionTransitionErrorTitle"
+        subtitle-key="supervisionTransitionErrorMessage"
+        aria-label$="[[i18nDynamic(locale,'supervisionTransitionErrorTitle')]]"
+        has-buttons hidden>
+      <iron-icon src="chrome://oobe/supervision_icon.png" slot="oobe-icon"
+          aria-hidden="true">
+      </iron-icon>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button id="accept-button" on-tap="onAcceptAndContinue_"
+            text-key="supervisionTransitionButton" inverse></oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<script src="../../resources/gesture-util.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+
+#scroller {
+    background-color: #ccc;
+    margin-top: 20px;
+    overflow: scroll;
+}
+
+#fracheight {
+    height: 1200.3px;
+}
+
+</style>
+<div id="scroller" onmousewheel="">
+  <div id="fracheight"></div>
+</div>
+
+<script>
+promise_test(async () => {
+    var scroller_element = document.getElementById("scroller");
+    var scroller_center = pointInElement(scroller_element, 50, 50);
+    await wheelTick(0, 1, scroller_center);
+    await waitFor( () => {
+        return scrollY == pixelsPerTick();
+});
+
+}, "Verify that wheel scrolls chain correctly from a fractional-height scroller to its parent.");
+</script>

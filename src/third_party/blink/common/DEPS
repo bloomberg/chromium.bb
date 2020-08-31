@@ -1,0 +1,35 @@
+include_rules = [
+    # In general this directory should not depend on any of components/,
+    # content/ or other third_party/blink directories.
+    "-components",
+    "-content",
+    "-third_party/blink",
+
+    # It is allowed to depend on common chromium stuff (and itself).
+    "+base",
+    "+build",
+    "+net",
+    "+media",
+    "+mojo",
+    "+services/metrics/public/cpp",
+    "+services/network/public/cpp",
+    "+services/network/public/mojom/web_sandbox_flags.mojom-shared.h",
+    "+services/network/public/mojom/url_loader.mojom.h",
+    "+services/network/public/mojom/url_loader_factory.mojom.h",
+    "+services/network/public/mojom/url_response_head.mojom.h",
+    "+services/network/public/mojom/url_response_head.mojom-forward.h",
+    "+skia/public/mojom/bitmap_skbitmap_mojom_traits.h",
+    "+testing/gmock/include/gmock",
+    "+testing/gtest/include/gtest",
+    "+third_party/blink/common",
+    "+third_party/blink/public/common",
+    "+third_party/blink/public/mojom",
+    "+third_party/icu/source/common/unicode/unistr.h",
+    "+ui/gfx/transform.h",
+    "+ui/gfx/geometry",
+    "+ui/gfx/win/direct_write.h",
+    "+url",
+]
+specific_include_rules = {
+  '.*unittest.?.cc': [ "+v8", "+services/network/test" ],
+}

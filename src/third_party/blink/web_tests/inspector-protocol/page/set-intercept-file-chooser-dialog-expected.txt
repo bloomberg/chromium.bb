@@ -1,0 +1,19 @@
+Tests that Page.setInterceptFileChooserDialog works as expected
+
+Running test: testAcceptFile
+file chooser mode: selectSingle
+selected files: ["path1"]
+
+Running test: testAcceptMultipleFiles
+file chooser mode: selectMultiple
+selected files: ["path1","path2"]
+
+Running test: testErrors
+Try enabling file interception in multiclient
+{
+    id : <number>
+    result : {
+    }
+    sessionId : <string>
+}
+

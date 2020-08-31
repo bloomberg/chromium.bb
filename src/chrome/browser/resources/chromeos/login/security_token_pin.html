@@ -1,0 +1,52 @@
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+
+<dom-module id="security-token-pin">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="security_token_pin.css">
+
+    <oobe-dialog class="gaia-dialog" has-buttons role="dialog"
+        title-key="securityTokenPinDialogTitle" id="dialog"
+        aria-label$="[[i18nDynamic(locale, 'securityTokenPinDialogTitle')]]"
+        aria-describedby="description">
+      <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:lock"
+          icon2x="oobe-64:lock">
+      </hd-iron-icon>
+      <div slot="subtitle" id="subtitle">
+        <span id="description" hidden="[[processingCompletion_]]">
+          [[i18nDynamic(locale, 'securityTokenPinDialogSubtitle')]]
+        </span>
+      </div>
+      <paper-progress slot="progress" id="progress"
+          hidden="[[!processingCompletion_]]"
+          indeterminate="[[processingCompletion_]]">
+      </paper-progress>
+      <div slot="footer">
+        <div id="pinKeyboardContainer" hidden="[[processingCompletion_]]">
+          <pin-keyboard id="pinKeyboard" enable-letters
+              has-error="[[isErrorLabelVisible_(errorLabelId_, userEdited_)]]"
+              aria-label="[[getLabel_(locale, parameters, errorLabelId_,
+                                      userEdited_)]]"
+              on-pin-change="onPinChange_" on-submit="onSubmit_"
+              disabled="[[!canEdit_]]">
+            <div id="errorContainer" role="alert" problem
+                invisible$="[[!isLabelVisible_(parameters, userEdited_)]]">
+              <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
+              <span id="error">[[getLabel_(locale, parameters, errorLabelId_,
+                                           userEdited_)]]</span>
+            </div>
+          </pin-keyboard>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal justified">
+        <oobe-back-button id="back" on-tap="onBackClicked_"></oobe-back-button>
+        <oobe-next-button id="submit" on-tap="onSubmit_"
+            disabled="[[!canSubmit_]]"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

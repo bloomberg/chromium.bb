@@ -1,0 +1,7 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++details
+++++++++disclosureTriangle collapsed name='details tag'
+++++++++++staticText name='details tag'
+++++++++++++inlineTextBox name='details tag'

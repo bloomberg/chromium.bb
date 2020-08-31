@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<video preload=none poster='../../banners/image-512px.png'>
+  <source src='../bigbuck.webm' type='video/webm'>
+</video>
+<script>
+  const video = document.querySelector('video');
+
+  function play() {
+    video.play().then(() => {
+      window.domAutomationController.send(true);
+    });
+  }
+
+  function enterPictureInPicture() {
+    video.requestPictureInPicture().then(() => {
+      window.domAutomationController.send(true);
+
+      video.addEventListener('leavepictureinpicture', () => {
+        document.title = 'leavepictureinpicture';
+      }, { once: true });
+    });
+  }
+
+  function changeSrcAndLoad() {
+    video.addEventListener('loadedmetadata', () => {
+      window.domAutomationController.send(true);
+    }, { once: true });
+
+    document.querySelector('source').src = '../bear-640x360-av-enc_av.webm';
+    video.load();
+  }
+
+  function isInPictureInPicture() {
+    window.domAutomationController.send(document.pictureInPictureElement == video);
+  }
+</script>

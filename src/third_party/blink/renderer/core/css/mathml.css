@@ -1,0 +1,88 @@
+/*
+ * The default style sheet used to render MathML (MathMLCore enabled).
+ *
+ * Copyright (C) 2014 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+@namespace "http://www.w3.org/1998/Math/MathML";
+
+/* By default, we only display the MathML formulas without any formatting other than the one specified by the display attribute. */
+math {
+    display: inline-math;
+    math-superscript-shift-style: display;
+}
+
+math[display="block"] {
+    display: math;
+    text-align: center;
+}
+
+:-internal-spatial-navigation-interest {
+    outline: auto 1px -webkit-focus-ring-color;
+    box-shadow: none !important;
+}
+
+:focus {
+    outline: auto 1px -webkit-focus-ring-color;
+}
+
+maction, merror, mfrac, mphantom, mrow, mspace, mstyle, msub, msup, msubsup, munder, mover, munderover
+{
+    display: math;
+}
+
+mphantom {
+    visibility: hidden;
+}
+
+merror {
+    color: red;
+    background-color: lightYellow;
+}
+
+mspace {
+    overflow: hidden !important;
+}
+
+mfrac {
+  padding-inline-start: 1px;
+  padding-inline-end: 1px;
+}
+
+mfrac > :nth-child(2) {
+  math-superscript-shift-style: inline;
+}
+
+munder > :nth-child(2),
+munderover > :nth-child(2),
+mover[accent="true" i] > :first-child,
+munderover[accent="true" i] > :first-child {
+  math-superscript-shift-style: inline;
+}
+
+/* Token elements */
+mi {
+  text-transform: math-auto;
+}
+

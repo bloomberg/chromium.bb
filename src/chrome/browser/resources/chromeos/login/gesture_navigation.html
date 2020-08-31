@@ -1,0 +1,110 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_lottie/cr_lottie.html">
+
+<dom-module id="gesture-navigation">
+  <template>
+    <style include="oobe-common"></style>
+    <link rel="stylesheet" href="gesture_navigation.css">
+
+    <oobe-dialog id="gestureIntro" has-buttons class="step hidden"
+        hidden="[[!isEqual_(currentPage_, 'gestureIntro')]]"
+        title-key="gestureNavigationIntroTitle"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationIntroTitle')]]">
+      <img slot="oobe-icon" src="images/gestures.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical">
+        <div class="gesture-list-item">
+          <img class="gesture-list-item-icon" src="images/home.svg">
+          <div class="gesture-list-item-text">
+            [[i18nDynamic(locale, 'gestureNavigationIntroGoHomeItem')]]
+          </div>
+        </div>
+        <div class="gesture-list-item">
+          <img class="gesture-list-item-icon" src="images/overview.svg">
+          <div class="gesture-list-item-text">
+            [[i18nDynamic(locale, 'gestureNavigationIntroSwitchAppItem')]]
+          </div>
+        </div>
+        <div class="gesture-list-item">
+          <img class="gesture-list-item-icon" src="images/back.svg">
+          <div class="gesture-list-item-text">
+              [[i18nDynamic(locale, 'gestureNavigationIntroGoBackItem')]]
+          </div>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="onNext_"
+            id="gesture-intro-next-button" class="focus-on-show"
+            text-key="gestureNavigationIntroNextButton">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="gestureHome" has-buttons  class="step hidden"
+        hidden="[[!isEqual_(currentPage_, 'gestureHome')]]"
+        title-key="gestureNavigationHomeTitle"
+        subtitle-key="gestureNavigationHomeDescription"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationHomeTitle')]]">
+      <img slot="oobe-icon" src="images/home.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical center">
+        <div class="gesture-animation-container">
+          <cr-lottie animation-url="gesture_go_home.json"
+                     class="gesture-animation">
+          </cr-lottie>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal justified">
+        <oobe-back-button on-tap="onBack_"
+            id="gesture-home-back-button"></oobe-back-button>
+        <oobe-next-button on-tap="onNext_" class="focus-on-show"
+            id="gesture-home-next-button"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="gestureOverview" has-buttons class="step hidden"
+        hidden="[[!isEqual_(currentPage_, 'gestureOverview')]]"
+        title-key="gestureNavigationOverviewTitle"
+        subtitle-key="gestureNavigationOverviewDescription"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationOverviewTitle')]]">
+      <img slot="oobe-icon" src="images/overview.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical center">
+        <div class="gesture-animation-container">
+          <cr-lottie animation-url="gesture_hotseat_overview.json"
+                     class="gesture-animation">
+          </cr-lottie>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal justified">
+        <oobe-back-button on-tap="onBack_"
+            id="gesture-overview-back-button"></oobe-back-button>
+        <oobe-next-button on-tap="onNext_" class="focus-on-show"
+            id="gesture-overview-next-button"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="gestureBack" has-buttons class="step hidden"
+        hidden="[[!isEqual_(currentPage_, 'gestureBack')]]"
+        title-key="gestureNavigationBackTitle"
+        subtitle-key="gestureNavigationBackDescription"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationBackTitle')]]">
+      <img slot="oobe-icon" src="images/back.svg" width="32" height="32">
+      <div slot="footer" class="flex layout vertical center">
+        <div class="gesture-animation-container">
+          <cr-lottie animation-url="gesture_go_back.json"
+                      class="gesture-animation">
+          </cr-lottie>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal justified">
+        <oobe-back-button on-tap="onBack_"
+            id="gesture-back-back-button"></oobe-back-button>
+        <oobe-next-button on-tap="onNext_" class="focus-on-show"
+            id="gesture-back-next-button"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

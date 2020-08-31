@@ -1,0 +1,26 @@
+include_rules = [
+    # In general this directory should not depend on any of components/,
+    # content/ or other third_party/blink directories.
+    "-components",
+    "-content",
+    "-third_party/blink",
+
+    # It is allowed to depend on common chromium stuff (and itself).
+    "+base",
+    "+build",
+    "+cc/paint/element_id.h",
+    "+net",
+    "+media",
+    "+mojo",
+    "+services/network/public/cpp/resource_request_body.h",
+    "+services/network/public/cpp/shared_url_loader_factory.h",
+    "+services/network/public/mojom",
+    "+skia/public/mojom",
+    "+third_party/blink/public/common",
+    "+third_party/blink/public/mojom",
+    "+ui/events/event_constants.h",
+    "+ui/events/types",
+    "+ui/gfx/geometry",
+    "+ui/latency/latency_info.h",
+    "+url",
+]

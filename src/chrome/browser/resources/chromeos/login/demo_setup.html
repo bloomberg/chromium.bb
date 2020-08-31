@@ -1,0 +1,63 @@
+<dom-module id="demo-setup-md">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="demo_setup.css">
+
+    <oobe-dialog id="demoSetupProgressDialog" role="dialog" has-buttons hidden
+      title-key="demoSetupProgressScreenTitle">
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:computer" icon2x="oobe-64:computer">
+      </hd-iron-icon>
+      <div slot="footer"
+          class="flex layout vertical center center-justified"
+          hidden$="[[showStepsInDemoModeSetup_]]">
+        <paper-spinner-lite id="spinner" dir="ltr"
+            active></paper-spinner-lite>
+      </div>
+      <div slot="footer" hidden$="[[!showStepsInDemoModeSetup_]]">
+        <div id="demo-setup-steps" role="list">
+          <progress-list-item text-key="demoSetupProgressStepDownload"
+              hidden="[[!shouldShowStep_('downloadResources', setupSteps_)]]"
+              active="[[stepIsActive_(
+                  'downloadResources', setupSteps_, currentStepIndex_)]]"
+              completed="[[stepIsCompleted_(
+                  'downloadResources', setupSteps_, currentStepIndex_)]]">
+          </progress-list-item>
+          <progress-list-item text-key="demoSetupProgressStepEnroll"
+              hidden="[[!shouldShowStep_('enrollment', setupSteps_)]]"
+              active="[[stepIsActive_(
+                  'enrollment', setupSteps_, currentStepIndex_)]]"
+              completed="[[stepIsCompleted_(
+                  'enrollment', setupSteps_, currentStepIndex_)]]">
+          </progress-list-item>
+        </div>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="demoSetupErrorDialog" role="dialog" has-buttons hidden
+        aria-label$="[[i18nDynamic(locale, 'demoSetupErrorScreenTitle')]]"
+        title-key="demoSetupErrorScreenTitle">
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:computer" icon2x="oobe-64:computer">
+      </hd-iron-icon>
+      <div slot="subtitle">[[errorMessage_]]</div>
+      <div slot="footer" class="flex layout vertical center center-justified">
+        <img srcset="images/alert-illustration_1x.svg 1x,
+            images/alert-illustration_2x.svg 2x">
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal justified">
+        <oobe-back-button inverse on-click="onCloseClicked_"
+            disabled="[[isPowerwashRequired_]]"></oobe-back-button>
+        <oobe-text-button id="retryButton" on-tap="onRetryClicked_"
+            text-key="demoSetupErrorScreenRetryButtonLabel"
+            inverse hidden="[[isPowerwashRequired_]]">
+        </oobe-text-button>
+        <oobe-text-button id="powerwashButton" on-tap="onPowerwashClicked_"
+            text-key="demoSetupErrorScreenPowerwashButtonLabel"
+            inverse hidden="[[!isPowerwashRequired_]]">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+  </template>
+</dom-module>

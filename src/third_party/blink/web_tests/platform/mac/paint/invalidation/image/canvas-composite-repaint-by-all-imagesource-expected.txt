@@ -1,0 +1,95 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [785, 928],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "invalidations": [
+        [571, 513, 80, 40],
+        [571, 413, 80, 40],
+        [571, 313, 80, 40],
+        [571, 163, 80, 40],
+        [571, 113, 80, 40],
+        [429, 513, 80, 40],
+        [429, 413, 80, 40],
+        [429, 313, 80, 40],
+        [429, 163, 80, 40],
+        [429, 113, 80, 40],
+        [287, 513, 80, 40],
+        [287, 413, 80, 40],
+        [287, 313, 80, 40],
+        [287, 163, 80, 40],
+        [287, 113, 80, 40],
+        [145, 513, 80, 40],
+        [145, 413, 80, 40],
+        [145, 313, 80, 40],
+        [145, 163, 80, 40],
+        [145, 113, 80, 40],
+        [601, 563, 50, 40],
+        [601, 463, 50, 40],
+        [601, 363, 50, 40],
+        [601, 263, 50, 40],
+        [601, 213, 50, 40],
+        [601, 63, 50, 40],
+        [459, 563, 50, 40],
+        [459, 463, 50, 40],
+        [459, 363, 50, 40],
+        [459, 263, 50, 40],
+        [459, 213, 50, 40],
+        [459, 63, 50, 40],
+        [317, 563, 50, 40],
+        [317, 463, 50, 40],
+        [317, 363, 50, 40],
+        [317, 263, 50, 40],
+        [317, 213, 50, 40],
+        [317, 63, 50, 40],
+        [175, 563, 50, 40],
+        [175, 463, 50, 40],
+        [175, 363, 50, 40],
+        [175, 263, 50, 40],
+        [175, 213, 50, 40],
+        [175, 63, 50, 40]
+      ]
+    },
+    {
+      "name": "LayoutVideo VIDEO id='video'",
+      "bounds": [150, 60],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for LayoutVideo VIDEO id='video'",
+      "bounds": [150, 60],
+      "transform": 1
+    },
+    {
+      "name": "LayoutFlexibleBox (relative positioned) DIV class='sizing-small phase-ready state-stopped'",
+      "bounds": [150, 60],
+      "transform": 1
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
+      "bounds": [150, 60],
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [15, 854, 0, 1]
+      ]
+    }
+  ]
+}
+

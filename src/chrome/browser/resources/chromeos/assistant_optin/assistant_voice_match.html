@@ -1,0 +1,107 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lottie/cr_lottie.html">
+<dom-module id="assistant-voice-match">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="assistant_shared_styles.css">
+    <link rel="stylesheet" href="assistant_voice_match.css">
+    <oobe-dialog id="voice-match-dialog" role="dialog" has-buttons hide-shadow
+        no-footer-padding no-header class="intro"
+        aria-label$="[[i18nDynamic(locale, 'assistantVoiceMatchTitle')]]">
+      <div slot="footer">
+        <div class="container">
+          <img id="logo" src="assistant_logo.png"
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
+          <div id="intro-container">
+            <div class="title">
+              [[i18nDynamic(locale, 'assistantVoiceMatchTitle')]]
+            </div>
+            <div class="content"
+                i18n-values=".innerHTML:assistantVoiceMatchMessage">
+            </div>
+            <div class="content" id="no-dsp-message">
+              [[i18nDynamic(locale, 'assistantVoiceMatchNoDspMessage')]]
+            </div>
+            <div id="voice-match-animation-container">
+              <div id="voice-match-animation" class="centering">
+                <cr-lottie id="voice-match-lottie"
+                    animation-url="voice_match_animation.json">
+                </cr-lottie>
+              </div>
+            </div>
+          </div>
+          <div id="recording-container">
+            <div class="title" id="title-recording">
+              [[i18nDynamic(locale, 'assistantVoiceMatchRecording')]]
+            </div>
+            <div class="title" id="title-completed">
+              [[i18nDynamic(locale, 'assistantVoiceMatchCompleted')]]
+            </div>
+            <div id="voice-match-entries">
+              <voice-match-entry id="voice-entry-0">
+                <div slot="entry-content">
+                  [[i18nDynamic(locale, 'assistantVoiceMatchInstruction0')]]
+                </div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-1">
+                <div slot="entry-content">
+                  [[i18nDynamic(locale, 'assistantVoiceMatchInstruction1')]]
+                </div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-2">
+                <div slot="entry-content">
+                  [[i18nDynamic(locale, 'assistantVoiceMatchInstruction2')]]
+                </div>
+              </voice-match-entry>
+              <voice-match-entry id="voice-entry-3">
+                <div slot="entry-content">
+                  [[i18nDynamic(locale, 'assistantVoiceMatchInstruction3')]]
+                </div>
+              </voice-match-entry>
+            </div>
+            <div id="loading-animation" hidden>
+              <paper-spinner-lite id="loading-spinner" active>
+              </paper-spinner-lite>
+            </div>
+            <div class="content" id="footer-text">
+              [[i18nDynamic(locale, 'assistantVoiceMatchFooter')]]
+            </div>
+          </div>
+          <div id="already-setup-container">
+            <div class="title" id="title-already-setup">
+              [[i18nDynamic(locale, 'assistantVoiceMatchAlreadySetupTitle')]]
+            </div>
+            <div class="content">
+              [[i18nDynamic(locale, 'assistantVoiceMatchAlreadySetupMessage')]]
+            </div>
+            <div id="already-setup-animation-container">
+              <div id="already-setup-animation" class="centering">
+                <cr-lottie id="already-setup-lottie"
+                    animation-url="voice_match_already_setup_animation.json">
+                </cr-lottie>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button id="skip-button" on-tap="onSkipTap_"
+            disabled="[[buttonsDisabled]]"
+            text-key="assistantOptinNoThanksButton">
+        </oobe-text-button>
+        <oobe-text-button id="later-button" on-tap="onSkipTap_"
+            disabled="[[buttonsDisabled]]" text-key="assistantOptinLaterButton">
+        </oobe-text-button>
+        <oobe-text-button id="agree-button" inverse on-tap="onAgreeTap_"
+            disabled="[[buttonsDisabled]]" text-key="assistantOptinAgreeButton">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

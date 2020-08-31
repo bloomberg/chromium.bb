@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Property flex-basis value '1px'
+PASS Property flex-basis value '400%'
+PASS Property flex-basis value 'auto'
+PASS Property flex-basis value 'calc(10px + 0.5em)'
+PASS Property flex-basis value 'calc(10px - 0.5em)'
+PASS Property flex-basis value 'calc(10%)'
+FAIL Property flex-basis value 'calc(0% + 10px)' assert_equals: expected "calc(0% + 10px)" but got "10px"
+PASS Property flex-basis value 'calc(10% + 0px)'
+Harness: the test ran to completion.
+

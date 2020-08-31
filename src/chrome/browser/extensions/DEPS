@@ -1,0 +1,40 @@
+include_rules = [
+  "+extensions/strings/grit/extensions_strings.h",
+  "+services/network",
+  "+third_party/ink/grit",
+  "+ui/base",
+
+  # For access to testing command line switches.
+  "+ppapi/shared_impl",
+
+  # The extensions system should not depend on Chrome Platform Apps (or any
+  # other component of the apps system).
+  # https://crbug.com/873872.
+  "-chrome/browser/apps/",
+]
+specific_include_rules = {
+  ".*test(_chromeos)?\.(cc|h)$": [
+    # For now, tests are allowed to depend on app_browsertest_util.h, since
+    # that's where PlatformAppBrowserTest is defined. Ideally, we'd eventually
+    # move all Platform App-specific tests to chrome/browser/apps/platform_apps.
+    "+chrome/browser/apps/platform_apps/app_browsertest_util.h",
+  ],
+
+  "extension_protocols_unittest\.cc": [
+    "+services/network/test",
+  ],
+  "zipfile_installer_unittest.cc": [
+    "+services/data_decoder",
+  ],
+  "test_extension_system.cc": [
+    "+services/data_decoder",
+  ],
+  "cross_origin_read_blocking_browsertest.cc": [
+    # Mostly for helping the test verify UMA values from
+    # network::CrossOriginReadBlocking::Action enum.
+    "+services/network/cross_origin_read_blocking.h"
+  ],
+  "webstore_private_apitest.cc" : [
+    "+chrome/browser/ui/views/parent_permission_dialog_view.h",
+  ],
+}

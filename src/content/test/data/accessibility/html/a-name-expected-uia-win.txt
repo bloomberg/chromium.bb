@@ -1,0 +1,5 @@
+Document
+++Hyperlink Name='named anchor'
+++++Text Name='named anchor'
+++Hyperlink Name='both a named anchor and a link'
+++++Text Name='both a named anchor and a link' IsControlElement=false

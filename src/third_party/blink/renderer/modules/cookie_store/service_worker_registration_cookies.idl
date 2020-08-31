@@ -1,0 +1,14 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  // TODO(crbug.com/839117): Enable the following [Exposed] on the partial
+  // interface declaration one it's supported.
+  //
+  // Exposed=(ServiceWorker,Window),
+  RuntimeEnabled=CookieStoreWorker,
+  ImplementedAs=ServiceWorkerRegistrationCookies
+] partial interface ServiceWorkerRegistration {
+  readonly attribute CookieStoreManager cookies;
+};

@@ -1,0 +1,43 @@
+Name: ARCore SDK
+Short Name: arcore
+URL: https://github.com/google-ar/arcore-android-sdk
+Version: 1.5
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+The ARCore Android SDK provides augmented reality capabilities to Android
+devices.
+
+Local Modifications:
+Added BUILD.gn for compilation in chrome.
+
+Added the test-apks/ subdirectory for storing production versions of AR APKs,
+namely ArCore, for testing.
+
+IMPORTANT: make sure to change chrome/android/java/AndroidManifest.xml
+com.google.ar.core.min_apk_version attribute if a newer version of the
+ARCore APK is required to maintain compatibility with this SDK.
+
+The LICENSE file is taken from
+ * https://github.com/google-ar/arcore-unity-sdk/blob/master/LICENSE
+
+Changes:
+2019-12-18 - Upgrade test-apks/arcore_current.apk to v1.14.
+2019-07-22 - Upgrade test-apks/arcore_current.apk to v1.10.
+2019-07-18 - Upgrade SDK to v1.10.
+2019-04-02 - Upgrade test-apks/arcore_current.apk to v1.8.
+2018-12-11 - Upgrade ARCore to v1.5. Remove checked in .so files - we now
+             extract them from ARCore's .aar file at build time.
+2018-12-11 - Upgrade test-apks/arcore_current.apk to v1.6.
+2018-09-14 - Upgrade test-apks/arcore_current.apk to v1.4.
+2018-08-10 - First, removed arcore shim copy target from BUILD.gn since it is no
+             longer needed. Second, added zero-byte dummy arcore library for AR
+             module support.
+2018-07-26 - Added test-apks/ subdirectory for storing production versions of AR
+             APKs for testing.
+2018-07-19 - Updated BUILD.gn to support secondary abi (the previous change for
+             arm64 support turned out to be insufficient) and removed the unused
+             libarcore_sdk target.
+2018-05-04 - Updated BUILD.gn to work properly for arm64.

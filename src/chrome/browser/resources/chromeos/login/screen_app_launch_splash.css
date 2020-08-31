@@ -1,0 +1,92 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+#app-launch-splash {
+  background: white;
+  display: flex;
+  justify-content: center;
+}
+
+
+#splash-content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 100%;
+  position: relative;
+}
+
+#splash-title {
+  background: left center no-repeat;
+  background-size: 96px;
+  display: flex;
+  flex-direction: column;
+  height: 96px;
+  justify-content: center;
+  max-width: 100%;
+  padding-inline-start: 108px;
+}
+
+#splash-header {
+  color: #666;
+  font-size: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+}
+
+#splash-subheader {
+  color: #666;
+  font-size: 18px;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
+}
+
+#splash-launch-text {
+  color: #666;
+  font-size: 18px;
+  padding-top: 50px;
+}
+
+#splash-spinner {
+  height: 32px;
+  width: 32px;
+}
+
+#splash-config-network-container {
+  height : 30px;
+  opacity: 1;
+  padding-bottom: 20px;
+  transition: 1s opacity;
+}
+
+#splash-config-network-container.faded {
+  opacity: 0;
+}
+
+#splash-config-network {
+  font-size: 10px;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+}
+
+#splash-config-network:hover {
+  color: rgb(202, 67, 100)
+}
+
+#splash-shortcut-info {
+  bottom: 50px;
+  color: rgb(102, 102, 102);  /* #666 */
+  left: 0;
+  position: absolute;
+  right: 0;
+  text-align: center;
+}

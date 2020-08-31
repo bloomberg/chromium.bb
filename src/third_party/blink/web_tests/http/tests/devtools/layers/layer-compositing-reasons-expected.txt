@@ -1,0 +1,13 @@
+Tests layer compositing reasons in Layers Panel
+Compositing reason ids for div#transform3d: assumedOverlap,transform3D
+Compositing reason ids for div#transform3d-individual: assumedOverlap,transform3D
+Compositing reason ids for div#backface-visibility: backfaceVisibilityHidden
+Compositing reason ids for div#animation: activeTransformAnimation,assumedOverlap
+Compositing reason ids for div#animation-individual: activeTransformAnimation,assumedOverlap
+Compositing reason ids for div#transformWithCompositedDescendants: assumedOverlap,squashingDisallowed
+Compositing reason ids for div#transformWithCompositedDescendants-individual: assumedOverlap,squashingDisallowed
+Compositing reason ids for div#opacityWithCompositedDescendants: assumedOverlap,opacityWithCompositedDescendants
+Compositing reason ids for div#reflectionWithCompositedDescendants: assumedOverlap,filterWithCompositedDescendants,reflectionWithCompositedDescendants
+Compositing reason ids for div#perspective: assumedOverlap,perspectiveWith3DDescendants
+Compositing reason ids for div#preserve3d: assumedOverlap,preserve3DWith3DDescendants
+

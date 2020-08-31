@@ -1,0 +1,115 @@
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<!--
+  Update required card that informs user that current chromeos version does not
+  satisfy policy requirements.
+
+  Events: none
+-->
+<dom-module id="update-required-card">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="update_required_card.css">
+
+    <oobe-dialog has-buttons hidden="[[showOn_(ui_state,
+        'update-required-message')]]" id="update-required-dialog"
+        title-key="updateRequiredTitle">
+      <div slot="subtitle">
+        [[i18nDynamic(locale,'updateRequiredMessage', enterpriseDomain,
+            deviceName)]]
+      </div>
+      <div slot="footer" class="flex layout vertical center-justified center">
+        <img class="update-illustration oobe-illustration"
+             srcset="images/1x/updating_1x.svg 1x,
+                     images/2x/updating_2x.svg 2x">
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="onUpdateClicked_"
+            class="focus-on-show" text-key="updateButtonCaption">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog has-buttons hidden="[[showOn_(ui_state,
+        'update-error')]]" id="update-required-error-dialog"
+        title-key="updateRequiredTitle"
+        subtitle-key="errorMessage">
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="onSelectNetworkClicked_"
+            class="focus-on-show" text-key="selectNetworkButtonCaption">
+        </oobe-text-button>
+        <oobe-text-button inverse on-tap="onUpdateClicked_"
+            id="update-button" text-key="updateButtonCaption">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <checking-downloading-update id="checking-downloading-update"
+        hidden="[[showOn_(ui_state, 'update-process',
+                'update-completed-need-reboot')]]"
+        checking-for-update="[[updateProgressUnavailable]]"
+        update-completed="[[!showOn_(ui_state,
+                          'update-completed-need-reboot')]]"
+        progress-value="[[updateProgressValue]]"
+        has-estimate="[[estimatedTimeLeftVisible]]"
+        estimated-time-left="[[estimatedTimeLeft]]"
+        default-progress-message="[[updateProgressMessage]]"
+        checking-for-updates-key="updatingMessage"
+        downloading-updates-key="updatingMessage">
+    </checking-downloading-update>
+
+    <oobe-dialog hidden="[[showOn_(ui_state, 'update-need-permission')]]"
+        has-buttons title-key="updateRequiredTitle"
+        id="update-need-permission-dialog">
+      <div slot="subtitle" class="update-subtitle">
+        [[i18nDynamic(locale,'updateOverCellularPromptMessage',
+            enterpriseDomain)]]
+      </div>
+      <div slot="footer" class="flex layout vertical center-justified center">
+        <img class="update-illustration oobe-illustration"
+            srcset="images/1x/updating_1x.svg 1x,
+                    images/2x/updating_2x.svg 2x">
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="onCellularPermissionAccepted_"
+            class="focus-on-show" text-key="AcceptUpdateOverCellularButton"
+            id="cellular-permission-accept-button">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog hidden="[[showOn_(ui_state, 'update-no-network')]]"
+        has-buttons title-key="updateRequiredTitle"
+        id="update-required-no-network-dialog">
+      <div slot="subtitle" class="update-subtitle"
+          id="no-network-message">
+        [[i18nDynamic(locale,'noNetworkMessage', enterpriseDomain)]]
+      </div>
+      <div slot="footer" class="flex layout vertical center-justified center">
+        <img class="update-illustration oobe-illustration"
+            srcset="images/1x/updating_1x.svg 1x,
+                    images/2x/updating_2x.svg 2x">
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="onSelectNetworkClicked_"
+            id="select-network-button" text-key="selectNetworkButtonCaption"
+            class="focus-on-show">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog
+        hidden="[[showOn_(ui_state, 'eol')]]" id="eol-dialog"
+        title-key="eolTitle"
+        subtitle-key="eolMessage">
+      <hd-iron-icon slot="oobe-icon" id="eol-alert-icon"
+          icon1x="oobe-32:alert" icon2x="oobe-64:alert">
+      </hd-iron-icon>
+    </oobe-dialog>
+
+  </template>
+</dom-module>

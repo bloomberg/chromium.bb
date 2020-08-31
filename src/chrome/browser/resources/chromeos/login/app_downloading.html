@@ -1,0 +1,40 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+
+<dom-module id="app-downloading">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <link rel="stylesheet" href="app_downloading.css">
+    <oobe-dialog id="app-downloading-dialog" role="dialog" has-buttons
+        subtitle-key="appDownloadingScreenDescription"
+        aria-label$="[[getDialogTitleA11yString_(numOfApps)]]"
+        no-footer-padding>
+      <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
+      </iron-icon>
+      <h1 slot="title" id="title-singular" hidden="[[!hasSingleApp]]">
+        [[i18nDynamic(locale, 'appDownloadingScreenTitleSingular')]]
+      </h1>
+      <h1 slot="title" id="title-plural" hidden="[[hasSingleApp]]">
+        [[i18nDynamic(locale, 'appDownloadingScreenTitlePlural', numOfApps)]]
+      </h1>
+      <div id="app-downloading-video-container" slot="footer">
+        <if expr="chromeos and _google_chrome">
+          <video loop="loop" autoplay="autoplay" muted>
+            <source src="chrome://oobe/res/arc_app_dowsnloading.mp4"
+                type="video/mp4">
+          </video>
+        </if>
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-next-button id="app-downloading-continue-setup-button"
+            text-key="appDownloadingContinueSetup" on-tap="onContinue_"
+            class="focus-on-show" inverse></oobe-next-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

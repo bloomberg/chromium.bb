@@ -1,0 +1,7 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++menuBar horizontal
+++++++++menuItem name='File'
+++++++++menuItem name='Edit'
+++++++++menuItem name='View'

@@ -1,0 +1,10 @@
+include_rules = [
+  "+net",
+  "+ui/aura",
+  "+ui/base",
+  "+ui/events",
+  "+ui/gfx",
+  "+ui/native_theme",
+  "+ui/views",
+  "+ui/wm",
+]

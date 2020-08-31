@@ -1,0 +1,21 @@
+include_rules = [
+  "+components/url_formatter",
+  "+components/leveldb_proto/public",
+  "+crypto",
+  "+ios/net",
+  "+ios/web",
+  "+mojo/public",
+  "+net",
+  "+services/metrics/public/cpp",
+  "+services/network/network_context.h",
+  "+services/network/public/cpp",
+  "+services/network/public/mojom",
+  "+ui",
+
+  # For tests.
+  "+ios/testing",
+  "+ios/third_party/earl_grey/src",
+  "+ios/third_party/earl_grey2/src/CommonLib",
+  "+ios/third_party/earl_grey2/src/TestLib",
+  "+mojo/core/embedder/embedder.h",
+]

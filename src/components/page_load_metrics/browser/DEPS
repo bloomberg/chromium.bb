@@ -1,0 +1,12 @@
+include_rules = [
+  "+content/public/common",
+  "+content/public/browser",
+  "+content/public/test",
+  "+components/data_reduction_proxy/core/browser",
+  "+components/ukm",
+  "+net",
+  "+services/metrics",
+  "+services/network/public",
+  "+third_party/blink/public",
+  "+ui",
+]

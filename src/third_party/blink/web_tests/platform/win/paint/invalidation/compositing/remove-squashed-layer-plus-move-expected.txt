@@ -1,0 +1,54 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [1418, 1008],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV",
+      "bounds": [1000, 1000],
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='mv-tile')",
+      "bounds": [1000, 105],
+      "invalidations": [
+        [0, 55, 100, 50],
+        [0, 0, 100, 50]
+      ],
+      "transform": 1
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 585],
+      "bounds": [785, 15],
+      "contentsOpaque": true
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 585],
+      "contentsOpaque": true
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [785, 585],
+      "bounds": [15, 15]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
+    }
+  ]
+}
+

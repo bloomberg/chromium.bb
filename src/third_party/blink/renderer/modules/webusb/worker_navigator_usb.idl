@@ -1,0 +1,16 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://wicg.github.io/webusb/#enumeration
+
+[
+    // TODO(crbug.com/839117): Enable the following [Exposed] on the partial
+    // interface declaration once it's supported.
+    //
+    // Exposed(DedicatedWorker WebUSBOnDedicatedWorkers),
+    ImplementedAs=WorkerNavigatorUSB,
+    SecureContext
+] partial interface WorkerNavigator {
+    [CallWith=ScriptState, SameObject] readonly attribute USB usb;
+};

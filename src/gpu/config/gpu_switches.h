@@ -1,0 +1,33 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef GPU_CONFIG_GPU_SWITCHES_H_
+#define GPU_CONFIG_GPU_SWITCHES_H_
+
+#include "gpu/gpu_export.h"
+
+namespace switches {
+
+GPU_EXPORT extern const char kDisableGpuRasterization[];
+GPU_EXPORT extern const char kEnableGpuRasterization[];
+GPU_EXPORT extern const char kGpuBlacklistTestGroup[];
+GPU_EXPORT extern const char kGpuDriverBugListTestGroup[];
+GPU_EXPORT extern const char kGpuPreferences[];
+GPU_EXPORT extern const char kIgnoreGpuBlacklist[];
+GPU_EXPORT extern const char kShaderDiskCacheSizeKB[];
+GPU_EXPORT extern const char kDisableGpuProcessForDX12VulkanInfoCollection[];
+GPU_EXPORT extern const char kEnableUnsafeWebGPU[];
+GPU_EXPORT extern const char kEnableDawnBackendValidation[];
+GPU_EXPORT extern const char kUseHighGPUThreadPriorityForPerfTests[];
+GPU_EXPORT extern const char kNoDelayForDX12VulkanInfoCollection[];
+GPU_EXPORT extern const char kEnableGpuBlockedTime[];
+GPU_EXPORT extern const char kGpuVendorId[];
+GPU_EXPORT extern const char kGpuDeviceId[];
+GPU_EXPORT extern const char kGpuSubSystemId[];
+GPU_EXPORT extern const char kGpuRevision[];
+GPU_EXPORT extern const char kGpuDriverVersion[];
+
+}  // namespace switches
+
+#endif  // GPU_CONFIG_GPU_SWITCHES_H_

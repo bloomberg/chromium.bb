@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<script src="../../../resources/gesture-util.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+
+<style type="text/css">
+    body {
+        height: 2000px;
+        width: 2000px;
+    }
+</style>
+
+<script>
+function reset() {
+    document.scrollingElement.scrollTop = 0;
+    document.scrollingElement.scrollLeft = 0;
+}
+
+var position = {x: 20, y: 20};
+promise_test(async () => {
+    await wheelTick(0, 1, position);
+    await waitFor( () => {
+        return document.scrollingElement.scrollTop == pixelsPerTick() &&
+               document.scrollingElement.scrollLeft == 0;
+    });
+}, "One vertical wheel tick scrolls the right number of pixels in high dpi mode.");
+
+promise_test(async () => {
+    reset();
+    await wheelTick(1, 0, position);
+    await waitFor( () => {
+        return document.scrollingElement.scrollTop == 0 &&
+               document.scrollingElement.scrollLeft == pixelsPerTick();
+    });
+}, "One horizontal wheel tick scrolls the right number of pixels in high dpi mode.");
+
+promise_test(async () => {
+    reset();
+    await wheelTick(0, 2, position);
+    await waitFor( () => {
+        return document.scrollingElement.scrollTop == 2 * pixelsPerTick() &&
+               document.scrollingElement.scrollLeft == 0;
+    });
+}, "Two vertical wheel ticks scroll the right number of pixels in high dpi mode.");
+
+promise_test(async () => {
+    reset();
+    await wheelTick(2, 0, position);
+    await waitFor( () => {
+        return document.scrollingElement.scrollTop == 0 &&
+               document.scrollingElement.scrollLeft == 2 * pixelsPerTick();
+    });
+}, "Two horizontal wheel ticks scroll the right number of pixels in high dpi mode.");
+</script>

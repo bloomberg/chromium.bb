@@ -1,0 +1,9 @@
+# TEAM: payments-dev@chromium.org
+# COMPONENT: Blink>Payments
+
+file://components/payments/OWNERS
+
+jinho.bang@samsung.com
+
+# Emeritus
+mathp@chromium.org
