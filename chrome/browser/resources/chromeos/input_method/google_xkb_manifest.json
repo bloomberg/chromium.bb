@@ -1,0 +1,1809 @@
+{
+  "name": "Chrome OS XKB",
+  "version": "1.0.5.0",
+  "description": "Chrome OS XKB",
+  "default_locale": "en",
+  "incognito": "split",
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC7C0oB6YTnf69uhWnVTZl5TB/psHrJXgIPLYchFb0whlVCG8fqMo9lW/oxBmZXZ3N8T7zZrdYI/SUjoc9I5R/dMVVD2q4iKox+x7xlTbqSdVeOb6b9ZVJ24pLbO1L7feSNSBgR0t61jrC2eY/gf78h7w58UEQBPFT2mUxhhwodyQIDAQAB",
+  "permissions": [
+    "accessibilityFeatures.read",
+    "app.window.alpha",
+    "app.window.alwaysOnTop",
+    "app.window.ime",
+    "audioCapture",
+    "crashReportPrivate",
+    "https://clients4.google.com/",
+    "https://dl.google.com/",
+    "https://handwriting.googleapis.com/",
+    "https://www.googleapis.com/",
+    "input",
+    "inputMethodPrivate",
+    "metricsPrivate",
+    "system.display",
+    "tabs",
+    "tts",
+    "unlimitedStorage",
+    "virtualKeyboardPrivate"
+  ],
+  "background": {
+    "page": "background.html",
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.googleapis.com/auth/imesync*"
+      ],
+      "js": [
+        "chos_inject-debug.js"
+      ]
+    }
+  ],
+  "ime_path": "/usr/share/chromeos-assets/input_methods/input_tools",
+  "input_components": [
+    {
+      "name": "__MSG_keyboard_us__",
+      "type": "ime",
+      "id": "xkb:us::eng",
+      "description": "",
+      "language": [
+        "en",
+        "en-US",
+        "en-AU",
+        "en-NZ"
+      ],
+      "layouts": [
+        "us"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us::eng"
+    },
+    {
+      "name": "__MSG_keyboard_us__",
+      "type": "ime",
+      "id": "xkb:us::ind",
+      "description": "",
+      "language": [
+        "id"
+      ],
+      "layouts": [
+        "us"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us::ind"
+    },
+    {
+      "name": "__MSG_keyboard_us__",
+      "type": "ime",
+      "id": "xkb:us::fil",
+      "description": "",
+      "language": [
+        "fil"
+      ],
+      "layouts": [
+        "us"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us::fil"
+    },
+    {
+      "name": "__MSG_keyboard_us__",
+      "type": "ime",
+      "id": "xkb:us::msa",
+      "description": "",
+      "language": [
+        "ms"
+      ],
+      "layouts": [
+        "us"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us::msa"
+    },
+    {
+      "name": "__MSG_keyboard_us_international__",
+      "type": "ime",
+      "id": "xkb:us:intl:eng",
+      "indicator": "INTL",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(intl)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:intl:eng"
+    },
+    {
+      "name": "__MSG_keyboard_us_international_pc__",
+      "type": "ime",
+      "id": "xkb:us:intl_pc:eng",
+      "indicator": "INTL",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(intl_pc)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:intl_pc:eng"
+    },
+    {
+      "name": "__MSG_keyboard_netherlands__",
+      "type": "ime",
+      "id": "xkb:us:intl:nld",
+      "indicator": "NLD",
+      "description": "",
+      "language": [
+        "nl"
+      ],
+      "layouts": [
+        "us(intl)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:intl:nld"
+    },
+    {
+      "name": "__MSG_keyboard_us_international_pc__",
+      "type": "ime",
+      "id": "xkb:us:intl_pc:nld",
+      "indicator": "NLD",
+      "description": "",
+      "language": [
+        "nl"
+      ],
+      "layouts": [
+        "us(intl_pc)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:intl_pc:nld"
+    },
+    {
+      "name": "__MSG_keyboard_us_extended__",
+      "type": "ime",
+      "id": "xkb:us:altgr-intl:eng",
+      "indicator": "EXTD",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(altgr-intl)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:altgr-intl:eng"
+    },
+    {
+      "name": "__MSG_keyboard_us_dvorak__",
+      "type": "ime",
+      "id": "xkb:us:dvorak:eng",
+      "indicator": "DV",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(dvorak)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:dvorak:eng"
+    },
+    {
+      "name": "__MSG_keyboard_us_dvp__",
+      "type": "ime",
+      "id": "xkb:us:dvp:eng",
+      "indicator": "DVP",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(dvp)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:dvp:eng"
+    },
+    {
+      "name": "__MSG_keyboard_us_colemak__",
+      "type": "ime",
+      "id": "xkb:us:colemak:eng",
+      "indicator": "CO",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(colemak)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:colemak:eng"
+    },
+    {
+      "name": "__MSG_keyboard_us_workman__",
+      "type": "ime",
+      "id": "xkb:us:workman:eng",
+      "indicator": "WM",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(workman)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:workman:eng"
+    },
+    {
+      "name": "__MSG_keyboard_us_workman_international__",
+      "type": "ime",
+      "id": "xkb:us:workman-intl:eng",
+      "indicator": "WMI",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(workman-intl)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:workman-intl:eng"
+    },
+    {
+      "name": "__MSG_keyboard_belgian__",
+      "type": "ime",
+      "id": "xkb:be::nld",
+      "description": "",
+      "language": [
+        "nl"
+      ],
+      "layouts": [
+        "be"
+      ],
+      "options_page": "hmm_options.html?code=xkb:be::nld"
+    },
+    {
+      "name": "__MSG_keyboard_french__",
+      "type": "ime",
+      "id": "xkb:fr::fra",
+      "description": "",
+      "language": [
+        "fr",
+        "fr-FR"
+      ],
+      "layouts": [
+        "fr(oss)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:fr::fra"
+    },
+    {
+      "name": "__MSG_keyboard_french_bepo__",
+      "type": "ime",
+      "id": "xkb:fr:bepo:fra",
+      "description": "",
+      "language": [
+        "fr",
+        "fr-FR"
+      ],
+      "layouts": [
+        "fr(bepo)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:fr:bepo:fra"
+    },
+    {
+      "name": "__MSG_keyboard_belgian__",
+      "type": "ime",
+      "id": "xkb:be::fra",
+      "description": "",
+      "language": [
+        "fr"
+      ],
+      "layouts": [
+        "be"
+      ],
+      "options_page": "hmm_options.html?code=xkb:be::fra"
+    },
+    {
+      "name": "__MSG_keyboard_faroese__",
+      "type": "ime",
+      "id": "xkb:fo::fao",
+      "description": "",
+      "language": [
+        "fo"
+      ],
+      "layouts": [
+        "fo"
+      ],
+      "options_page": "hmm_options.html?code=xkb:fo::fao"
+    },
+    {
+      "name": "__MSG_keyboard_canadian_french__",
+      "type": "ime",
+      "id": "xkb:ca::fra",
+      "description": "",
+      "language": [
+        "fr",
+        "fr-CA"
+      ],
+      "layouts": [
+        "ca"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ca::fra"
+    },
+    {
+      "name": "__MSG_keyboard_swiss_french__",
+      "type": "ime",
+      "id": "xkb:ch:fr:fra",
+      "description": "",
+      "language": [
+        "fr",
+        "fr-CH"
+      ],
+      "layouts": [
+        "ch(fr)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ch:fr:fra"
+    },
+    {
+      "name": "__MSG_keyboard_canadian_multilingual__",
+      "type": "ime",
+      "id": "xkb:ca:multix:fra",
+      "description": "",
+      "language": [
+        "fr",
+        "fr-CA"
+      ],
+      "layouts": [
+        "ca(multix)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ca:multix:fra"
+    },
+    {
+      "name": "__MSG_keyboard_german__",
+      "type": "ime",
+      "id": "xkb:de::ger",
+      "description": "",
+      "language": [
+        "de",
+        "de-AT",
+        "de-DE",
+        "de-LI"
+      ],
+      "layouts": [
+        "de"
+      ],
+      "options_page": "hmm_options.html?code=xkb:de::ger"
+    },
+    {
+      "name": "__MSG_keyboard_german_neo_2__",
+      "type": "ime",
+      "id": "xkb:de:neo:ger",
+      "indicator": "NEO",
+      "description": "",
+      "language": [
+        "de",
+        "de-AT",
+        "de-DE",
+        "de-LI"
+      ],
+      "layouts": [
+        "de(neo)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:de:neo:ger"
+    },
+    {
+      "name": "__MSG_keyboard_belgian__",
+      "type": "ime",
+      "id": "xkb:be::ger",
+      "description": "",
+      "language": [
+        "de"
+      ],
+      "layouts": [
+        "be"
+      ],
+      "options_page": "hmm_options.html?code=xkb:be::ger"
+    },
+    {
+      "name": "__MSG_keyboard_swiss__",
+      "type": "ime",
+      "id": "xkb:ch::ger",
+      "description": "",
+      "language": [
+        "de",
+        "de-CH"
+      ],
+      "layouts": [
+        "ch"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ch::ger"
+    },
+    {
+      "name": "__MSG_keyboard_japanese__",
+      "type": "ime",
+      "id": "xkb:jp::jpn",
+      "indicator": "JA",
+      "description": "",
+      "language": [
+        "ja"
+      ],
+      "layouts": [
+        "jp"
+      ],
+      "options_page": "hmm_options.html?code=xkb:jp::jpn"
+    },
+    {
+      "name": "__MSG_keyboard_russian__",
+      "type": "ime",
+      "id": "xkb:ru::rus",
+      "description": "",
+      "language": [
+        "ru"
+      ],
+      "layouts": [
+        "ru"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ru::rus"
+    },
+    {
+      "name": "__MSG_keyboard_russian_phonetic__",
+      "type": "ime",
+      "id": "xkb:ru:phonetic:rus",
+      "description": "",
+      "language": [
+        "ru"
+      ],
+      "layouts": [
+        "ru(phonetic)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ru:phonetic:rus"
+    },
+    {
+      "name": "__MSG_keyboard_brazilian__",
+      "type": "ime",
+      "id": "xkb:br::por",
+      "description": "",
+      "language": [
+        "pt-BR",
+        "pt"
+      ],
+      "layouts": [
+        "br"
+      ],
+      "options_page": "hmm_options.html?code=xkb:br::por"
+    },
+    {
+      "name": "__MSG_keyboard_us_international__",
+      "type": "ime",
+      "id": "xkb:us:intl:por",
+      "indicator": "INTL",
+      "description": "",
+      "language": [
+        "pt-BR"
+      ],
+      "layouts": [
+        "us(intl)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:intl:por"
+    },
+    {
+      "name": "__MSG_keyboard_us_international_pc__",
+      "type": "ime",
+      "id": "xkb:us:intl_pc:por",
+      "indicator": "INTL",
+      "description": "",
+      "language": [
+        "pt-BR"
+      ],
+      "layouts": [
+        "us(intl_pc)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:us:intl_pc:por"
+    },
+    {
+      "name": "__MSG_keyboard_bulgarian__",
+      "type": "ime",
+      "id": "xkb:bg::bul",
+      "description": "",
+      "language": [
+        "bg"
+      ],
+      "layouts": [
+        "bg"
+      ],
+      "options_page": "hmm_options.html?code=xkb:bg::bul"
+    },
+    {
+      "name": "__MSG_keyboard_bulgarian_phonetic__",
+      "type": "ime",
+      "id": "xkb:bg:phonetic:bul",
+      "description": "",
+      "language": [
+        "bg"
+      ],
+      "layouts": [
+        "bg(phonetic)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:bg:phonetic:bul"
+    },
+    {
+      "name": "__MSG_keyboard_canadian_english__",
+      "type": "ime",
+      "id": "xkb:ca:eng:eng",
+      "description": "",
+      "language": [
+        "en",
+        "en-CA"
+      ],
+      "layouts": [
+        "ca(eng)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ca:eng:eng"
+    },
+    {
+      "name": "__MSG_keyboard_czech__",
+      "type": "ime",
+      "id": "xkb:cz::cze",
+      "description": "",
+      "language": [
+        "cs"
+      ],
+      "layouts": [
+        "cz"
+      ],
+      "options_page": "hmm_options.html?code=xkb:cz::cze"
+    },
+    {
+      "name": "__MSG_keyboard_czech_qwerty__",
+      "type": "ime",
+      "id": "xkb:cz:qwerty:cze",
+      "indicator": "CS",
+      "description": "",
+      "language": [
+        "cs"
+      ],
+      "layouts": [
+        "cz(qwerty)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:cz:qwerty:cze"
+    },
+    {
+      "name": "__MSG_keyboard_estonian__",
+      "type": "ime",
+      "id": "xkb:ee::est",
+      "description": "",
+      "language": [
+        "et"
+      ],
+      "layouts": [
+        "ee"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ee::est"
+    },
+    {
+      "name": "__MSG_keyboard_spanish__",
+      "type": "ime",
+      "id": "xkb:es::spa",
+      "description": "",
+      "language": [
+        "es",
+        "es-ES"
+      ],
+      "layouts": [
+        "es"
+      ],
+      "options_page": "hmm_options.html?code=xkb:es::spa"
+    },
+    {
+      "name": "__MSG_keyboard_catalan__",
+      "type": "ime",
+      "id": "xkb:es:cat:cat",
+      "indicator": "CAT",
+      "description": "",
+      "language": [
+        "ca"
+      ],
+      "layouts": [
+        "es(cat)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:es:cat:cat"
+    },
+    {
+      "name": "__MSG_keyboard_danish__",
+      "type": "ime",
+      "id": "xkb:dk::dan",
+      "description": "",
+      "language": [
+        "da"
+      ],
+      "layouts": [
+        "dk"
+      ],
+      "options_page": "hmm_options.html?code=xkb:dk::dan"
+    },
+    {
+      "name": "__MSG_keyboard_greek__",
+      "type": "ime",
+      "id": "xkb:gr::gre",
+      "description": "",
+      "language": [
+        "el"
+      ],
+      "layouts": [
+        "gr"
+      ],
+      "options_page": "hmm_options.html?code=xkb:gr::gre"
+    },
+    {
+      "name": "__MSG_keyboard_hebrew__",
+      "type": "ime",
+      "id": "xkb:il::heb",
+      "description": "",
+      "language": [
+        "he"
+      ],
+      "layouts": [
+        "il"
+      ],
+      "options_page": "hmm_options.html?code=xkb:il::heb"
+    },
+    {
+      "name": "__MSG_keyboard_latin_american__",
+      "type": "ime",
+      "id": "xkb:latam::spa",
+      "indicator": "LA",
+      "description": "",
+      "language": [
+        "es",
+        "es-419"
+      ],
+      "layouts": [
+        "latam"
+      ],
+      "options_page": "hmm_options.html?code=xkb:latam::spa"
+    },
+    {
+      "name": "__MSG_keyboard_lithuanian__",
+      "type": "ime",
+      "id": "xkb:lt::lit",
+      "description": "",
+      "language": [
+        "lt"
+      ],
+      "layouts": [
+        "lt"
+      ],
+      "options_page": "hmm_options.html?code=xkb:lt::lit"
+    },
+    {
+      "name": "__MSG_keyboard_latvian__",
+      "type": "ime",
+      "id": "xkb:lv:apostrophe:lav",
+      "description": "",
+      "language": [
+        "lv"
+      ],
+      "layouts": [
+        "lv(apostrophe)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:lv:apostrophe:lav"
+    },
+    {
+      "name": "__MSG_keyboard_croatian__",
+      "type": "ime",
+      "id": "xkb:hr::scr",
+      "description": "",
+      "language": [
+        "hr"
+      ],
+      "layouts": [
+        "hr"
+      ],
+      "options_page": "hmm_options.html?code=xkb:hr::scr"
+    },
+    {
+      "name": "__MSG_keyboard_uk__",
+      "type": "ime",
+      "id": "xkb:gb:extd:eng",
+      "description": "",
+      "language": [
+        "en",
+        "en-GB"
+      ],
+      "layouts": [
+        "gb(extd)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:gb:extd:eng"
+    },
+    {
+      "name": "__MSG_keyboard_uk_dvorak__",
+      "type": "ime",
+      "id": "xkb:gb:dvorak:eng",
+      "indicator": "DV",
+      "description": "",
+      "language": [
+        "en",
+        "en-GB"
+      ],
+      "layouts": [
+        "gb(dvorak)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:gb:dvorak:eng"
+    },
+    {
+      "name": "__MSG_keyboard_finnish__",
+      "type": "ime",
+      "id": "xkb:fi::fin",
+      "description": "",
+      "language": [
+        "fi"
+      ],
+      "layouts": [
+        "fi"
+      ],
+      "options_page": "hmm_options.html?code=xkb:fi::fin"
+    },
+    {
+      "name": "__MSG_keyboard_hungarian__",
+      "type": "ime",
+      "id": "xkb:hu::hun",
+      "description": "",
+      "language": [
+        "hu"
+      ],
+      "layouts": [
+        "hu"
+      ],
+      "options_page": "hmm_options.html?code=xkb:hu::hun"
+    },
+    {
+      "name": "__MSG_keyboard_hungarian_qwerty__",
+      "type": "ime",
+      "id": "xkb:hu:qwerty:hun",
+      "description": "",
+      "language": [
+        "hu"
+      ],
+      "layouts": [
+        "hu(qwerty)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:hu:qwerty:hun"
+    },
+    {
+      "name": "__MSG_keyboard_italian__",
+      "type": "ime",
+      "id": "xkb:it::ita",
+      "description": "",
+      "language": [
+        "it",
+        "it-IT"
+      ],
+      "layouts": [
+        "it"
+      ],
+      "options_page": "hmm_options.html?code=xkb:it::ita"
+    },
+    {
+      "name": "__MSG_keyboard_icelandic__",
+      "type": "ime",
+      "id": "xkb:is::ice",
+      "description": "",
+      "language": [
+        "is"
+      ],
+      "layouts": [
+        "is"
+      ],
+      "options_page": "hmm_options.html?code=xkb:is::ice"
+    },
+    {
+      "name": "__MSG_keyboard_norwegian__",
+      "type": "ime",
+      "id": "xkb:no::nob",
+      "description": "",
+      "language": [
+        "nb",
+        "nn",
+        "no"
+      ],
+      "layouts": [
+        "no"
+      ],
+      "options_page": "hmm_options.html?code=xkb:no::nob"
+    },
+    {
+      "name": "__MSG_keyboard_polish__",
+      "type": "ime",
+      "id": "xkb:pl::pol",
+      "description": "",
+      "language": [
+        "pl"
+      ],
+      "layouts": [
+        "pl"
+      ],
+      "options_page": "hmm_options.html?code=xkb:pl::pol"
+    },
+    {
+      "name": "__MSG_keyboard_portuguese__",
+      "type": "ime",
+      "id": "xkb:pt::por",
+      "description": "",
+      "language": [
+        "pt-PT",
+        "pt"
+      ],
+      "layouts": [
+        "pt"
+      ],
+      "options_page": "hmm_options.html?code=xkb:pt::por"
+    },
+    {
+      "name": "__MSG_keyboard_romanian__",
+      "type": "ime",
+      "id": "xkb:ro::rum",
+      "description": "",
+      "language": [
+        "ro"
+      ],
+      "layouts": [
+        "ro"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ro::rum"
+    },
+    {
+      "name": "__MSG_keyboard_romanian_standard__",
+      "type": "ime",
+      "id": "xkb:ro:std:rum",
+      "description": "",
+      "language": [
+        "ro"
+      ],
+      "layouts": [
+        "ro(std)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ro:std:rum"
+    },
+    {
+      "name": "__MSG_keyboard_swedish__",
+      "type": "ime",
+      "id": "xkb:se::swe",
+      "description": "",
+      "language": [
+        "sv"
+      ],
+      "layouts": [
+        "se"
+      ],
+      "options_page": "hmm_options.html?code=xkb:se::swe"
+    },
+    {
+      "name": "__MSG_keyboard_slovak__",
+      "type": "ime",
+      "id": "xkb:sk::slo",
+      "description": "",
+      "language": [
+        "sk"
+      ],
+      "layouts": [
+        "sk"
+      ],
+      "options_page": "hmm_options.html?code=xkb:sk::slo"
+    },
+    {
+      "name": "__MSG_keyboard_slovenian__",
+      "type": "ime",
+      "id": "xkb:si::slv",
+      "description": "",
+      "language": [
+        "sl"
+      ],
+      "layouts": [
+        "si"
+      ],
+      "options_page": "hmm_options.html?code=xkb:si::slv"
+    },
+    {
+      "name": "__MSG_keyboard_serbian__",
+      "type": "ime",
+      "id": "xkb:rs::srp",
+      "description": "",
+      "language": [
+        "sr"
+      ],
+      "layouts": [
+        "rs"
+      ],
+      "options_page": "hmm_options.html?code=xkb:rs::srp"
+    },
+    {
+      "name": "__MSG_keyboard_turkish__",
+      "type": "ime",
+      "id": "xkb:tr::tur",
+      "description": "",
+      "language": [
+        "tr"
+      ],
+      "layouts": [
+        "tr"
+      ],
+      "options_page": "hmm_options.html?code=xkb:tr::tur"
+    },
+    {
+      "name": "__MSG_keyboard_turkish_f__",
+      "type": "ime",
+      "id": "xkb:tr:f:tur",
+      "description": "",
+      "language": [
+        "tr"
+      ],
+      "layouts": [
+        "tr(f)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:tr:f:tur"
+    },
+    {
+      "name": "__MSG_keyboard_ukrainian__",
+      "type": "ime",
+      "id": "xkb:ua::ukr",
+      "description": "",
+      "language": [
+        "uk"
+      ],
+      "layouts": [
+        "ua"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ua::ukr"
+    },
+    {
+      "name": "__MSG_keyboard_belarusian__",
+      "type": "ime",
+      "id": "xkb:by::bel",
+      "description": "",
+      "language": [
+        "be"
+      ],
+      "layouts": [
+        "by"
+      ],
+      "options_page": "hmm_options.html?code=xkb:by::bel"
+    },
+    {
+      "name": "__MSG_keyboard_armenian_phonetic__",
+      "type": "ime",
+      "id": "xkb:am:phonetic:arm",
+      "description": "",
+      "language": [
+        "hy"
+      ],
+      "layouts": [
+        "am(phonetic)"
+      ],
+      "options_page": "hmm_options.html?code=xkb:am:phonetic:arm"
+    },
+    {
+      "name": "__MSG_keyboard_georgian__",
+      "type": "ime",
+      "id": "xkb:ge::geo",
+      "description": "",
+      "language": [
+        "ka"
+      ],
+      "layouts": [
+        "ge"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ge::geo"
+    },
+    {
+      "name": "__MSG_keyboard_mongolian__",
+      "type": "ime",
+      "id": "xkb:mn::mon",
+      "description": "",
+      "language": [
+        "mn"
+      ],
+      "layouts": [
+        "mn"
+      ],
+      "options_page": "hmm_options.html?code=xkb:mn::mon"
+    },
+    {
+      "name": "__MSG_keyboard_irish__",
+      "type": "ime",
+      "id": "xkb:ie::ga",
+      "description": "",
+      "language": [
+        "ga"
+      ],
+      "layouts": [
+        "ie"
+      ],
+      "options_page": "hmm_options.html?code=xkb:ie::ga"
+    },
+    {
+      "name": "__MSG_keyboard_maltese__",
+      "type": "ime",
+      "id": "xkb:mt::mlt",
+      "description": "",
+      "language": [
+        "mt"
+      ],
+      "layouts": [
+        "mt"
+      ],
+      "options_page": "hmm_options.html?code=xkb:mt::mlt"
+    },
+    {
+      "name": "__MSG_keyboard_macedonian__",
+      "type": "ime",
+      "id": "xkb:mk::mkd",
+      "description": "",
+      "language": [
+        "mk"
+      ],
+      "layouts": [
+        "mk"
+      ],
+      "options_page": "hmm_options.html?code=xkb:mk::mkd"
+    },
+    {
+      "name": "__MSG_keyboard_kazakh__",
+      "type": "ime",
+      "id": "xkb:kz::kaz",
+      "description": "",
+      "language": [
+        "kk"
+      ],
+      "layouts": [
+        "kz"
+      ],
+      "options_page": "hmm_options.html?code=xkb:kz::kaz"
+    },
+    {
+      "name": "__MSG_inputmethod_pinyin__",
+      "type": "ime",
+      "id": "zh-t-i0-pinyin",
+      "indicator": "\u62fc",
+      "description": "Pinyin",
+      "language": [
+        "zh-CN",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ],
+      "options_page": "hmm_options.html?code=zh-t-i0-pinyin"
+    },
+    {
+      "name": "__MSG_inputmethod_traditional_pinyin__",
+      "type": "ime",
+      "id": "zh-hant-t-i0-pinyin",
+      "indicator": "\u62fc",
+      "description": "Pinyin for Tranditional Chinese",
+      "language": [
+        "zh-TW",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ],
+      "options_page": "hmm_options.html?code=zh-hant-t-i0-pinyin"
+    },
+    {
+      "name": "__MSG_inputmethod_cangjie__",
+      "type": "ime",
+      "id": "zh-hant-t-i0-cangjie-1987",
+      "indicator": "\u5009",
+      "description": "Cangjie",
+      "language": [
+        "zh-TW",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_inputmethod_quick__",
+      "type": "ime",
+      "id": "zh-hant-t-i0-cangjie-1987-x-m0-simplified",
+      "indicator": "\u901f",
+      "description": "Quick",
+      "language": [
+        "zh-TW",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_inputmethod_cantonese__",
+      "type": "ime",
+      "id": "yue-hant-t-i0-und",
+      "indicator": "\u7CA4",
+      "description": "Cantonese",
+      "language": [
+        "zh-TW"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_inputmethod_wubi__",
+      "type": "ime",
+      "id": "zh-t-i0-wubi-1986",
+      "indicator": "\u4e94",
+      "description": "Wubi",
+      "language": [
+        "zh-CN",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_inputmethod_array__",
+      "type": "ime",
+      "id": "zh-hant-t-i0-array-1992",
+      "indicator": "\u884c\u5217",
+      "description": "Array",
+      "language": [
+        "zh-TW",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_inputmethod_dayi__",
+      "type": "ime",
+      "id": "zh-hant-t-i0-dayi-1988",
+      "indicator": "\u5927\u6613",
+      "description": "Dayi",
+      "language": [
+        "zh-TW",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_inputmethod_zhuyin__",
+      "type": "ime",
+      "id": "zh-hant-t-i0-und",
+      "indicator": "\u6CE8",
+      "description": "Zhuyin",
+      "language": [
+        "zh-TW",
+        "zh"
+      ],
+      "layouts": [
+        "us"
+      ],
+      "options_page": "hmm_options.html?code=zh-hant-t-i0-und"
+    },
+    {
+      "name": "__MSG_transliteration_am__",
+      "type": "ime",
+      "id": "am-t-i0-und",
+      "description": "Amharic",
+      "language": "am",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_ar__",
+      "type": "ime",
+      "id": "ar-t-i0-und",
+      "description": "Arabic",
+      "language": "ar",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_bn__",
+      "type": "ime",
+      "id": "bn-t-i0-und",
+      "description": "Bengali",
+      "language": "bn",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_el__",
+      "type": "ime",
+      "id": "el-t-i0-und",
+      "description": "Greek",
+      "language": "el",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_fa__",
+      "type": "ime",
+      "id": "fa-t-i0-und",
+      "description": "Persian",
+      "language": "fa",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_gu__",
+      "type": "ime",
+      "id": "gu-t-i0-und",
+      "description": "Gujarati",
+      "language": "gu",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_he__",
+      "type": "ime",
+      "id": "he-t-i0-und",
+      "description": "Hebrew",
+      "language": "he",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_hi__",
+      "type": "ime",
+      "id": "hi-t-i0-und",
+      "description": "Hindi",
+      "language": "hi",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_kn__",
+      "type": "ime",
+      "id": "kn-t-i0-und",
+      "description": "Kannada",
+      "language": "kn",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_ml__",
+      "type": "ime",
+      "id": "ml-t-i0-und",
+      "description": "Malayalam",
+      "language": "ml",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_mr__",
+      "type": "ime",
+      "id": "mr-t-i0-und",
+      "description": "Marathi",
+      "language": "mr",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_ne__",
+      "type": "ime",
+      "id": "ne-t-i0-und",
+      "description": "Nepali",
+      "language": "ne",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_or__",
+      "type": "ime",
+      "id": "or-t-i0-und",
+      "description": "Oriya",
+      "language": "or",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_pa__",
+      "type": "ime",
+      "id": "pa-t-i0-und",
+      "description": "Punjabi",
+      "language": "pa",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_sa__",
+      "type": "ime",
+      "id": "sa-t-i0-und",
+      "description": "Sanskrit",
+      "language": "sa",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_sr__",
+      "type": "ime",
+      "id": "sr-t-i0-und",
+      "description": "Serbian",
+      "language": "sr",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_ta__",
+      "type": "ime",
+      "id": "ta-t-i0-und",
+      "description": "Tamil",
+      "language": "ta",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_te__",
+      "type": "ime",
+      "id": "te-t-i0-und",
+      "description": "Telugu",
+      "language": "te",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_ti__",
+      "type": "ime",
+      "id": "ti-t-i0-und",
+      "description": "Tigrinya",
+      "language": "ti",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_transliteration_ur__",
+      "type": "ime",
+      "id": "ur-t-i0-und",
+      "description": "Urdu",
+      "language": "ur",
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_inputmethod_hangul__",
+      "type": "ime",
+      "id": "ko-t-i0-und",
+      "indicator": "\ud55c",
+      "description": "Korean input method.",
+      "language": "ko",
+      "layouts": [
+        "us"
+      ],
+      "options_page": "hmm_options.html?code=ko-t-i0-und"
+    },
+    {
+      "name": "__MSG_inputmethod_mozc_us__",
+      "type": "ime",
+      "id": "nacl_mozc_us",
+      "indicator": "\u3042",
+      "description": "Japanese input method.",
+      "language": "ja",
+      "layouts": [
+        "us"
+      ],
+      "options_page": "mozc_option.html"
+    },
+    {
+      "name": "__MSG_inputmethod_mozc_jp__",
+      "type": "ime",
+      "id": "nacl_mozc_jp",
+      "indicator": "\u3042",
+      "description": "Japanese input method.",
+      "language": "ja",
+      "layouts": [
+        "jp"
+      ],
+      "options_page": "mozc_option.html"
+    },
+    {
+      "name": "__MSG_keyboard_bengali_phonetic__",
+      "type": "ime",
+      "id": "vkd_bn_phone",
+      "description": "",
+      "language": [
+        "bn"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_gujarati_phonetic__",
+      "type": "ime",
+      "id": "vkd_gu_phone",
+      "description": "",
+      "language": [
+        "gu"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_devanagari_phonetic__",
+      "type": "ime",
+      "id": "vkd_deva_phone",
+      "description": "",
+      "language": [
+        "hi",
+        "mr"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_kannada_phonetic__",
+      "type": "ime",
+      "id": "vkd_kn_phone",
+      "description": "",
+      "language": [
+        "kn"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_malayalam_phonetic__",
+      "type": "ime",
+      "id": "vkd_ml_phone",
+      "description": "",
+      "language": [
+        "ml"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_tamil_inscript__",
+      "type": "ime",
+      "id": "vkd_ta_inscript",
+      "description": "",
+      "language": [
+        "ta"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_tamil_phonetic__",
+      "type": "ime",
+      "id": "vkd_ta_phone",
+      "description": "",
+      "language": [
+        "ta"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_tamil_tamil99__",
+      "type": "ime",
+      "id": "vkd_ta_tamil99",
+      "description": "",
+      "language": [
+        "ta"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_tamil_typewriter__",
+      "type": "ime",
+      "id": "vkd_ta_typewriter",
+      "description": "",
+      "language": [
+        "ta"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_tamil_itrans__",
+      "type": "ime",
+      "id": "vkd_ta_itrans",
+      "description": "",
+      "language": [
+        "ta"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_telugu_phonetic__",
+      "type": "ime",
+      "id": "vkd_te_phone",
+      "description": "",
+      "language": [
+        "te"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_ethiopic__",
+      "type": "ime",
+      "id": "vkd_ethi",
+      "description": "",
+      "language": [
+        "am"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_thai_kedmanee__",
+      "type": "ime",
+      "id": "vkd_th",
+      "description": "",
+      "language": [
+        "th"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_thai_pattachote__",
+      "type": "ime",
+      "id": "vkd_th_pattajoti",
+      "description": "",
+      "language": [
+        "th"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_thai_tis__",
+      "type": "ime",
+      "id": "vkd_th_tis",
+      "description": "",
+      "language": [
+        "th"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_persian__",
+      "type": "ime",
+      "id": "vkd_fa",
+      "description": "",
+      "language": [
+        "fa"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_vietnamese_tcvn__",
+      "type": "ime",
+      "id": "vkd_vi_tcvn",
+      "description": "",
+      "language": [
+        "vi"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_vietnamese_telex__",
+      "type": "ime",
+      "id": "vkd_vi_telex",
+      "description": "",
+      "language": [
+        "vi"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_vietnamese_viqr__",
+      "type": "ime",
+      "id": "vkd_vi_viqr",
+      "description": "",
+      "language": [
+        "vi"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_vietnamese_vni__",
+      "type": "ime",
+      "id": "vkd_vi_vni",
+      "description": "",
+      "language": [
+        "vi"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_arabic__",
+      "type": "ime",
+      "id": "vkd_ar",
+      "description": "",
+      "language": [
+        "ar"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_lao__",
+      "type": "ime",
+      "id": "vkd_lo",
+      "description": "",
+      "language": [
+        "lo"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_nepali_inscript__",
+      "type": "ime",
+      "id": "vkd_ne_inscript",
+      "description": "",
+      "language": [
+        "ne"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_nepali_phonetic__",
+      "type": "ime",
+      "id": "vkd_ne_phone",
+      "description": "",
+      "language": [
+        "ne"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_khmer__",
+      "type": "ime",
+      "id": "vkd_km",
+      "description": "",
+      "language": [
+        "km"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_myanmar__",
+      "type": "ime",
+      "id": "vkd_my",
+      "description": "",
+      "language": [
+        "my"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_sinhala__",
+      "type": "ime",
+      "id": "vkd_si",
+      "description": "",
+      "language": [
+        "si"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_soranikurdish_en__",
+      "type": "ime",
+      "id": "vkd_ckb_en",
+      "description": "Sorani Kurdish - English-based",
+      "language": [
+        "ckb"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_soranikurdish_ar__",
+      "type": "ime",
+      "id": "vkd_ckb_ar",
+      "description": "Sorani Kurdish - Arabic-based",
+      "language": [
+        "ckb"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_myanmar_myansan__",
+      "type": "ime",
+      "id": "vkd_my_myansan",
+      "description": "",
+      "language": [
+        "my"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_russian_phonetic_aatseel__",
+      "type": "ime",
+      "id": "vkd_ru_phone_aatseel",
+      "description": "",
+      "language": [
+        "ru"
+      ],
+      "layouts": [
+        "us"
+      ]
+    },
+    {
+      "name": "__MSG_keyboard_russian_phonetic_yazhert__",
+      "type": "ime",
+      "id": "vkd_ru_phone_yazhert",
+      "description": "",
+      "language": [
+        "ru"
+      ],
+      "layouts": [
+        "us"
+      ]
+    }
+  ],
+  "manifest_version": 2,
+  "content_security_policy": "script-src 'self' 'wasm-eval'; object-src 'self'"
+}

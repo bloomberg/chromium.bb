@@ -1,0 +1,41 @@
+# General renderer_host owners
+kenrb@chromium.org
+
+# for *aura*
+per-file *aura*=sadrul@chromium.org
+
+# for GPU-related stuff in *mac*
+kbr@chromium.org
+ccameron@chromium.org
+
+# for *android*
+per-file *android*=ericrk@chromium.org
+per-file *android*=khushalsagar@chromium.org
+
+# For touch/gesture specific changes
+rjkroege@chromium.org
+sadrul@chromium.org
+
+# For surface ID propagation and synchronization
+fsamuel@chromium.org
+samans@chromium.org
+jonross@chromium.org
+
+# DelegatedFrame*
+per-file *delegated_frame*=fsamuel@chromium.org
+per-file *delegated_frame*=samans@chromium.org
+per-file *delegated_frame*=jonross@chromium.org
+
+# WebSQL
+per-file web_database_*=jsbell@chromium.org
+per-file web_database_*=pwnall@chromium.org
+
+# Embedded Frame Sinks (eg. Offscreen Canvas)
+per-file embedded_frame_sink*.*=xlai@chromium.org
+per-file embedded_frame_sink*.*=junov@chromium.org
+per-file embedded_frame_sink*.*=kylechar@chromium.org
+
+# DirectWrite Font Code
+per-file dwrite_*=drott@chromium.org
+
+# COMPONENT: Internals>Core

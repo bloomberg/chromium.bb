@@ -1,0 +1,3 @@
+[document web]
+++[article] xml-roles:article
+++++[static] name='This is an article element.'

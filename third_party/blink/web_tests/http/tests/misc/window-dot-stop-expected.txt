@@ -1,0 +1,3 @@
+This tests for the successful use of window.stop()
+
+

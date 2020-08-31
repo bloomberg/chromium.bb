@@ -1,0 +1,480 @@
+Tests DOMSnapshot.getSnapshot method returning input values.
+{
+  "domNodes": [
+    {
+      "nodeType": 9,
+      "nodeName": "#document",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        1
+      ],
+      "layoutNodeIndex": 0,
+      "documentURL": "<string>",
+      "baseURL": "<string>",
+      "documentEncoding": "windows-1252",
+      "frameId": "<string>",
+      "scrollOffsetX": 0,
+      "scrollOffsetY": 0
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "HTML",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        2,
+        3
+      ],
+      "layoutNodeIndex": 1,
+      "frameId": "<string>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "HEAD",
+      "nodeValue": "",
+      "backendNodeId": "<number>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "BODY",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        4,
+        5,
+        35
+      ],
+      "attributes": [
+        {
+          "name": "class",
+          "value": "body-class"
+        }
+      ],
+      "layoutNodeIndex": 2
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": "<number>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        6,
+        7,
+        15,
+        16,
+        19,
+        20,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        34
+      ],
+      "attributes": [
+        {
+          "name": "style",
+          "value": "width: 200px"
+        }
+      ],
+      "layoutNodeIndex": 3
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "SELECT",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        8,
+        10
+      ],
+      "layoutNodeIndex": 4
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        9
+      ],
+      "attributes": [
+        {
+          "name": "aria-hidden",
+          "value": "true"
+        }
+      ],
+      "layoutNodeIndex": 5,
+      "shadowRootType": "user-agent"
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "Option 1",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 6,
+      "shadowRootType": "user-agent"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "SLOT",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        11,
+        13
+      ],
+      "attributes": [
+        {
+          "name": "name",
+          "value": "user-agent-custom-assign-slot"
+        }
+      ],
+      "shadowRootType": "user-agent"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "OPTION",
+      "nodeValue": "",
+      "optionSelected": true,
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        12
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "value": "OptionSelected"
+        }
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "Option 1",
+      "backendNodeId": "<number>",
+      "shadowRootType": "user-agent"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "OPTION",
+      "nodeValue": "",
+      "optionSelected": false,
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        14
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "value": "OptionNotSelected"
+        }
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "Option 2",
+      "backendNodeId": "<number>",
+      "shadowRootType": "user-agent"
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 7
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "INPUT",
+      "nodeValue": "",
+      "inputValue": "InputValue",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        17
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "value": "TextInput"
+        },
+        {
+          "name": "value",
+          "value": "InputValue"
+        }
+      ],
+      "layoutNodeIndex": 8,
+      "isClickable": true
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        18
+      ],
+      "layoutNodeIndex": 9,
+      "shadowRootType": "user-agent",
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "InputValue",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 10,
+      "shadowRootType": "user-agent",
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 11
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "INPUT",
+      "nodeValue": "",
+      "inputValue": "ButtonValue",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        21
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "value": "ButtonInput"
+        },
+        {
+          "name": "type",
+          "value": "button"
+        },
+        {
+          "name": "value",
+          "value": "ButtonValue"
+        }
+      ],
+      "layoutNodeIndex": 12,
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "ButtonValue",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 13,
+      "shadowRootType": "user-agent"
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 14
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "INPUT",
+      "nodeValue": "",
+      "inputValue": "RadioInputValue",
+      "inputChecked": true,
+      "backendNodeId": "<number>",
+      "attributes": [
+        {
+          "name": "id",
+          "value": "RadioInputChecked"
+        },
+        {
+          "name": "value",
+          "value": "RadioInputValue"
+        },
+        {
+          "name": "type",
+          "value": "radio"
+        },
+        {
+          "name": "checked",
+          "value": ""
+        }
+      ],
+      "layoutNodeIndex": 15,
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 16
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "INPUT",
+      "nodeValue": "",
+      "inputValue": "on",
+      "inputChecked": false,
+      "backendNodeId": "<number>",
+      "attributes": [
+        {
+          "name": "id",
+          "value": "RadioInputUnchecked"
+        },
+        {
+          "name": "type",
+          "value": "radio"
+        }
+      ],
+      "layoutNodeIndex": 17,
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 18
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "INPUT",
+      "nodeValue": "",
+      "inputValue": "CheckInputValue",
+      "inputChecked": true,
+      "backendNodeId": "<number>",
+      "attributes": [
+        {
+          "name": "id",
+          "value": "CheckboxInputChecked"
+        },
+        {
+          "name": "value",
+          "value": "CheckInputValue"
+        },
+        {
+          "name": "type",
+          "value": "checkbox"
+        },
+        {
+          "name": "checked",
+          "value": ""
+        }
+      ],
+      "layoutNodeIndex": 19,
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 20
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "INPUT",
+      "nodeValue": "",
+      "inputValue": "",
+      "inputChecked": false,
+      "backendNodeId": "<number>",
+      "attributes": [
+        {
+          "name": "id",
+          "value": "CheckboxInputUnchecked"
+        },
+        {
+          "name": "type",
+          "value": "checkbox"
+        },
+        {
+          "name": "value",
+          "value": ""
+        }
+      ],
+      "layoutNodeIndex": 21,
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 22
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "TEXTAREA",
+      "nodeValue": "",
+      "textValue": "TextAreaValue",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        32
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "value": "TextArea"
+        }
+      ],
+      "layoutNodeIndex": 23
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "DIV",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        33
+      ],
+      "layoutNodeIndex": 24,
+      "shadowRootType": "user-agent",
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "TextAreaValue",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 25,
+      "shadowRootType": "user-agent",
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 26
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n\n\n",
+      "backendNodeId": "<number>"
+    }
+  ],
+  "layoutTreeNodes": "<object>",
+  "computedStyles": "<object>"
+}
+

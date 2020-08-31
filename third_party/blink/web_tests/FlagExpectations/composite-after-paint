@@ -1,0 +1,102 @@
+# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
+#         Mac10.13 Win Win7 Win10 ]
+# tags: [ Release Debug ]
+# results: [ Timeout Crash Pass Failure Slow Skip ]
+
+# Expectations for CompositeAfterPaint
+# See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
+http/tests/devtools/tracing/* [ Skip ]
+
+virtual/composite-after-paint/* [ Skip ]
+
+virtual/layout_ng_block_frag/* [ Skip ]
+virtual/layout_ng_fieldset/* [ Skip ]
+virtual/layout_ng_flex_box/* [ Skip ]
+virtual/prefer_compositing_to_lcd_text/compositing/overflow/* [ Skip ]
+virtual/stable/* [ Skip ]
+
+# For now we track the failures of the base tests of the following virtual suites.
+virtual/exotic-color-space/images/* [ Skip ]
+virtual/gpu-rasterization/images/* [ Skip ]
+virtual/scroll_customization/fast/events/touch/* [ Skip ]
+virtual/threaded/printing/* [ Skip ]
+virtual/threaded/http/tests/devtools/tracing/* [ Skip ]
+virtual/controls-refresh/* [ Skip ]
+virtual/controls-refresh-hc/* [ Skip ]
+virtual/web-components-v0-disabled/* [ Skip ]
+
+# They test Layer::ScrollsWithRespectTo() which is for pre-CompositeAfterPaint only.
+compositing/overflow/scrolls-with-respect-to-nested.html [ Skip ]
+compositing/overflow/scrolls-with-respect-to-transform.html [ Skip ]
+compositing/overflow/scrolls-with-respect-to.html [ Skip ]
+
+# We don't repaint when opacity changes from zero to non-zero, so it's not feasible
+# to detect that as a first paint. Won't fix.
+external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Skip ]
+external/wpt/paint-timing/fcp-only/fcp-pseudo-element-opacity.html [ Skip ]
+
+# Can't rebaseline because the file path is too long.
+virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Skip ]
+
+# Fail before CompositeAfterPaint but pass with it.
+crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Pass ]
+crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Pass ]
+crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
+crbug.com/1039401 virtual/scroll_customization/fast/scrolling/scrollbar-mousedown-mouseup.html [ Pass ]
+paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Pass ]
+crbug.com/957674 external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
+crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
+
+virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
+
+# Wrong clipping of the right side of nested composited reflection with non-zero filter origin.
+compositing/reflections/deeply-nested-reflections.html [ Failure ]
+
+compositing/masks/broken-mask.html [ Failure ]
+compositing/masks/mask-with-removed-filters.html [ Failure ]
+external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
+external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
+external/wpt/portals/portals-rendering.html [ Failure ]
+fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
+
+printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
+printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
+printing/offscreencanvas-2d-printing.html [ Failure ]
+printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
+printing/webgl-repeated-printing.html [ Failure ]
+
+transforms/3d/general/background-visibility-layers.html [ Failure ]
+virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-22.html [ Crash ]
+
+# Raster invalidation doesn't work for huge layers.
+paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
+
+# No composited scrolling for overflow:hidden (on marquee).
+compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
+
+# Subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
+fullscreen/rendering/backdrop-object.html [ Failure ]
+
+# Passes on bot, timeouts locally.
+virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Pass Timeout ]
+
+paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
+
+# Missing compositing reasons
+http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
+# Missing WheelEventHandler
+http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
+
+# Outline paints incorrectly with columns.
+crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
+
+# Ad frame highlight size is incorrect
+crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
+
+compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
+http/tests/images/image-decode-in-frame.html [ Pass Failure ]
+
+# User Activation
+crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
+external/wpt/html/user-activation/consumption-crossorigin.sub.tentative.html [ Timeout ]
+external/wpt/html/user-activation/propagation-crossorigin.sub.tentative.html [ Timeout ]

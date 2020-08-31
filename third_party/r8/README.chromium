@@ -1,0 +1,56 @@
+Name: R8
+URL: https://r8.googlesource.com/r8
+Revision: 924f28bdb1f32b7504d6813ee911ba1949be6130
+Version: 2.1.26-dev
+License: BSD 3-Clause
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+lib/r8.jar
+ - Contains R8 (proguard replacement) as well as D8 (dexer).
+desugar_jdk_libs.json
+ - Configuration for Java library desugaring.
+ - Taken from fa020a2164ea087c1d79c8c6b0f435f199f8d196
+ - This file should be kept in sync with the prebuilt shims that live
+   at //third_party/android_deps/libs/com_android_tools_desugar_jdk_libs.
+
+R8 is a proguard-like optimizer that also has the ability to dex.
+
+Local Modifications:
+* Cherry-picked R8 commit: b8464335ec1e587bde88d7a12c90d59531be10de
+* Refer to commit descriptions within "patches" directory.
+* Added "playground" directory for quick "how does this optimize" tests.
+
+Update Instructions:
+# Download R8:
+git clone https://r8.googlesource.com/r8
+cd r8
+# Apply patches:
+git am $CHROMIUM_SRC/third_party/r8/patches *.patch
+# Build:
+tools/gradle.py r8
+# Shrink (improves r8/d8 launch time):
+java -jar build/libs/r8.jar --debug --classfile --output r8.jar \
+    --lib $CHROMIUM_SRC/third_party/jdk/current --pg-conf src/main/keep.txt \
+    --no-minification --no-desugaring build/libs/r8.jar
+rm $CHROMIUM_SRC/third_party/r8/lib/r8.jar
+cp r8.jar $CHROMIUM_SRC/third_party/r8/lib/r8.jar
+
+# Create patches if conflicts / new patches. Change number if expecting
+# different amount of patches:
+git format-patch -6 -o $CHROMIUM_SRC/third_party/r8/patches
+
+# Upload to CIPD:
+cipd create --pkg-def cipd.yaml # Make note of the instance ID
+
+# Copy over desugar config:
+cp src/library_desugar/desugar_jdk_libs.json $CHROMIUM_SRC/third_party/r8
+
+# Manually update:
+* README.chromium (version number via "java -jar lib/r8.jar --version")
+* //DEPS (instance ID output by cipd create)
+
+# To create a new patch:
+* Make commits to the r8 repro
+* Run: git format-patch $R8_REVISION_BEFORE_PATCHES

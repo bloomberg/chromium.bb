@@ -1,0 +1,10 @@
+include_rules = [
+  "+cc",
+  "+gpu/ipc",
+  "+gpu/ipc/common",
+  "+skia/public/mojom",
+  "+third_party/skia/include",
+  "+ui/gfx",
+  "+ui/latency/mojom",
+  "+gpu/ipc/common/vulkan_ycbcr_info.h"
+]

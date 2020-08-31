@@ -1,0 +1,11 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++menu
+++++++++menuItem collapsed name='New' haspopup=menu
+++++++++menuItem name='Open' haspopup=menu
+++++++++menuItem collapsed name='Save'
+++++++++menuItem name='Quit'
+++++++splitter horizontal
+++++++splitter horizontal
+++++++splitter horizontal

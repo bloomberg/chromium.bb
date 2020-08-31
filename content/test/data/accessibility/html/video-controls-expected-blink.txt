@@ -1,0 +1,18 @@
+rootWebArea
+++genericContainer
+++++video
+++++++genericContainer
+++++++++toolbar horizontal description='video' name='video' descriptionFrom=uninitialized
+++++++++toolbar horizontal description='video' name='video' descriptionFrom=uninitialized
+++++++++++toolbar horizontal description='video' name='video' descriptionFrom=uninitialized
+++++++++++++toolbar horizontal description='video' name='video' descriptionFrom=uninitialized
+++++++++++++++button name='play' restriction=disabled
+++++++++++++++staticText name='0:00'
+++++++++++++++++inlineTextBox name='0:00'
+++++++++++++++genericContainer
+++++++++++++++++genericContainer
+++++++++++++++++button name='mute' restriction=disabled
+++++++++++++++button name='enter full screen' restriction=disabled
+++++++++++++++button description='more options' name='show more media controls' descriptionFrom=uninitialized restriction=disabled
+++++++++++++slider horizontal description='movie time scrubber' value='0:00' descriptionFrom=uninitialized valueForRange=0.00 minValueForRange=0.00 maxValueForRange=0.00
+++++++++++++++sliderThumb

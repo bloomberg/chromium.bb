@@ -1,0 +1,32 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://immersive-web.github.io/webxr/#xrframe
+[
+    SecureContext,
+    Exposed=Window,
+    RuntimeEnabled=WebXR
+] interface XRFrame {
+  [SameObject] readonly attribute XRSession session;
+
+  // More details about the real-world understanding APIs can be found here:
+  // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
+  [RuntimeEnabled=WebXRIncubations] readonly attribute XRWorldInformation worldInformation;
+
+  [RuntimeEnabled=WebXRAnchors]
+  readonly attribute XRAnchorSet trackedAnchors;
+  [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState, RaisesException, MeasureAs=XRFrameCreateAnchor]
+  Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
+
+  [RaisesException] XRViewerPose? getViewerPose(XRReferenceSpace referenceSpace);
+  [RaisesException] XRPose? getPose(XRSpace space, XRSpace relativeTo);
+
+  [RuntimeEnabled=WebXRHitTest, RaisesException]
+  FrozenArray<XRHitTestResult> getHitTestResults(XRHitTestSource hitTestSource);
+  [RuntimeEnabled=WebXRHitTest, RaisesException]
+  FrozenArray<XRTransientInputHitTestResult> getHitTestResultsForTransientInput(XRTransientInputHitTestSource hitTestSource);
+
+  [RuntimeEnabled=WebXRLightEstimation, RaisesException]
+  XRLightEstimate? getLightEstimate(XRLightProbe lightProbe);
+};

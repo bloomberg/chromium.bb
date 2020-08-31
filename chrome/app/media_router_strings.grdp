@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Media Router-specific strings (included from generated_resources.grd). -->
+<grit-part>
+  <!-- General -->
+  <message name="IDS_MEDIA_ROUTER_ICON_TOOLTIP_TEXT" desc="Tooltip for the Media Router Action icon, which appears in the toolbar. The tooltip appears on mouseover of the icon.">
+   Display on another screen
+  </message>
+  <message name="IDS_MEDIA_ROUTER_MENU_ITEM_TITLE" desc="Title of menu item for Media Router, which appears in the overflow menu and page contextual menus.">
+    &amp;Cast...
+  </message>
+
+  <!-- Cast Modes -->
+  <message name="IDS_MEDIA_ROUTER_PRESENTATION_CAST_MODE" desc="Title for the presentation cast mode, which is used when the page is cast enabled. This is shown as a dropdown option, and if selected, also appears as the header of a list of devices.">
+    Cast <ph name="HOST_NAME">$1<ex>google.com</ex></ph>
+  </message>
+  <message name="IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE" desc="Title for the desktop mirror cast mode. This is shown as a dropdown option, and if selected, also appears as the header of a list of devices.">
+    Cast desktop
+  </message>
+  <message name="IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE" desc="Title for the tab mirror cast mode. This is shown as a dropdown option, and if selected, also appears as the header of a list of devices.">
+    Cast tab
+  </message>
+  <message name="IDS_MEDIA_ROUTER_LOCAL_FILE_CAST_MODE" desc="Title for choosing a file to cast. This is shown as a dropdown option.">
+    Cast file
+  </message>
+
+  <!-- Cast Mode Picker -->
+  <message name="IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_TITLE" desc="Title of the local file cast mode after a local file is selected for casting.">
+    Cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON" desc="Label for the button which, on click, shows a list of Cast sources (tab, desktop, local media file).">
+    Sources
+  </message>
+
+  <!-- Contextual Menu -->
+  <message name="IDS_MEDIA_ROUTER_ABOUT" desc="Title of a menu item which, on click, opens a page with product information about Chromecast.">
+    About
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE" desc="Title of a menu item which, on click, toggles the preference to opt in or out of cloud services.">
+    Enable cloud services
+  </message>
+  <message name="IDS_MEDIA_ROUTER_HELP" desc="Title of a menu item which, on click, opens a page to the Chromecast help center.">
+    Help
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION" desc="Title of a menu item which, on click, toggles whether or not the Media Router action icon is always shown. When toggled off, the icon is shown only when the Media Router dialog is open or if there is an active local Media Route or an issue.">
+    Always show icon
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REPORT_ISSUE" desc="Title of a menu item which, on click, opens a page to give feedback or report an issue with Chromecast integration.">
+    Report an issue
+  </message>
+  <message name="IDS_MEDIA_ROUTER_SHOWN_BY_POLICY" desc="Title of a menu item, which indicates that the Media Router action icon was added to the toolbar by the policy enabled by the user's administrator.">
+    Added by your administrator
+  </message>
+  <message name="IDS_MEDIA_ROUTER_TOGGLE_MEDIA_REMOTING" desc="Title of a menu item which, on click, toggles (enables or disables) the feature to optimize casting fullscreen videos to a Chromecast device. This menu item has a checkmark when the feature is enabled.">
+    Optimize fullscreen videos
+  </message>
+
+  <!-- Issue Messaging -->
+  <message name="IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT" desc="Title of an issue to show when the user attempts to create a route and the Media Router times out while waiting for a route creation response.">
+    Unable to cast <ph name="HOST_NAME">$1<ex>youtube.com</ex></ph>.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP" desc="Title of an issue to show when the user attempts to create a route to mirror the desktop and the Media Router times out while waiting for a route creation response.">
+    Unable to cast desktop.  Check to see if you confirmed the prompt to start sharing your screen.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB" desc="Title of an issue to show when the user attempts to create a route to mirror a tab and the Media Router times out while waiting for a route creation response.">
+    Unable to cast tab.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ISSUE_UNABLE_TO_CAST_DESKTOP" desc="Title of an issue to show when creating a route for desktop mirroring fails for a reason other than timeout.">
+    Unable to cast desktop.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_GENERIC_ERROR" desc="Title of a generic issue to show when a selected file cannot be cast.">
+    Unable to cast file.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ISSUE_FILE_CAST_ERROR" desc="Title of an issue to show when a selected file cannot be cast, file specified by FILE_NAME.">
+    Unable to cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_ISSUE_TAB_AUDIO_NOT_SUPPORTED" desc="Title of an issue shown when the user is casting a tab, but only its visual content can be cast and not its audio output.">
+    Casting tab audio is not supported on this device.
+  </message>
+
+  <!-- Sink List -->
+  <message name="IDS_MEDIA_ROUTER_STATUS_LOOKING_FOR_DEVICES" desc="Status text temporarily shown while searching for Cast devices but none have been found.">
+    Looking for devices
+  </message>
+  <message name="IDS_MEDIA_ROUTER_STATUS_NO_DEVICES_FOUND" desc="Status text shown to indicate that no Cast device was found.">
+    No devices found
+  </message>
+  <message name="IDS_MEDIA_ROUTER_NO_DEVICES_FOUND_BUTTON" desc="The accessibility label that gets read by screen readers for a button shown when no Cast device was found. Clicking on the button opens a new tab.">
+    No devices found. Open a help center article in a new tab.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_DESTINATION_MISSING" desc="Link to display when no Cast destinations are found which, on click, opens a page to the Chromecast help center explaining possible reasons why none are detected.">
+    No Cast destinations found. Need help?
+  </message>
+  <message name="IDS_MEDIA_ROUTER_SINK_AVAILABLE" desc="Text shown as the status of a Cast destination that the user can Cast to." meaning="Device status shown in Cast dialog">
+    Available
+  </message>
+  <message name="IDS_MEDIA_ROUTER_SINK_CONNECTING" desc="Text shown as the status of a Cast destination that we are starting a Cast session on.">
+    Connecting...
+  </message>
+  <message name="IDS_MEDIA_ROUTER_SINK_DISCONNECTING" desc="Text shown as the status of a Cast device that has a Cast session that is ending.">
+    Disconnecting...
+  </message>
+  <message name="IDS_MEDIA_ROUTER_STOP_CASTING" desc="Text shown when user hovers over the stop icon for a cast device.">
+    Stop casting
+  </message>
+  <message name="IDS_MEDIA_ROUTER_SOURCE_NOT_SUPPORTED" desc="Text shown as the status of a Cast device that is not compatible with the selected Cast source (contents).">
+    Source not supported
+  </message>
+
+  <!-- File Dialog -->
+  <message name="IDS_MEDIA_ROUTER_FILE_DIALOG_AUDIO_VIDEO_FILTER" desc="Label for the drop down menu in the file selection dialog to show only audio and
+video files, instead of all files.">
+    Audio/Video
+  </message>
+
+  <!-- Media Remoting Dialog -->
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_TITLE" desc="Title text shown at the top of the dialog asking the user whether they want to enable the Media Remoting feature. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    Optimize fullscreen casting?
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_BODY_TEXT" desc="Body text shown in the dialog to enable/disable Media Remoting. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    Get better quality video and save battery life. Video will play only on your Cast-enabled screen.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_CHECKBOX" desc="Label for the checkbox that the user can click on to get their preference to enable/disable Media Remoting recorded. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    Don't ask again
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_OPTIMIZE_BUTTON" desc="Label for a button in the Media Remoting dialog that the user can click on to enable the feature. Shown next to the 'Cancel' button. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    Optimize
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON" desc="Label for a button in the Media Remoting dialog that the user can click on to cancel enabling the feature. Shown next to the 'Optimize' button. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    No thanks
+  </message>
+  <message name="IDS_MEDIA_ROUTER_REMOTING_DIALOG_CANCEL_BUTTON_MACOS" desc="Label for a button in the Media Remoting dialog that the user can click on to cancel enabling the feature, shown on macOS. Shown next to the 'Optimize' button. Media Remoting is a feature that can be enabled during a Cast session for improved playback.">
+    No Thanks
+  </message>
+
+  <!-- Cloud Services Dialog -->
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_TITLE" desc="Title of the dialog asking whether the user wants to enable the feature allowing them to Cast to cloud services (Google Hangouts, Google Meet, Cast for Education extension).">
+    Enable cloud services for Cast?
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_BODY" desc="Body text of the dialog asking whether the user wants to enable the feature allowing them to Cast to cloud services (Google Hangouts, Google Meet, Cast for Education extension).">
+    Use of Hangouts and Cast for Education is governed by the Google Privacy Policy.
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_ENABLE" desc="Label for a button in the dialog asking whether the user wants to enable the feature allowing them to Cast to cloud services. When this button is clicked, the preference to enable the feature gets saved.">
+    Enable
+  </message>
+  <message name="IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_CANCEL" desc="Label for a button in the dialog asking whether the user wants to enable the feature allowing them to Cast to cloud services. No changes are made when this button is clicked.">
+    Cancel
+  </message>
+
+  <!-- Wired Display Media Route Provider -->
+  <message name="IDS_MEDIA_ROUTER_WIRED_DISPLAY_ROUTE_DESCRIPTION" desc="Description shown to indicate that a website is being presented to another display.">
+    Presenting (<ph name="PAGE_ORIGIN">$1<ex>example.com</ex></ph>)
+  </message>
+  <message name="IDS_MEDIA_ROUTER_WIRED_DISPLAY_SINK_NAME" desc="Name shown for a wired display that can be used as a Cast destination.">
+    Display <ph name="DISPLAY_ID">$1<ex>1</ex></ph>
+  </message>
+</grit-part>

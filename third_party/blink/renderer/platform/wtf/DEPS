@@ -1,0 +1,34 @@
+include_rules = [
+    # To whitelist base/ stuff Blink is allowed to include, we list up all
+    # directories and files instead of writing 'base/'.
+    "+base/allocator/partition_allocator",
+    "+base/atomic_ref_count.h",
+    "+base/auto_reset.h",
+    "+base/bind.h",
+    "+base/bits.h",
+    "+base/compiler_specific.h",
+    "+base/logging.h",
+    "+base/mac/foundation_util.h",
+    "+base/mac/scoped_cftyperef.h",
+    "+base/memory/ptr_util.h",
+    "+base/memory/ref_counted.h",
+    "+base/memory/weak_ptr.h",
+    "+base/metrics/histogram_macros.h",
+    "+base/numerics",
+    "+base/optional.h",
+    "+base/process/process_metrics.h",
+    "+base/rand_util.h",
+    "+base/stl_util.h",
+    "+base/strings",
+    "+base/third_party/double_conversion",
+    "+base/template_util.h",
+    "+base/test/metrics/histogram_tester.h",
+    "+base/threading",
+    "+base/time/time.h",
+    "+base/tuple.h",
+    # To avoid recursive dependency, we impose a blanket ban on using other
+    # platform files. Think carefully if you want to relax this restriction.
+    "-third_party/blink/renderer/platform",
+    "+third_party/blink/renderer/platform/wtf",
+    "-v8",
+]

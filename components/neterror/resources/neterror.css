@@ -1,0 +1,1029 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Don't use the main frame div when the error is in a subframe. */
+html[subframe] #main-frame-error {
+  display: none;
+}
+
+/* Don't use the subframe error div when the error is in a main frame. */
+html:not([subframe]) #sub-frame-error {
+  display: none;
+}
+
+#diagnose-button {
+  float: none;
+  margin-bottom: 10px;
+  margin-inline-start: 0;
+  margin-top: 20px;
+}
+
+h1 {
+  margin-top: 0;
+  word-wrap: break-word;
+}
+
+h1 span {
+  font-weight: 500;
+}
+
+h2 {
+  color: var(--heading-color);
+  font-size: 1.2em;
+  font-weight: normal;
+  margin: 10px 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+.icon {
+  -webkit-user-select: none;
+  display: inline-block;
+}
+
+.icon-generic {
+  /**
+   * Can't access chrome://theme/IDR_ERROR_NETWORK_GENERIC from an untrusted
+   * renderer process, so embed the resource manually.
+   */
+  content: -webkit-image-set(
+      url(../../resources/default_100_percent/neterror/error_network_generic.png) 1x,
+      url(../../resources/default_200_percent/neterror/error_network_generic.png) 2x);
+}
+
+.icon-offline {
+  content: -webkit-image-set(
+      url(images/default_100_percent/offline/100-error-offline.png) 1x,
+      url(images/default_200_percent/offline/200-error-offline.png) 2x);
+  position: relative;
+}
+
+.icon-disabled {
+  content: -webkit-image-set(
+      url(images/default_100_percent/offline/100-disabled.png) 1x,
+      url(images/default_200_percent/offline/200-disabled.png) 2x);
+  width: 112px;
+}
+
+.error-code {
+  display: block;
+  font-size: .8em;
+}
+
+#content-top {
+  margin: 20px;
+}
+
+#help-box-inner {
+  background-color: #f9f9f9;
+  border-top: 1px solid #EEE;
+  color: #444;
+  padding: 20px;
+  text-align: start;
+}
+
+.hidden {
+  display: none;
+}
+
+#suggestion {
+  margin-top: 15px;
+}
+
+#suggestions-list a {
+  color: var(--google-blue-600);
+}
+
+#suggestions-list p {
+  margin-block-end: 0;
+}
+
+#suggestions-list ul {
+  margin-top: 0;
+}
+
+.single-suggestion {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#short-suggestion {
+  margin-top: 5px;
+}
+
+#error-information-button {
+  content: url(images/help_outline.svg);
+  height: 24px;
+  vertical-align: -.15em;
+  width: 24px;
+}
+
+.use-popup-container#error-information-popup-container
+  #error-information-popup {
+  align-items: center;
+  background-color: var(--popup-container-background-color);
+  display: flex;
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+.use-popup-container#error-information-popup-container
+  #error-information-popup-content > p {
+  margin-bottom: 11px;
+  margin-inline-start: 20px;
+}
+
+.use-popup-container#error-information-popup-container #suggestions-list ul {
+  margin-inline-start: 15px;
+}
+
+.use-popup-container#error-information-popup-container
+  #error-information-popup-box {
+  background-color: var(--background-color);
+  left: 5%;
+  padding-bottom: 15px;
+  padding-top: 15px;
+  position: fixed;
+  width: 90%;
+  z-index: 101;
+}
+
+.use-popup-container#error-information-popup-container div.error-code {
+  margin-inline-start: 20px;
+}
+
+.use-popup-container#error-information-popup-container #suggestions-list p {
+  margin-inline-start: 20px;
+}
+
+:not(.use-popup-container)#error-information-popup-container
+  #error-information-popup-close {
+  display: none;
+}
+
+#error-information-popup-close {
+  margin-bottom: 0px;
+  margin-inline-end: 35px;
+  margin-top: 15px;
+  text-align: end;
+}
+
+.link-button {
+  color: rgb(66, 133, 244);
+  display: inline-block;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+#sub-frame-error-details {
+<if expr="is_ios">
+  font-size: 8pt;
+</if>
+  color: #8F8F8F;
+<if expr="not is_android and not is_ios">
+  /* Not done on mobile for performance reasons. */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+</if>
+}
+
+[jscontent=hostName],
+[jscontent=failedUrl] {
+  overflow-wrap: break-word;
+}
+
+#search-container {
+  /* Prevents a space between controls. */
+  display: flex;
+  margin-top: 20px;
+}
+
+#search-box {
+  border: 1px solid #cdcdcd;
+  flex-grow: 1;
+  font-size: 1em;
+  height: 26px;
+  margin-right: 0;
+  padding: 1px 9px;
+}
+
+#search-box:focus {
+  border: 1px solid rgb(93, 154, 255);
+  outline: none;
+}
+
+#search-button {
+  border: none;
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  box-shadow: none;
+  display: flex;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  width: 60px;
+}
+
+#search-image {
+  content:
+      -webkit-image-set(
+          url(../../resources/default_100_percent/neterror/search_glass.png) 1x,
+          url(../../resources/default_200_percent/neterror/search_glass.png) 2x);
+  margin: auto;
+}
+
+.secondary-button {
+  background: #d9d9d9;
+  color: #696969;
+  margin-inline-end: 16px;
+}
+
+.snackbar {
+  background: #323232;
+  border-radius: 2px;
+  bottom: 24px;
+  box-sizing: border-box;
+  color: #fff;
+  font-size: .87em;
+  left: 24px;
+  max-width: 568px;
+  min-width: 288px;
+  opacity: 0;
+  padding: 16px 24px 12px;
+  position: fixed;
+  transform: translateY(90px);
+  will-change: opacity, transform;
+  z-index: 999;
+}
+
+.snackbar-show {
+  -webkit-animation:
+    show-snackbar .25s cubic-bezier(0.0, 0.0, 0.2, 1) forwards,
+    hide-snackbar .25s cubic-bezier(0.4, 0.0, 1, 1) forwards 5s;
+}
+
+@-webkit-keyframes show-snackbar {
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@-webkit-keyframes hide-snackbar {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(90px);
+  }
+}
+
+.suggestions {
+  margin-top: 18px;
+}
+
+.suggestion-header {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.suggestion-body {
+  color: #777;
+}
+
+/* Increase line height at higher resolutions. */
+@media (min-width: 641px) and (min-height: 641px) {
+  #help-box-inner {
+    line-height: 18px;
+  }
+}
+
+/* Decrease padding at low sizes. */
+@media (max-width: 640px), (max-height: 640px) {
+  h1 {
+    margin: 0 0 15px;
+  }
+  #content-top {
+    margin: 15px;
+  }
+  #help-box-inner {
+    padding: 20px;
+  }
+  .suggestions {
+    margin-top: 10px;
+  }
+  .suggestion-header {
+    margin-bottom: 0;
+  }
+}
+
+#download-link, #download-link-clicked {
+  margin-bottom: 30px;
+  margin-top: 30px;
+}
+
+#download-link-clicked {
+  color: #BBB;
+}
+
+#download-link:before, #download-link-clicked:before {
+  content: url(images/download-blue.svg);
+  display: inline-block;
+  margin-inline-end: 4px;
+  vertical-align: -webkit-baseline-middle;
+}
+
+#download-link-clicked:before {
+  width: 0px;
+  opacity: 0;
+}
+
+#offline-content-list-visibility-card {
+  border: 1px solid white;
+  border-radius: 8px;
+  display: flex;
+  font-size: .8em;
+  justify-content: space-between;
+  line-height: 1;
+}
+
+#offline-content-list.list-hidden #offline-content-list-visibility-card {
+  border-color: rgb(218, 220, 224);
+}
+
+#offline-content-list-visibility-card > div {
+  padding: 1em;
+}
+
+#offline-content-list-title {
+  color: var(--google-gray-700);
+}
+
+#offline-content-list-show-text, #offline-content-list-hide-text {
+  color: rgb(66, 133, 244);
+}
+
+/* Hides the "hide" text div when the offline content list is collapsed/hidden
+ * and, alternatively, hides the "show" text div when the offline content list
+ * is expanded/shown.
+ */
+#offline-content-list.list-hidden #offline-content-list-hide-text,
+#offline-content-list:not(.list-hidden) #offline-content-list-show-text {
+  display: none;
+}
+
+/* Controls the animation of the offline content list when it is expanded/shown.
+ */
+#offline-content-suggestions {
+  /* Max-height has to be set for the height animation to work. The chosen value
+   * is a little greater than the maximum height the list will have, when all
+   * suggestions have images, so that it is never clamped. This makes so that
+   * when the actual height is smaller then the animation is not as smooth.
+   */
+  max-height: 27em;
+  transition: max-height 0.2s ease-in, visibility 0s 0.2s,
+              opacity 0.2s 0.2s linear;
+}
+
+/* Controls the animation of the offline content list when it is
+ * collapsed/hidden.
+ */
+#offline-content-list.list-hidden #offline-content-suggestions {
+  max-height: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s linear, visibility 0s 0.2s,
+              max-height 0.2s 0.2s ease-out;
+}
+
+#offline-content-list {
+  margin-inline-start: -5%;
+  width: 110%;
+}
+
+/* The selectors below adjust the "overflow" of the suggestion cards contents
+ * based on the same screen size based strategy used for the main frame, which
+ * is applied by the `interstitial-wrapper` class. */
+@media (max-width: 420px)  {
+  #offline-content-list {
+    margin-inline-start: -2.5%;
+    width: 105%;
+  }
+}
+@media (max-width: 420px) and (orientation: portrait),
+       (max-height: 560px) {
+  #offline-content-list {
+    margin-inline-start: -12px;
+    width: calc(100% + 24px);
+  }
+}
+
+.suggestion-with-image .offline-content-suggestion-thumbnail {
+  flex-basis: 8.2em;
+  flex-shrink: 0;
+}
+
+.suggestion-with-image .offline-content-suggestion-thumbnail > img {
+  height: 100%;
+  width: 100%;
+}
+
+.suggestion-with-image #offline-content-list:not(.is-rtl)
+.offline-content-suggestion-thumbnail > img {
+  border-bottom-right-radius: 7px;
+  border-top-right-radius: 7px;
+}
+
+.suggestion-with-image #offline-content-list.is-rtl
+.offline-content-suggestion-thumbnail > img {
+  border-bottom-left-radius: 7px;
+  border-top-left-radius: 7px;
+}
+
+.suggestion-with-icon .offline-content-suggestion-thumbnail {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 4.2em;
+  min-width: 4.2em;
+}
+
+.suggestion-with-icon .offline-content-suggestion-thumbnail > div {
+  align-items: center;
+  background-color: rgb(241, 243, 244);
+  border-radius: 50%;
+  display: flex;
+  height: 2.3em;
+  justify-content: center;
+  width: 2.3em;
+}
+
+.suggestion-with-icon .offline-content-suggestion-thumbnail > div > img {
+  height: 1.45em;
+  width: 1.45em;
+}
+
+.offline-content-suggestion-favicon {
+  height: 1em;
+  margin-inline-end: 0.4em;
+  width: 1.4em;
+}
+
+.offline-content-suggestion-favicon > img {
+  height: 1.4em;
+  width: 1.4em;
+}
+
+.no-favicon .offline-content-suggestion-favicon {
+  display: none;
+}
+
+.image-video {
+  content: url(images/video.svg);
+}
+
+.image-music-note {
+  content: url(images/music-note.svg);
+}
+
+.image-earth {
+  content: url(images/generic-globe.svg);
+}
+
+.image-file {
+  content: url(images/file.svg);
+}
+
+.offline-content-suggestion-texts {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  line-height: 1.3;
+  padding: .9em;
+  width: 100%;
+}
+
+.offline-content-suggestion-title {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: rgb(32, 33, 36);
+  display: -webkit-box;
+  font-size: 1.1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+div.offline-content-suggestion {
+  align-items: stretch;
+  border: 1px solid rgb(218, 220, 224);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: .8em;
+}
+
+.suggestion-with-image {
+  flex-direction: row;
+  height: 8.2em;
+  max-height: 8.2em;
+}
+
+.suggestion-with-icon {
+  flex-direction: row-reverse;
+  height: 4.2em;
+  max-height: 4.2em;
+}
+
+.suggestion-with-icon .offline-content-suggestion-title {
+  -webkit-line-clamp: 1;
+  word-break: break-all;
+}
+
+.suggestion-with-icon .offline-content-suggestion-texts {
+  padding-inline-start: 0px;
+}
+
+.offline-content-suggestion-attribution-freshness {
+  color: rgb(95, 99, 104);
+  display: flex;
+  font-size: .8em;
+  line-height: 1.7em;
+}
+
+.offline-content-suggestion-attribution {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  display: -webkit-box;
+  flex-shrink: 1;
+  margin-inline-end: 0.3em;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
+
+.no-attribution .offline-content-suggestion-attribution {
+  display: none;
+}
+
+.offline-content-suggestion-freshness:before {
+  content: '-';
+  display: inline-block;
+  flex-shrink: 0;
+  margin-inline-end: .1em;
+  margin-inline-start: .1em;
+}
+
+.no-attribution .offline-content-suggestion-freshness:before {
+  display: none;
+}
+
+.offline-content-suggestion-freshness {
+  flex-shrink: 0;
+}
+
+.suggestion-with-image .offline-content-suggestion-pin-spacer {
+  flex-shrink: 1;
+  flex-grow: 100;
+}
+
+.suggestion-with-image .offline-content-suggestion-pin {
+  content: url(images/offline_pin.svg);
+  flex-shrink: 0;
+  height: 1.4em;
+  margin-inline-start: .4em;
+  width: 1.4em;
+}
+
+/* Controls the animation (and a bit more) of the launch-downloads-home action
+ * button when the offline content list is expanded/shown.
+ */
+#offline-content-list-action {
+  text-align: center;
+  transition: visibility 0s 0.2s, opacity 0.2s 0.2s linear;
+}
+
+/* Controls the animation of the launch-downloads-home action button when the
+ * offline content list is collapsed/hidden.
+ */
+#offline-content-list.list-hidden #offline-content-list-action {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s linear, visibility 0s 0.2s;
+}
+
+#cancel-save-page-button {
+  background-image: url(images/animated_offline_pin.svg);
+  background-position: right 27px center;
+  background-repeat: no-repeat;
+  border: 1px solid var(--google-gray-300);
+  border-radius: 5px;
+  color: var(--google-gray-700);
+  margin-bottom: 26px;
+  padding-bottom: 16px;
+  padding-inline-end: 88px;
+  padding-inline-start: 16px;
+  padding-top: 16px;
+  text-align: start;
+}
+
+html[dir="rtl"] #cancel-save-page-button {
+  background-position: left 27px center;
+}
+
+#save-page-for-later-button {
+  display: flex;
+  justify-content: start;
+}
+
+#save-page-for-later-button a:before {
+  content: url(images/download-blue.svg);
+  display: inline-block;
+  margin-inline-end: 4px;
+  vertical-align: -webkit-baseline-middle;
+}
+
+.hidden#save-page-for-later-button {
+  display: none;
+}
+
+/* Don't allow overflow when in a subframe. */
+html[subframe] body {
+  overflow: hidden;
+}
+
+#sub-frame-error {
+  -webkit-align-items: center;
+  background-color: #DDD;
+  display: -webkit-flex;
+  -webkit-flex-flow: column;
+  height: 100%;
+  -webkit-justify-content: center;
+  left: 0;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  transition: background-color .2s ease-in-out;
+  width: 100%;
+}
+
+#sub-frame-error:hover {
+  background-color: #EEE;
+}
+
+#sub-frame-error .icon-generic {
+  margin: 0 0 16px;
+}
+
+#sub-frame-error-details {
+  margin: 0 10px;
+  text-align: center;
+  visibility: hidden;
+}
+
+/* Show details only when hovering. */
+#sub-frame-error:hover #sub-frame-error-details {
+  visibility: visible;
+}
+
+/* If the iframe is too small, always hide the error code. */
+/* TODO(mmenke): See if overflow: no-display works better, once supported. */
+@media (max-width: 200px), (max-height: 95px) {
+  #sub-frame-error-details {
+    display: none;
+  }
+}
+
+/* Adjust icon for small embedded frames in apps. */
+@media (max-height: 100px) {
+  #sub-frame-error .icon-generic {
+    height: auto;
+    margin: 0;
+    padding-top: 0;
+    width: 25px;
+  }
+}
+
+/* details-button is special; it's a <button> element that looks like a link. */
+#details-button {
+  box-shadow: none;
+  min-width: 0;
+}
+
+/* Styles for platform dependent separation of controls and details button. */
+.suggested-left > #control-buttons,
+.suggested-right > #details-button {
+  float: left;
+}
+
+.suggested-right > #control-buttons,
+.suggested-left > #details-button {
+  float: right;
+}
+
+.suggested-left .secondary-button {
+  margin-inline-end: 0px;
+  margin-inline-start: 16px;
+}
+
+#details-button.singular {
+  float: none;
+}
+
+/* download-button shows both icon and text. */
+#download-button {
+  padding-bottom: 4px;
+  padding-top: 4px;
+  position: relative;
+}
+
+#download-button:before {
+  background: -webkit-image-set(
+      url(../../resources/default_100_percent/neterror/download.png) 1x,
+      url(../../resources/default_200_percent/neterror/download.png) 2x)
+    no-repeat;
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-inline-end: 4px;
+  margin-inline-start: -4px;
+  vertical-align: middle;
+}
+
+#download-button:disabled {
+  background: rgb(180, 206, 249);
+  color: rgb(255, 255, 255);
+}
+
+/*
+TODO(https://crbug.com/852872): UI for offline suggested content is incomplete.
+*/
+.suggested-thumbnail {
+  width: 25vw;
+  height: 25vw;
+}
+
+/* Alternate dino page button styles */
+#control-buttons .reload-button-alternate:disabled {
+  background: #ccc;
+  color: #fff;
+  font-size: 14px;
+  height: 48px;
+}
+
+#buttons::after {
+  clear: both;
+  content: '';
+  display: block;
+  width: 100%;
+}
+
+/* Offline page */
+.offline {
+  transition: filter 1.5s cubic-bezier(0.65, 0.05, 0.36, 1),
+              background-color 1.5s cubic-bezier(0.65, 0.05, 0.36, 1);
+<if expr="not is_ios">
+  will-change: filter, background-color;
+</if>
+}
+
+.offline body {
+  transition: background-color 1.5s cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+
+.offline #main-message > p {
+  display: none;
+}
+
+/* iOS WKWebView inverts the background color set at the HTML level
+whereas Blink does not. */
+.offline.inverted {
+  filter: invert(1);
+<if expr="not is_ios">
+  background-color: #000;
+</if>
+<if expr="is_ios">
+  background-color: #fff;
+</if>
+}
+
+.offline.inverted body {
+  background-color: #fff;
+}
+
+.offline .interstitial-wrapper {
+  color: var(--text-color);
+  font-size: 1em;
+  line-height: 1.55;
+  margin: 0 auto;
+  max-width: 600px;
+  padding-top: 100px;
+  width: 100%;
+}
+
+.offline .runner-container {
+  direction: ltr;
+  height: 150px;
+  max-width: 600px;
+  overflow: hidden;
+  position: absolute;
+  top: 35px;
+  width: 44px;
+}
+
+.offline .runner-canvas {
+  height: 150px;
+  max-width: 600px;
+  opacity: 1;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  z-index: 10;
+}
+
+.offline .controller {
+  background: rgba(247,247,247, .1);
+  height: 100vh;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  z-index: 9;
+}
+
+#offline-resources {
+  display: none;
+}
+
+#offline-instruction {
+  image-rendering: pixelated;
+  left: 0;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 60px;
+  width: fit-content;
+}
+
+@media (max-width: 420px) {
+  #download-button {
+    padding-bottom: 12px;
+    padding-top: 12px;
+  }
+
+  .suggested-left > #control-buttons,
+  .suggested-right > #control-buttons {
+    float: none;
+  }
+
+  .snackbar {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    border-radius: 0;
+  }
+}
+
+@media (max-height: 350px) {
+  h1 {
+    margin: 0 0 15px;
+  }
+
+  .icon-offline {
+    margin: 0 0 10px;
+  }
+
+  .interstitial-wrapper {
+    margin-top: 5%;
+  }
+
+  .nav-wrapper {
+    margin-top: 30px;
+  }
+}
+
+@media (min-width: 420px) and (max-width: 736px) and
+       (min-height: 240px) and (max-height: 420px) and
+       (orientation:landscape) {
+  .interstitial-wrapper {
+    margin-bottom: 100px;
+  }
+}
+
+@media (max-width: 360px) and (max-height: 480px) {
+  .offline .interstitial-wrapper {
+    padding-top: 60px;
+  }
+
+  .offline .runner-container {
+    top: 8px;
+  }
+}
+
+@media (min-height: 240px) and (orientation: landscape) {
+  .offline .interstitial-wrapper {
+    margin-bottom: 90px;
+  }
+
+  .icon-offline {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-height: 320px) and (orientation: landscape) {
+  .icon-offline {
+    margin-bottom: 0;
+  }
+
+  .offline .runner-container {
+    top: 10px;
+  }
+}
+
+@media (max-width: 240px) {
+  button {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .interstitial-wrapper {
+    overflow: inherit;
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 120px) {
+  button {
+    width: auto;
+  }
+}
+
+.arcade-mode,
+.arcade-mode .runner-container,
+.arcade-mode .runner-canvas {
+  image-rendering: pixelated;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.arcade-mode #buttons,
+.arcade-mode #main-content {
+  opacity: 0;
+  overflow: hidden;
+}
+
+.arcade-mode .interstitial-wrapper {
+  height: 100vh;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.arcade-mode .runner-container {
+  left: 0;
+  margin: auto;
+  right: 0;
+  transform-origin: top center;
+  transition: transform 250ms cubic-bezier(0.4, 0.0, 1, 1) .4s;
+  z-index: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+  .icon {
+    filter: invert(1);
+  }
+
+  .offline .runner-canvas {
+    filter: invert(1);
+  }
+
+  .offline.inverted {
+    filter: invert(0);
+  <if expr="not is_ios">
+    background-color: var(--background-color);
+  </if>
+  <if expr="is_ios">
+    background-color: #fff;
+  </if>
+  }
+
+  .offline.inverted body {
+    background-color: #fff;
+  }
+
+  #suggestions-list a {
+    color: var(--link-color);
+  }
+
+  #error-information-button {
+    filter: invert(0.6);
+  }
+}

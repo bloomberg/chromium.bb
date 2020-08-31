@@ -1,0 +1,12 @@
+include_rules = [
+  "+content/public/browser",
+  "+mojo/public/cpp/bindings",
+  "+ui/base",
+  "+ui/touch_selection",
+]
+
+specific_include_rules = {
+  'pdf_web_contents_helper_browsertest.cc': [
+    "+content/shell",
+  ],
+}

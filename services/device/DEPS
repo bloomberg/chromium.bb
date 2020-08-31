@@ -1,0 +1,13 @@
+include_rules = [
+  "+device",
+  "+services/device/usb/jni_headers",
+  "+services/network/public/cpp",
+  "+services/network/test",
+  "+ui/gfx/native_widget_types.h",
+]
+
+specific_include_rules = {
+  "NfcBlocklist\.java": [
+    "+components/variations/android/java",
+  ],
+}

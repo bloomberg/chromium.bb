@@ -1,0 +1,53 @@
+{
+    "0": {
+        "benchmarks": {
+            "startup.mobile": {
+                "abridged": false
+            },
+            "system_health.common_mobile": {
+                "end": 7,
+                "abridged": true
+            }
+        }
+    },
+    "1": {
+        "benchmarks": {
+            "system_health.common_mobile": {
+                "begin": 7,
+                "abridged": true
+            },
+            "system_health.memory_mobile": {
+                "end": 3,
+                "abridged": true
+            }
+        }
+    },
+    "2": {
+        "benchmarks": {
+            "system_health.memory_mobile": {
+                "begin": 3,
+                "end": 10,
+                "abridged": true
+            }
+        }
+    },
+    "3": {
+        "benchmarks": {
+            "system_health.memory_mobile": {
+                "begin": 10,
+                "abridged": true
+            }
+        }
+    },
+    "extra_infos": {
+        "num_stories": 28,
+        "predicted_min_shard_time": 828.0,
+        "predicted_min_shard_index": 3,
+        "predicted_max_shard_time": 1224.0,
+        "predicted_max_shard_index": 2,
+        "shard #0": 996.0,
+        "shard #1": 880.0,
+        "shard #2": 1224.0,
+        "shard #3": 828.0
+    }
+}

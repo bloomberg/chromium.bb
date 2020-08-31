@@ -1,0 +1,36 @@
+CONSOLE WARNING: line 27: Element.createShadowRoot is deprecated and will be removed in M80, around February 2020. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 and https://developers.google.com/web/updates/2019/07/web-components-time-to-upgrade for more details.
+PASS window.innerWidth is 800
+PASS window.innerHeight is 600
+PASS getComputedStyle(test).fontSize is '30px'
+PASS getComputedStyle(test).width is '400px'
+PASS getComputedStyle(testpseudo, ':after').marginLeft is '120px'
+PASS getComputedStyle(testshadow).borderRightWidth is '80px'
+PASS window.innerWidth is 900
+PASS window.innerHeight is 600
+PASS getComputedStyle(test).fontSize is '30px'
+PASS getComputedStyle(test).width is '450px'
+PASS getComputedStyle(testpseudo, ':after').marginLeft is '120px'
+PASS getComputedStyle(testshadow).borderRightWidth is '90px'
+PASS window.innerWidth is 900
+PASS window.innerHeight is 640
+PASS getComputedStyle(test).fontSize is '32px'
+PASS getComputedStyle(test).width is '450px'
+PASS getComputedStyle(testpseudo, ':after').marginLeft is '128px'
+PASS getComputedStyle(testshadow).borderRightWidth is '90px'
+PASS window.innerWidth is 500
+PASS window.innerHeight is 640
+PASS getComputedStyle(test).fontSize is '32px'
+PASS getComputedStyle(test).width is '250px'
+PASS getComputedStyle(testpseudo, ':after').marginLeft is '100px'
+PASS getComputedStyle(testshadow).borderRightWidth is '64px'
+PASS window.innerWidth is 800
+PASS window.innerHeight is 600
+PASS getComputedStyle(test).fontSize is '30px'
+PASS getComputedStyle(test).width is '400px'
+PASS getComputedStyle(testpseudo, ':after').marginLeft is '120px'
+PASS getComputedStyle(testshadow).borderRightWidth is '80px'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+This test of viewport units and resizing depends on window.resizeTo.

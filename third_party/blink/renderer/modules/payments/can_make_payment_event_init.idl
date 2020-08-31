@@ -1,0 +1,15 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/w3c/payment-handler/pull/170
+
+dictionary CanMakePaymentEventInit : ExtendableEventInit {
+    USVString topOrigin;
+    USVString paymentRequestOrigin;
+    sequence<PaymentMethodData> methodData;
+    sequence<PaymentDetailsModifier> modifiers;
+
+    // https://gist.github.com/rsolomakhin/eba91c185028899883d2c7f37f357d7c
+    DOMString currency;
+};

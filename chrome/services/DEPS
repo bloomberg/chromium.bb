@@ -1,0 +1,10 @@
+include_rules = [
+  "+chrome/grit",
+
+  "+mojo/public",
+
+  # Services have to list which other services they depend on.
+  "-chrome/services",
+  "-services",
+  "+services/service_manager/public",  # Every service talks to Service Manager.
+]

@@ -1,0 +1,9 @@
+include_rules = [
+  "+components/embedder_support",
+  "+components/metrics",
+  "+content/public/android",
+  "+content/public/app",
+  "+content/public/test",
+  "+ui/android",
+  "+third_party/metrics_proto"
+]

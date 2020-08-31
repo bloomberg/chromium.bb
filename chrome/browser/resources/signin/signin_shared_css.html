@@ -1,0 +1,36 @@
+<!-- Common styles for signin-related tab modal dialogs. -->
+<template>
+  <style>
+    a {
+      color: var(--cr-link-color);
+      text-decoration: none;
+    }
+
+    .container {
+      color: var(--cr-primary-text-color);
+      width: 448px;
+    }
+
+    .top-title-bar {
+      align-items: center;
+      border-bottom: var(--cr-separator-line);
+      display: flex;
+      font-size: 16px;
+      height: 52px;
+      padding: 0 24px;
+    }
+
+    .action-container {
+      display: flex;
+      justify-content: flex-end;
+      padding: 16px;
+    }
+
+<if expr="is_macosx or is_linux">
+    .action-container {
+      flex-flow: row-reverse;
+      justify-content: flex-start;
+    }
+</if>
+  </style>
+</template>

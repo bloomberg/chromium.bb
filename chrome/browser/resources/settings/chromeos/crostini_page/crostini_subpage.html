@@ -1,0 +1,147 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="crostini_browser_proxy.html">
+<link rel="import" href="crostini_mic_sharing_dialog.html">
+<link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
+<link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
+<link rel="import" href="../route_origin_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../metrics_recorder.html">
+<link rel="import" href="crostini_disk_resize_dialog.html">
+<link rel="import" href="crostini_disk_resize_confirmation_dialog.html">
+
+<dom-module id="settings-crostini-subpage">
+  <template>
+    <style include="settings-shared"></style>
+    <template is="dom-if" if="[[showCrostiniContainerUpgrade_]]">
+      <div id="container-upgrade" class="settings-box first">
+        <!-- TODO(davidmunro): Add Icon from
+             https://docs.google.com/presentation/d/1cBU0TnQhuorL69NmifWJ1OzLMsu9dihw64Jo031jUZ4/edit#slide=id.g6b38a81213_0_0
+          --->
+        <div class="start" aria-hidden="true">
+          <div id="containerUpgradeLabel">
+            $i18n{crostiniContainerUpgrade}
+          </div>
+          <div class="secondary" id="containerUpgradeDescription">
+            $i18n{crostiniContainerUpgradeSubtext}
+          </div>
+        </div>
+        <cr-button id="containerUpgradeButton"
+            on-click="onContainerUpgradeClick_"
+            aria-labelledby="containerUpgradeLabel containerUpgradeButton"
+            aria-describedby="containerUpgradeDescription"
+            disabled="[[disableUpgradeButton_]]">
+          $i18n{crostiniContainerUpgradeButton}
+        </cr-button>
+      </div>
+    </template>
+    <cr-link-row
+        class="hr"
+        id="crostini-shared-paths"
+        label="$i18n{crostiniSharedPaths}"
+        on-click="onSharedPathsClick_"
+        role-description="$i18n{subpageArrowRoleDescription}">
+    </cr-link-row>
+    <cr-link-row
+        class="hr"
+        label="$i18n{crostiniSharedUsbDevicesLabel}"
+        id="crostini-shared-usb-devices"
+        on-click="onSharedUsbDevicesClick_"
+        role-description="$i18n{subpageArrowRoleDescription}">
+    </cr-link-row>
+    <template is="dom-if" if="[[showCrostiniExportImport_]]">
+      <cr-link-row
+          class="hr"
+          label="$i18n{crostiniExportImportTitle}"
+          id="crostini-export-import"
+          on-click="onExportImportClick_"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
+    </template>
+    <template is="dom-if" if="[[showArcAdbSideloading_]]">
+      <cr-link-row
+          class="hr"
+          label="$i18n{crostiniArcAdbTitle}"
+          id="crostini-enable-arc-adb"
+          on-click="onEnableArcAdbClick_"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
+    </template>
+    <template is="dom-if" if="[[showCrostiniPortForwarding_]]">
+      <cr-link-row
+          class="hr"
+          label="$i18n{crostiniPortForwarding}"
+          id="crostini-port-forwarding"
+          on-click="onPortForwardingClick_"
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
+    </template>
+    <template is="dom-if" if="[[showCrostiniDiskResize_]]">
+      <div class="settings-box hr" id="crostini-disk-resize">
+        <div class="start">
+          <div>
+            $i18n{crostiniDiskResizeLabel}
+          </div>
+          <div class="secondary" id="diskSizeDescription">
+            [[diskSizeLabel_]]
+          </div>
+        </div>
+        <cr-button on-click="onDiskResizeClick_" hidden="[[!canDiskResize_]]"
+            aria-label="[[diskResizeButtonAriaLabel_]]"
+            aria-describedby="diskSizeDescription"
+            id="showDiskResizeButton">
+          [[diskResizeButtonLabel_]]
+        </cr-button>
+      </div>
+      <template is="dom-if" if="[[showDiskResizeDialog_]]" restamp>
+        <settings-crostini-disk-resize-dialog
+            on-close="onDiskResizeDialogClose_">
+        </settings-crostini-disk-resize-dialog>
+      </template>
+      <template is="dom-if" if="[[showDiskResizeConfirmationDialog_]]" restamp>
+        <settings-crostini-disk-resize-confirmation-dialog
+            on-close="onDiskResizeConfirmationDialogClose_"
+            on-cancel="onDiskResizeConfirmationDialogCancel_">
+        </settings-crostini-disk-resize-confirmation-dialog>
+      </template>
+    </template>
+    <template is="dom-if" if="[[showCrostiniMic_]]">
+      <div class="settings-box">
+        <div id="crostini-mic-sharing-label" class="start" aria-hidden="true">
+          $i18n{crostiniMicTitle}
+        </div>
+        <cr-toggle id="crostini-mic-sharing-toggle"
+            checked="[[crostiniMicSharingEnabled_]]"
+            on-change="onMicSharingChange_"
+            aria-label="$i18n{crostiniMicTitle}">
+        </cr-toggle>
+      </div>
+    </template>
+    <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
+      <div id="remove" class="settings-box">
+        <div id="removeCrostiniLabel" class="start" aria-hidden="true">
+          $i18n{crostiniRemove}
+        </div>
+        <cr-button on-click="onRemoveClick_"
+            aria-labelledby="removeCrostiniLabel">
+          $i18n{crostiniRemoveButton}
+        </cr-button>
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[showCrostiniMicSharingDialog_]]" restamp>
+      <settings-crostini-mic-sharing-dialog
+          on-close="onCrostiniMicSharingDialogClose_"
+          pending-mic-sharing-state="[[!crostiniMicSharingEnabled_]]">
+      </settings-crostini-mic-sharing-dialog>
+    </template>
+  </template>
+  <script src="crostini_subpage.js"></script>
+</dom-module>

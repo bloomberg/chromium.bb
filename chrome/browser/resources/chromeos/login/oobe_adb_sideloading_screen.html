@@ -1,0 +1,78 @@
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<dom-module id="oobe-adb-sideloading-screen">
+  <template>
+    <link rel="stylesheet" href="chrome://resources/css/throbber.css">
+    <style include="oobe-dialog-host">
+      a {
+        color: var(--google-blue-600);
+      }
+    </style>
+
+    <!-- Dialog for normal confirmation -->
+    <oobe-dialog id="enableAdbSideloadDialog" role="dialog" has-buttons
+        footer-shrinkable
+        title-key="enableAdbSideloadingSetupTitle"
+        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
+        hidden="[[!isState_(uiState_, 'setup')]]">
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:alert" icon2x="oobe-64:alert">
+      </hd-iron-icon>
+      <div slot="subtitle">
+        <div>
+          [[i18nDynamic(locale, 'enableAdbSideloadingSetupMessage')]]
+          <a href="#" on-tap="onLearnMoreTap_" class="oobe-local-link">
+            [[i18nDynamic(locale, 'enableAdbSideloadingLearnMore')]]
+          </a>
+        </div>
+      </div>
+      <div slot="footer" class="flex layout vertical center center-justified">
+        <img srcset="images/1x/arc_sideloading_illustration.svg 1x,
+                     images/2x/arc_sideloading_illustration.svg 2x"
+             class="oobe-illustration"
+             alt="[[i18nDynamic(locale,
+                    'enableAdbSideloadingIllustrationTitle')]]">
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button border on-tap="onCancelTap_"
+            text-key="enableAdbSideloadingCancelButton"
+            id="enable-adb-sideloading-cancel-button"></oobe-text-button>
+        <oobe-text-button inverse on-tap="onEnableTap_" class="focus-on-show"
+            text-key="enableAdbSideloadingConfirmButton"
+            id="enable-adb-sideloading-ok-button"></oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <!-- Dialog for error -->
+    <oobe-dialog id="enableAdbSideloadErrorDialog" role="dialog" has-buttons
+        footer-shrinkable
+        title-key="enableAdbSideloadingErrorTitle"
+        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
+        hidden="[[!isState_(uiState_, 'error')]]">
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:alert" icon2x="oobe-64:alert">
+      </hd-iron-icon>
+      <div slot="subtitle">
+        [[i18nDynamic(locale, 'enableAdbSideloadingErrorMessage')]]
+        <a href="#" on-tap="onLearnMoreTap_" class="oobe-local-link">
+          [[i18nDynamic(locale, 'enableAdbSideloadingLearnMore')]]
+        </a>
+      </div>
+      <div slot="footer" class="flex layout vertical center center-justified">
+        <img srcset="images/1x/error_illustration.svg 1x,
+                     images/2x/error_illustration.svg 2x"
+             class="oobe-illustration"
+             alt="[[i18nDynamic(locale,
+                    'enableAdbSideloadingErrorIllustrationTitle')]]">
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal">
+        <div class="flex"></div>
+        <oobe-text-button inverse on-tap="onCancelTap_" class="focus-on-show"
+            text-key="enableAdbSideloadingOkButton"></oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

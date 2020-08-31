@@ -1,0 +1,45 @@
+{
+  "comments": [
+    "Runs tests on @3x, @2x, 64-bit phone, tablet, iOS 12."
+  ],
+  "xcode build version": "11c29",
+  "gn_args": [
+    "goma_dir=\"$(goma_dir)\"",
+    "ios_enable_code_signing=false",
+    "ios_use_goma_rbe=true",
+    "is_component_build=false",
+    "is_debug=true",
+    "symbol_level=1",
+    "target_cpu=\"x64\"",
+    "target_os=\"ios\"",
+    "use_goma=true"
+  ],
+  "additional_compile_targets": [
+    "all"
+  ],
+  "configuration": "Debug",
+  "sdk": "iphonesimulator10.0",
+  "tests": [
+    {
+      "include": "webrtc_tests.json",
+      "device type": "iPhone 6s Plus",
+      "os": "12.4",
+      "host os": "Mac-10.14.6",
+      "pool": "chromium.tests.template"
+    },
+    {
+      "include": "webrtc_tests.json",
+      "device type": "iPhone 6s",
+      "os": "12.4",
+      "host os": "Mac-10.14.6",
+      "pool": "chromium.tests.template"
+    },
+    {
+      "include": "webrtc_tests.json",
+      "device type": "iPad Air 2",
+      "os": "12.4",
+      "host os": "Mac-10.14.6",
+      "pool": "chromium.tests.template"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package feedwire;
+
+option optimize_for = LITE_RUNTIME;
+
+// Top level feature which shows a stream of cards.  Provides any UI information
+// which may be needed in order to render the stream of cards.
+message Stream {
+}
+
+// Feature which represents a cluster in a Stream. May have a Card or Content
+// as children.
+// TODO Determine if Clusters can be removed.
+message Cluster {
+  // Empty for now as we don't support any custom information.
+}
+
+// Feature which is able to show actual content in a stream. This could be
+// inside or outside a card. Actual data on what to display will be sent on an
+// extension.
+message Content {
+  optional bool is_ad = 3;
+
+  optional XSurfaceContent xsurface_content = 1000;
+
+  reserved 2;
+}
+
+// Opaque data to for rendering a piece of content.
+message XSurfaceContent {
+  optional bytes xsurface_output = 1;
+}

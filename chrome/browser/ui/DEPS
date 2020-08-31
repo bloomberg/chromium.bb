@@ -1,0 +1,22 @@
+include_rules = [
+  "+chrome/browser/image_decoder",
+  "-chrome/browser/ui/views",
+  "+components/browser_ui/util/android/url_constants.h",
+  "+components/country_codes",
+  "+components/page_load_metrics/browser",
+  "+components/safety_check",
+  "+mash/public/mojom",
+  "+services/content/public",
+  "+services/device/public/mojom",
+]
+
+specific_include_rules = {
+  "browser_finder_chromeos_browsertest\.cc": [
+    "+ash/wm/desks/desk.h",
+    "+ash/wm/desks/desks_controller.h",
+    "+ash/wm/desks/desks_test_util.h",
+  ],
+  "fullscreen_controller_interactive_browsertest\.cc": [
+    "+ash/shell.h",
+  ],
+}

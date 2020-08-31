@@ -1,0 +1,54 @@
+{
+  "layers": [
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "bounds": [800, 600]
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='stacking-context'",
+      "contentsOpaque": true,
+      "drawsContent": false,
+      "backgroundColor": "#FF0000",
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='stacking-context'",
+      "bounds": [160, 90],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV class='blended'",
+      "bounds": [160, 90],
+      "backgroundColor": "#0000FF",
+      "transform": 1
+    },
+    {
+      "name": "LayoutImage IMG class='accelerated'",
+      "bounds": [160, 90],
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='stacking-context' (foreground) Layer",
+      "drawsContent": false,
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML (foreground) Layer",
+      "bounds": [800, 600]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
+    }
+  ]
+}
+

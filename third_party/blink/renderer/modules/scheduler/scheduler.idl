@@ -1,0 +1,14 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Experimental Scheduling API Proposal:
+// https://docs.google.com/document/d/1Apz-SD-pOagGeyWxIpgOi0ARNkrCrELhPdm18eeu9tw
+[
+    Exposed=Window,
+    ImplementedAs=DOMScheduler,
+    RuntimeEnabled=WebScheduler
+] interface Scheduler {
+    [CallWith=ScriptState, MeasureAs=SchedulerPostTask, RaisesException] Promise<any> postTask(Function callback, optional SchedulerPostTaskOptions options = {}, any... arguments);
+    [CallWith=ScriptState, MeasureAs=SchedulerCurrentTaskSignal] readonly attribute TaskSignal currentTaskSignal;
+};

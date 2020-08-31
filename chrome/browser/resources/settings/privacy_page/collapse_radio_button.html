@@ -1,0 +1,95 @@
+    <style include="settings-shared cr-radio-button-style">
+      :host {
+        display: block;
+      }
+
+      :host([disabled]) {
+        opacity: 1;
+      }
+
+      cr-policy-indicator,
+      :host([disabled]) cr-expand-button {
+        pointer-events: auto;
+      }
+
+      :host([disabled]) .disc-wrapper {
+        opacity: var(--cr-disabled-opacity);
+      }
+
+      iron-collapse {
+        margin-inline-end: 0;
+        margin-inline-start: calc(var(--cr-radio-button-label-spacing, 20px)
+            + var(--cr-radio-button-size));
+      }
+
+      .disc-wrapper {
+        margin-inline-end: var(--cr-radio-button-label-spacing, 20px);
+      }
+
+      .separator {
+        margin-inline-end: 0;
+        min-height: calc(var(--settings-collapse-toggle-min-height, 48px) / 2);
+      }
+
+      #borderWrapper {
+        align-items: center;
+        border-top: var(--settings-collapse-separator-line);
+        display: flex;
+        min-height: var(--settings-collapse-toggle-min-height);
+        width: 100%;
+      }
+
+      #labelWrapper {
+        --cr-radio-button-label-spacing: 0;
+        padding-bottom: 6px;
+        padding-top: 6px;
+      }
+
+      #radioCollapse {
+        align-items: center;
+        display: flex;
+      }
+
+      slot[name='noSelectionCollapse'] {
+       cursor: auto;
+      }
+    </style>
+    <div id="radioCollapse">
+      <div aria-checked$="[[getAriaChecked_(checked)]]"
+          aria-disabled$="[[getAriaDisabled_(disabled)]]"
+          aria-labelledby="label"
+          class="disc-wrapper"
+          id="button"
+          role="radio"
+          tabindex$="[[buttonTabIndex_]]"
+          on-keydown="onInputKeydown_">
+        <div class="disc-border"></div>
+        <div class="disc"></div>
+      </div>
+      <div id="borderWrapper">
+        <div id="labelWrapper">
+          <div id="label" aria-hidden="true">
+            [[label]]
+            <slot name="label"></slot>
+          </div>
+          <div hidden$="[[!subLabel]]" class="secondary">
+            [[subLabel]]
+            <slot name="sub-label"></slot>
+          </div>
+        </div>
+        <cr-policy-indicator id="policyIndicator"
+            on-click="onIndicatorClick_"
+            on-aria-label="[[label]]"
+            indicator-type="[[policyIndicatorType]]">
+        </cr-policy-indicator>
+        <div hidden$="[[noCollapse]]" class="separator"></div>
+        <cr-expand-button hidden$="[[noCollapse]]" expanded="{{expanded}}">
+        </cr-expand-button>
+      </div>
+    </div>
+
+    <iron-collapse opened="[[expanded]]">
+      <slot name="collapse"></slot>
+      <slot name="noSelectionCollapse"></slot>
+    </iron-collapse>
+

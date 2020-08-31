@@ -1,0 +1,84 @@
+    <style include="cr-shared-style settings-shared iron-flex">
+      :host {
+        display: block;
+      }
+
+      .column-header {
+        margin-bottom: 15px;
+        margin-inline-start: 20px;
+        margin-top: 15px;
+      }
+    </style>
+    <div class="cr-row first two-line">
+      <div id="categoryLabel" class="flex" on-click="categoryLabelClicked_"
+          actionable>
+        [[computeHandlersDescription_(categoryEnabled)]]
+      </div>
+      <cr-toggle id="toggle" checked="{{categoryEnabled}}"
+          on-change="onToggleChange_" aria-labelledby="categoryLabel">
+      </cr-toggle>
+    </div>
+
+    <template is="dom-repeat" items="[[protocols]]" as="protocol">
+      <div class="column-header">[[protocol.protocol_display_name]]</div>
+
+      <div class="list-frame menu-content vertical-list">
+        <template is="dom-repeat" items="[[protocol.handlers]]">
+
+          <div class="list-item">
+            <site-favicon url="[[item.host]]"></site-favicon>
+            <div class="middle" >
+              <div class="protocol-host">
+                <span class="url-directionality">[[item.host]]</span>
+              </div>
+              <div class="secondary protocol-default"
+                  hidden$="[[!item.is_default]]">
+                $i18n{handlerIsDefault}
+              </div>
+            </div>
+
+            <cr-icon-button class="icon-more-vert" on-click="showMenu_"
+                title="$i18n{moreActions}"></cr-icon-button>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <cr-action-menu role-description="$i18n{menu}">
+      <button class="dropdown-item" on-click="onDefaultClick_"
+          id="defaultButton" hidden$="[[actionMenuModel_.is_default]]">
+        $i18n{handlerSetDefault}
+      </button>
+      <button class="dropdown-item" on-click="onRemoveClick_"
+          id="removeButton">
+        $i18n{handlerRemove}
+      </button>
+    </cr-action-menu>
+
+    <template is="dom-if" if="[[ignoredProtocols.length]]">
+      <div class="column-header">$i18n{siteSettingsBlocked}</div>
+      <div class="list-frame menu-content vertical-list">
+        <template is="dom-repeat" items="[[ignoredProtocols]]">
+          <div class="list-item">
+            <site-favicon url="[[item.host]]"></site-favicon>
+            <div class="middle" >
+              <div class="protocol-host">
+                <span class="url-directionality">[[item.host]]</span></div>
+              <div class="secondary protocol-protocol">
+                [[item.protocol_display_name]]
+              </div>
+            </div>
+            <cr-icon-button class="icon-clear" id="removeIgnoredButton"
+                on-click="onRemoveIgnored_" title="$i18n{handlerRemove}">
+            </cr-icon-button>
+          </div>
+        </template>
+      </div>
+    </template>
+
+<if expr="chromeos">
+  <template is="dom-if" if="[[settingsAppAvailable_]]">
+    <cr-link-row on-click="onManageAndroidAppsClick_"
+        label="$i18n{androidAppsManageAppLinks}" external></cr-link-row>
+  </template>
+</if>

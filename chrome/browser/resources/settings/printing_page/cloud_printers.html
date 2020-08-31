@@ -1,0 +1,22 @@
+    <style include="cr-shared-style settings-shared iron-flex"></style>
+    <div class="cr-row first">
+      <div class="flex cr-padded-text">
+        $i18n{printingCloudPrintLearnMoreLabel}
+        <a href="$i18n{printingCloudPrintLearnMoreUrl}" target="_blank">
+          $i18n{learnMore}
+        </a>
+      </div>
+    </div>
+    <settings-toggle-button
+        class="hr"
+        pref="{{prefs.local_discovery.notifications_enabled}}"
+        label="$i18n{printingNotificationsLabel}">
+    </settings-toggle-button>
+    <a class="cr-row inherit-color no-outline" tabindex="-1"
+        target="_blank" href="$i18n{devicesUrl}">
+      <div class="flex">
+        $i18n{printingManageCloudPrintDevices}
+      </div>
+      <cr-icon-button class="icon-external"
+          aria-label="$i18n{printingManageCloudPrintDevices}"></cr-icon-button>
+    </a>

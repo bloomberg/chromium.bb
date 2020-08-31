@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<grit current_release="1" latest_public_release="0" output_all_resource_defines="false">
+  <outputs>
+    <output filename="values-af/android_touch_to_fill_strings.xml" lang="af" type="android" />
+    <output filename="values-am/android_touch_to_fill_strings.xml" lang="am" type="android" />
+    <output filename="values-ar/android_touch_to_fill_strings.xml" lang="ar" type="android" />
+    <output filename="values-as/android_touch_to_fill_strings.xml" lang="as" type="android" />
+    <output filename="values-az/android_touch_to_fill_strings.xml" lang="az" type="android" />
+    <output filename="values-be/android_touch_to_fill_strings.xml" lang="be" type="android" />
+    <output filename="values-bg/android_touch_to_fill_strings.xml" lang="bg" type="android" />
+    <output filename="values-bn/android_touch_to_fill_strings.xml" lang="bn" type="android" />
+    <output filename="values-bs/android_touch_to_fill_strings.xml" lang="bs" type="android" />
+    <output filename="values-ca/android_touch_to_fill_strings.xml" lang="ca" type="android" />
+    <output filename="values-cs/android_touch_to_fill_strings.xml" lang="cs" type="android" />
+    <output filename="values-da/android_touch_to_fill_strings.xml" lang="da" type="android" />
+    <output filename="values-de/android_touch_to_fill_strings.xml" lang="de" type="android" />
+    <output filename="values-el/android_touch_to_fill_strings.xml" lang="el" type="android" />
+    <output filename="values/android_touch_to_fill_strings.xml" lang="en" type="android" />
+    <output filename="values-en-rGB/android_touch_to_fill_strings.xml" lang="en-GB" type="android" />
+    <output filename="values-es/android_touch_to_fill_strings.xml" lang="es" type="android" />
+    <output filename="values-es-rUS/android_touch_to_fill_strings.xml" lang="es-419" type="android" />
+    <output filename="values-et/android_touch_to_fill_strings.xml" lang="et" type="android" />
+    <output filename="values-eu/android_touch_to_fill_strings.xml" lang="eu" type="android" />
+    <output filename="values-fa/android_touch_to_fill_strings.xml" lang="fa" type="android" />
+    <output filename="values-fi/android_touch_to_fill_strings.xml" lang="fi" type="android" />
+    <output filename="values-tl/android_touch_to_fill_strings.xml" lang="fil" type="android" />
+    <output filename="values-fr/android_touch_to_fill_strings.xml" lang="fr" type="android" />
+    <output filename="values-fr-rCA/android_touch_to_fill_strings.xml" lang="fr-CA" type="android" />
+    <output filename="values-gl/android_touch_to_fill_strings.xml" lang="gl" type="android" />
+    <output filename="values-gu/android_touch_to_fill_strings.xml" lang="gu" type="android" />
+    <output filename="values-hi/android_touch_to_fill_strings.xml" lang="hi" type="android" />
+    <output filename="values-hr/android_touch_to_fill_strings.xml" lang="hr" type="android" />
+    <output filename="values-hu/android_touch_to_fill_strings.xml" lang="hu" type="android" />
+    <output filename="values-hy/android_touch_to_fill_strings.xml" lang="hy" type="android" />
+    <output filename="values-in/android_touch_to_fill_strings.xml" lang="id" type="android" />
+    <output filename="values-is/android_touch_to_fill_strings.xml" lang="is" type="android" />
+    <output filename="values-it/android_touch_to_fill_strings.xml" lang="it" type="android" />
+    <output filename="values-iw/android_touch_to_fill_strings.xml" lang="iw" type="android" />
+    <output filename="values-ja/android_touch_to_fill_strings.xml" lang="ja" type="android" />
+    <output filename="values-ka/android_touch_to_fill_strings.xml" lang="ka" type="android" />
+    <output filename="values-kk/android_touch_to_fill_strings.xml" lang="kk" type="android" />
+    <output filename="values-km/android_touch_to_fill_strings.xml" lang="km" type="android" />
+    <output filename="values-kn/android_touch_to_fill_strings.xml" lang="kn" type="android" />
+    <output filename="values-ko/android_touch_to_fill_strings.xml" lang="ko" type="android" />
+    <output filename="values-ky/android_touch_to_fill_strings.xml" lang="ky" type="android" />
+    <output filename="values-lo/android_touch_to_fill_strings.xml" lang="lo" type="android" />
+    <output filename="values-lt/android_touch_to_fill_strings.xml" lang="lt" type="android" />
+    <output filename="values-lv/android_touch_to_fill_strings.xml" lang="lv" type="android" />
+    <output filename="values-mk/android_touch_to_fill_strings.xml" lang="mk" type="android" />
+    <output filename="values-ml/android_touch_to_fill_strings.xml" lang="ml" type="android" />
+    <output filename="values-mn/android_touch_to_fill_strings.xml" lang="mn" type="android" />
+    <output filename="values-mr/android_touch_to_fill_strings.xml" lang="mr" type="android" />
+    <output filename="values-ms/android_touch_to_fill_strings.xml" lang="ms" type="android" />
+    <output filename="values-my/android_touch_to_fill_strings.xml" lang="my" type="android" />
+    <output filename="values-ne/android_touch_to_fill_strings.xml" lang="ne" type="android" />
+    <output filename="values-nl/android_touch_to_fill_strings.xml" lang="nl" type="android" />
+    <output filename="values-nb/android_touch_to_fill_strings.xml" lang="no" type="android" />
+    <output filename="values-or/android_touch_to_fill_strings.xml" lang="or" type="android" />
+    <output filename="values-pa/android_touch_to_fill_strings.xml" lang="pa" type="android" />
+    <output filename="values-pl/android_touch_to_fill_strings.xml" lang="pl" type="android" />
+    <output filename="values-pt-rBR/android_touch_to_fill_strings.xml" lang="pt-BR" type="android" />
+    <output filename="values-pt-rPT/android_touch_to_fill_strings.xml" lang="pt-PT" type="android" />
+    <output filename="values-ro/android_touch_to_fill_strings.xml" lang="ro" type="android" />
+    <output filename="values-ru/android_touch_to_fill_strings.xml" lang="ru" type="android" />
+    <output filename="values-si/android_touch_to_fill_strings.xml" lang="si" type="android" />
+    <output filename="values-sk/android_touch_to_fill_strings.xml" lang="sk" type="android" />
+    <output filename="values-sl/android_touch_to_fill_strings.xml" lang="sl" type="android" />
+    <output filename="values-sq/android_touch_to_fill_strings.xml" lang="sq" type="android" />
+    <output filename="values-sr/android_touch_to_fill_strings.xml" lang="sr" type="android" />
+    <output filename="values-b+sr+Latn/android_touch_to_fill_strings.xml" lang="sr-Latn" type="android" />
+    <output filename="values-sv/android_touch_to_fill_strings.xml" lang="sv" type="android" />
+    <output filename="values-sw/android_touch_to_fill_strings.xml" lang="sw" type="android" />
+    <output filename="values-ta/android_touch_to_fill_strings.xml" lang="ta" type="android" />
+    <output filename="values-te/android_touch_to_fill_strings.xml" lang="te" type="android" />
+    <output filename="values-th/android_touch_to_fill_strings.xml" lang="th" type="android" />
+    <output filename="values-tr/android_touch_to_fill_strings.xml" lang="tr" type="android" />
+    <output filename="values-uk/android_touch_to_fill_strings.xml" lang="uk" type="android" />
+    <output filename="values-ur/android_touch_to_fill_strings.xml" lang="ur" type="android" />
+    <output filename="values-uz/android_touch_to_fill_strings.xml" lang="uz" type="android" />
+    <output filename="values-vi/android_touch_to_fill_strings.xml" lang="vi" type="android" />
+    <output filename="values-zh-rCN/android_touch_to_fill_strings.xml" lang="zh-CN" type="android" />
+    <output filename="values-zh-rHK/android_touch_to_fill_strings.xml" lang="zh-HK" type="android" />
+    <output filename="values-zh-rTW/android_touch_to_fill_strings.xml" lang="zh-TW" type="android" />
+    <output filename="values-zu/android_touch_to_fill_strings.xml" lang="zu" type="android" />
+  </outputs>
+  <translations>
+    <file lang="af" path="translations/android_touch_to_fill_strings_af.xtb" />
+    <file lang="am" path="translations/android_touch_to_fill_strings_am.xtb" />
+    <file lang="ar" path="translations/android_touch_to_fill_strings_ar.xtb" />
+    <file lang="as" path="translations/android_touch_to_fill_strings_as.xtb" />
+    <file lang="az" path="translations/android_touch_to_fill_strings_az.xtb" />
+    <file lang="be" path="translations/android_touch_to_fill_strings_be.xtb" />
+    <file lang="bg" path="translations/android_touch_to_fill_strings_bg.xtb" />
+    <file lang="bn" path="translations/android_touch_to_fill_strings_bn.xtb" />
+    <file lang="bs" path="translations/android_touch_to_fill_strings_bs.xtb" />
+    <file lang="ca" path="translations/android_touch_to_fill_strings_ca.xtb" />
+    <file lang="cs" path="translations/android_touch_to_fill_strings_cs.xtb" />
+    <file lang="da" path="translations/android_touch_to_fill_strings_da.xtb" />
+    <file lang="de" path="translations/android_touch_to_fill_strings_de.xtb" />
+    <file lang="el" path="translations/android_touch_to_fill_strings_el.xtb" />
+    <file lang="en-GB" path="translations/android_touch_to_fill_strings_en-GB.xtb" />
+    <file lang="es" path="translations/android_touch_to_fill_strings_es.xtb" />
+    <file lang="es-419" path="translations/android_touch_to_fill_strings_es-419.xtb" />
+    <file lang="et" path="translations/android_touch_to_fill_strings_et.xtb" />
+    <file lang="eu" path="translations/android_touch_to_fill_strings_eu.xtb" />
+    <file lang="fa" path="translations/android_touch_to_fill_strings_fa.xtb" />
+    <file lang="fi" path="translations/android_touch_to_fill_strings_fi.xtb" />
+    <file lang="fil" path="translations/android_touch_to_fill_strings_fil.xtb" />
+    <file lang="fr" path="translations/android_touch_to_fill_strings_fr.xtb" />
+    <file lang="fr-CA" path="translations/android_touch_to_fill_strings_fr-CA.xtb" />
+    <file lang="gl" path="translations/android_touch_to_fill_strings_gl.xtb" />
+    <file lang="gu" path="translations/android_touch_to_fill_strings_gu.xtb" />
+    <file lang="hi" path="translations/android_touch_to_fill_strings_hi.xtb" />
+    <file lang="hr" path="translations/android_touch_to_fill_strings_hr.xtb" />
+    <file lang="hu" path="translations/android_touch_to_fill_strings_hu.xtb" />
+    <file lang="hy" path="translations/android_touch_to_fill_strings_hy.xtb" />
+    <file lang="id" path="translations/android_touch_to_fill_strings_id.xtb" />
+    <file lang="is" path="translations/android_touch_to_fill_strings_is.xtb" />
+    <file lang="it" path="translations/android_touch_to_fill_strings_it.xtb" />
+    <file lang="iw" path="translations/android_touch_to_fill_strings_iw.xtb" />
+    <file lang="ja" path="translations/android_touch_to_fill_strings_ja.xtb" />
+    <file lang="ka" path="translations/android_touch_to_fill_strings_ka.xtb" />
+    <file lang="kk" path="translations/android_touch_to_fill_strings_kk.xtb" />
+    <file lang="km" path="translations/android_touch_to_fill_strings_km.xtb" />
+    <file lang="kn" path="translations/android_touch_to_fill_strings_kn.xtb" />
+    <file lang="ko" path="translations/android_touch_to_fill_strings_ko.xtb" />
+    <file lang="ky" path="translations/android_touch_to_fill_strings_ky.xtb" />
+    <file lang="lo" path="translations/android_touch_to_fill_strings_lo.xtb" />
+    <file lang="lt" path="translations/android_touch_to_fill_strings_lt.xtb" />
+    <file lang="lv" path="translations/android_touch_to_fill_strings_lv.xtb" />
+    <file lang="mk" path="translations/android_touch_to_fill_strings_mk.xtb" />
+    <file lang="ml" path="translations/android_touch_to_fill_strings_ml.xtb" />
+    <file lang="mn" path="translations/android_touch_to_fill_strings_mn.xtb" />
+    <file lang="mr" path="translations/android_touch_to_fill_strings_mr.xtb" />
+    <file lang="ms" path="translations/android_touch_to_fill_strings_ms.xtb" />
+    <file lang="my" path="translations/android_touch_to_fill_strings_my.xtb" />
+    <file lang="ne" path="translations/android_touch_to_fill_strings_ne.xtb" />
+    <file lang="nl" path="translations/android_touch_to_fill_strings_nl.xtb" />
+    <file lang="no" path="translations/android_touch_to_fill_strings_no.xtb" />
+    <file lang="or" path="translations/android_touch_to_fill_strings_or.xtb" />
+    <file lang="pa" path="translations/android_touch_to_fill_strings_pa.xtb" />
+    <file lang="pl" path="translations/android_touch_to_fill_strings_pl.xtb" />
+    <file lang="pt-BR" path="translations/android_touch_to_fill_strings_pt-BR.xtb" />
+    <file lang="pt-PT" path="translations/android_touch_to_fill_strings_pt-PT.xtb" />
+    <file lang="ro" path="translations/android_touch_to_fill_strings_ro.xtb" />
+    <file lang="ru" path="translations/android_touch_to_fill_strings_ru.xtb" />
+    <file lang="si" path="translations/android_touch_to_fill_strings_si.xtb" />
+    <file lang="sk" path="translations/android_touch_to_fill_strings_sk.xtb" />
+    <file lang="sl" path="translations/android_touch_to_fill_strings_sl.xtb" />
+    <file lang="sq" path="translations/android_touch_to_fill_strings_sq.xtb" />
+    <file lang="sr" path="translations/android_touch_to_fill_strings_sr.xtb" />
+    <file lang="sr-Latn" path="translations/android_touch_to_fill_strings_sr-Latn.xtb" />
+    <file lang="sv" path="translations/android_touch_to_fill_strings_sv.xtb" />
+    <file lang="sw" path="translations/android_touch_to_fill_strings_sw.xtb" />
+    <file lang="ta" path="translations/android_touch_to_fill_strings_ta.xtb" />
+    <file lang="te" path="translations/android_touch_to_fill_strings_te.xtb" />
+    <file lang="th" path="translations/android_touch_to_fill_strings_th.xtb" />
+    <file lang="tr" path="translations/android_touch_to_fill_strings_tr.xtb" />
+    <file lang="uk" path="translations/android_touch_to_fill_strings_uk.xtb" />
+    <file lang="ur" path="translations/android_touch_to_fill_strings_ur.xtb" />
+    <file lang="uz" path="translations/android_touch_to_fill_strings_uz.xtb" />
+    <file lang="vi" path="translations/android_touch_to_fill_strings_vi.xtb" />
+    <file lang="zh-CN" path="translations/android_touch_to_fill_strings_zh-CN.xtb" />
+    <file lang="zh-HK" path="translations/android_touch_to_fill_strings_zh-HK.xtb" />
+    <file lang="zh-TW" path="translations/android_touch_to_fill_strings_zh-TW.xtb" />
+    <file lang="zu" path="translations/android_touch_to_fill_strings_zu.xtb" />
+  </translations>
+  <release allow_pseudo="false" seq="1">
+    <messages fallback_to_english="true">
+      <!-- Touch To Fill -->
+      <message name="IDS_TOUCH_TO_FILL_SHEET_TITLE_SINGLE" desc="Header for Touch To Fill sheet where users only have a single credential to fill into a form to.">
+        Continue with account
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_TITLE" desc="Header for Touch To Fill sheet where users can pick a credential to fill into a form to.">
+        Choose an account
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_SUBTITLE_NOT_SECURE" desc="Subtitle for Touch To Fill sheet when the website is not secure. Note that similarly to the omnibox 'not secure' in this case primarily refers to HTTPS connection security. So prefer translations with a connotation of 'not private' (someone can intercept your communication with the site) rather than 'not trustworthy' (which would be a judgment of site reputation).">
+        <ph name="SITE_NAME">%1$s<ex>airbnb.com</ex> (not secure)</ph>
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_CONTENT_DESCRIPTION" desc="Accessibility string read when the Touch To Fill bottom sheet is opened. It describes the bottom sheet where a user can pick a credential to fill into a password form.">
+        List of credentials to be filled on touch.
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_HALF_HEIGHT" desc="Accessibility string read when the Touch To Fill bottom sheet showing a list of the user's credentials is opened at half height. The sheet will occupy the bottom half the screen.">
+        List of credentials to be filled on touch opened at half height.
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_FULL_HEIGHT" desc="Accessibility string read when the Touch To Fill bottom sheet showing a list of the user's credentials is opened at full height. The sheet will occupy the entire screen.">
+        List of credentials to be filled on touch opened at full height.
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_CLOSED" desc="Accessibility string read when the Touch To Fill bottom sheet showing a list of the user's credentials is closed.">
+        List of credentials to be filled on touch is closed.
+      </message>
+      <message name="IDS_MANAGE_PASSWORDS" desc="Title of the button at the end of a touch to fill sheet that will open the password preferences when tapped.">
+        Manage passwords
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_CONTINUE" desc="Title of the button that continues filling with the only available set of credentials.">
+        Continue
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_BRANDING_VARIATION_1" desc="Message shown at the bottom of the Touch To Fill sheet to draw attention to the feature.">
+        New in <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>! Tap to sign in
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_BRANDING_VARIATION_2" desc="Message shown at the bottom of the Touch To Fill sheet to draw attention to the feature.">
+        New in <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>! Control how you sign in with one tap
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_BRANDING_VARIATION_3" desc="Message shown at the bottom of the Touch To Fill sheet to draw attention to the feature.">
+        Powered by <ph name="APP_NAME">%1$s<ex>Chrome</ex></ph>
+      </message>
+    </messages>
+  </release>
+</grit>

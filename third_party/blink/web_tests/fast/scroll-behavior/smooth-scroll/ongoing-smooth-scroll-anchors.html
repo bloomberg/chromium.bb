@@ -1,0 +1,58 @@
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/gesture-util.js"></script>
+<style>
+  body {
+    margin: 0px;
+    height: 2000px;
+    width: 2000px;
+  }
+  #changer {
+    background-color: #FF7F7F;
+    height: 10px;
+  }
+  #anchor {
+    height: 1500px;
+    background-color: #84BE6A;
+  }
+</style>
+
+<div id="changer"></div>
+<div id="anchor"></div>
+
+<script>
+  var asyncTest = async_test("Verify smooth scroll interaction with scroll anchroing");
+
+  // The element that will change in height.
+  var ch;
+
+  // Initital scroll position.
+  var initialY = 10;
+  // Amount to smooth scroll by.
+  var userScrollY = 205;
+  // Amount to change the height of the element above the viewport.
+  var changerY =  100;
+  // End position: height of ch + userScroll.
+  var endY = 305;
+  var source = GestureSourceType.MOUSE_INPUT;
+
+  function scrollListener() {
+    if (window.scrollY == endY) {
+      asyncTest.done();
+      return;
+    }
+
+    if (ch.style.height != "100")
+      ch.style.height = changerY;
+  }
+
+  window.onload = async () => {
+    ch = document.getElementById("changer");
+    document.addEventListener("scroll", scrollListener);
+
+    // Smooth scroll.
+    smoothScroll(userScrollY, 100, 100, source, 'down', SPEED_INSTANT, false /* precise_scrolling_deltas */);
+    await raf();
+    document.getElementById('anchor').scrollIntoView();
+  }
+</script>

@@ -1,0 +1,268 @@
+    <style include="cr-shared-style settings-shared action-link iron-flex">
+      .favicon-image {
+        margin: 2px;
+      }
+
+      #storage {
+        padding-inline-end: 0;
+      }
+
+      #storageText {
+        display: flex;
+      }
+
+      #resetSettingsButton {
+        margin-top: 24px;
+      }
+
+      #usageHeader {
+        padding: 0 var(--cr-section-padding);
+      }
+    </style>
+    <!-- Confirm reset settings dialog. -->
+    <cr-dialog id="confirmResetSettings" close-text="$i18n{close}"
+        on-close="onResetSettingsDialogClosed_">
+      <div slot="body">
+        [[i18n('siteSettingsSiteResetConfirmation', pageTitle)]]
+      </div>
+      <div slot="button-container">
+        <cr-button class="cancel-button" on-click="onCloseDialog_">
+          $i18n{cancel}
+        </cr-button>
+        <cr-button class="action-button" on-click="onResetSettings_">
+          $i18n{siteSettingsSiteResetAll}
+        </cr-button>
+      </div>
+    </cr-dialog>
+
+    <!-- Confirm clear storage dialog. -->
+    <cr-dialog id="confirmClearStorage" close-text="$i18n{close}"
+        on-close="onClearStorageDialogClosed_">
+      <style include="clear-storage-dialog-shared"></style>
+      <div slot="title">
+        $i18n{siteSettingsSiteClearStorageDialogTitle}
+      </div>
+      <div slot="body">
+        [[i18n('siteSettingsSiteClearStorageConfirmation', pageTitle)]]
+      </div>
+      <div slot="button-container">
+        <cr-button class="cancel-button" on-click="onCloseDialog_">
+          $i18n{cancel}
+        </cr-button>
+        <cr-button class="action-button" on-click="onClearStorage_">
+          $i18n{siteSettingsSiteClearStorage}
+        </cr-button>
+      </div>
+    </cr-dialog>
+
+    <!-- New version of confirm clear data dialog to show if storage
+         pressure UI flag is enabled. -->
+    <cr-dialog id="confirmClearStorageNew" close-text="$i18n{close}"
+        on-close="onClearStorageDialogClosed_">
+      <style include="clear-storage-dialog-shared"></style>
+      <div slot="title">
+        $i18n{siteSettingsSiteClearStorageDialogTitle}
+      </div>
+      <div slot="body">
+        [[i18n('siteSettingsSiteClearStorageConfirmationNew', pageTitle)]]
+        <div class="detail-list">
+          <div class="detail">
+            <iron-icon icon="all-sites:logout"></iron-icon>
+            $i18n{siteSettingsSiteClearStorageSignOut}
+          </div>
+          <div class="detail">
+            <iron-icon icon="all-sites:offline"></iron-icon>
+            $i18n{siteSettingsSiteClearStorageOfflineData}
+          </div>
+        </div>
+      </div>
+      <div slot="button-container">
+        <cr-button class="cancel-button" on-click="onCloseDialog_">
+          $i18n{cancel}
+        </cr-button>
+        <cr-button class="action-button" on-click="onClearStorage_">
+          $i18n{siteSettingsSiteClearStorage}
+        </cr-button>
+      </div>
+    </cr-dialog>
+
+    <div id="usage">
+      <div id="usageHeader">
+        <h2 class="first">$i18n{siteSettingsUsage}</h2>
+      </div>
+      <div class="list-frame">
+        <div class="list-item" id="noStorage"
+            hidden$="[[hasUsage_(storedData_, numCookies_)]]">
+          <div class="start">$i18n{siteSettingsUsageNone}</div>
+        </div>
+        <div class="list-item" id="storage"
+            hidden$="[[!hasUsage_(storedData_, numCookies_)]]">
+          <div class="start" id="storageText">
+            <div hidden$="[[!storedData_]]">[[storedData_]]</div>
+            <div hidden$="[[!hasDataAndCookies_(storedData_, numCookies_)]]">
+              &nbsp;&middot;&nbsp;
+            </div>
+            <div hidden$="[[!numCookies_]]">[[numCookies_]]</div>
+          </div>
+          <cr-button id="clearStorage" role="button" aria-disabled="false"
+              on-click="onConfirmClearStorage_"
+              aria-label="$i18n{siteSettingsDelete}">
+            $i18n{siteSettingsDelete}
+          </cr-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cr-row first">
+      <h2 class="flex">$i18n{siteSettingsPermissions}</h2>
+      <cr-button id="resetSettingsButton" class="header-aligned-button"
+          role="button" aria-disabled="false"
+          on-click="onConfirmClearSettings_">
+        $i18n{siteSettingsReset}
+      </cr-button>
+    </div>
+    <div class="list-frame">
+      <site-details-permission category="{{ContentSettingsTypes.GEOLOCATION}}"
+          icon="cr:location-on" id="geolocation"
+          label="$i18n{siteSettingsLocation}">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.CAMERA}}"
+          icon="cr:videocam" id="camera"
+          label="$i18n{siteSettingsCamera}">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.MIC}}"
+          icon="cr:mic" id="mic"
+          label="$i18n{siteSettingsMic}">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.SENSORS}}"
+          icon="settings:sensors" id="sensors"
+          label="$i18n{siteSettingsSensors}">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.NOTIFICATIONS}}"
+          icon="settings:notifications" id="notifications"
+          label="$i18n{siteSettingsNotifications}">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.JAVASCRIPT}}"
+          icon="settings:code" id="javascript"
+          label="$i18n{siteSettingsJavascript}">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.PLUGINS}}"
+          icon="cr:extension" id="plugins" label="$i18n{siteSettingsFlash}">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.IMAGES}}"
+          icon="settings:photo" id="images" label="$i18n{siteSettingsImages}">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.POPUPS}}"
+          icon="cr:open-in-new" id="popups" label="$i18n{siteSettingsPopups}">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.ADS}}"
+          icon="settings:ads" id="ads"
+          label="$i18n{siteSettingsAds}">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.BACKGROUND_SYNC}}"
+          icon="cr:sync" id="backgroundSync"
+          label="$i18n{siteSettingsBackgroundSync}">
+      </site-details-permission>
+      <site-details-permission category="{{ContentSettingsTypes.SOUND}}"
+          icon="settings:volume-up" id="sound"
+          label="$i18n{siteSettingsSound}"
+          use-automatic-label="[[blockAutoplayEnabled]]">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}"
+          icon="cr:file-download" id="automaticDownloads"
+          label="$i18n{siteSettingsAutomaticDownloads}">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.MIDI_DEVICES}}" icon="settings:midi"
+          id="midiDevices" label="$i18n{siteSettingsMidiDevices}">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.USB_DEVICES}}" icon="settings:usb"
+          id="usbDevices" label="$i18n{siteSettingsUsbDevices}">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.SERIAL_PORTS}}"
+          icon="settings:serial-port" id="serialPorts"
+          label="$i18n{siteSettingsSerialPorts}">
+      </site-details-permission>
+      <template is="dom-if" if="[[enableWebBluetoothNewPermissionsBackend_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.BLUETOOTH_DEVICES}}"
+            icon="settings:bluetooth" id="bluetoothDevices"
+            label="$i18n{siteSettingsBluetoothDevices}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"
+            icon="settings:save-original" id="nativeFileSystemWrite"
+            label="$i18n{siteSettingsNativeFileSystemWrite}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <site-details-permission
+            category="[[ContentSettingsTypes.HID_DEVICES]]"
+            icon="settings:hid-device" id="hidDevices"
+            label="$i18n{siteSettingsHidDevices}">
+        </site-details-permission>
+      </template>
+      <site-details-permission
+          category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}"
+          icon="cr:extension" id="unsandboxedPlugins"
+          label="$i18n{siteSettingsUnsandboxedPlugins}">
+      </site-details-permission>
+<if expr="chromeos">
+      <site-details-permission
+          category="{{ContentSettingsTypes.PROTECTED_CONTENT}}"
+          icon="settings:protected-content" id="protectedContent"
+          label="$i18n{siteSettingsProtectedContentIdentifiers}">
+      </site-details-permission>
+</if>
+      <site-details-permission
+          category="{{ContentSettingsTypes.CLIPBOARD}}"
+          icon="settings:clipboard" id="clipboard"
+          label="$i18n{siteSettingsClipboard}">
+      </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.PAYMENT_HANDLER}}"
+          icon="settings:payment-handler" id="paymentHandler"
+          label="$i18n{siteSettingsPaymentHandler}">
+      </site-details-permission>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.BLUETOOTH_SCANNING}}"
+            icon="settings:bluetooth-scanning" id="bluetoothScanning"
+            label="$i18n{siteSettingsBluetoothScanning}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableInsecureContentContentSetting_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.MIXEDSCRIPT}}"
+            icon="settings:insecure-content" id="mixed-script"
+            label="$i18n{siteSettingsInsecureContent}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableWebXrContentSetting_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.AR}}"
+            icon="settings:vr-headset" id="ar"
+            label="$i18n{siteSettingsAr}">
+        </site-details-permission>
+        <site-details-permission
+            category="{{ContentSettingsTypes.VR}}"
+            icon="settings:vr-headset" id="vr"
+            label="$i18n{siteSettingsVr}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.WINDOW_PLACEMENT}}"
+            icon="settings:window-placement" id="windowPlacement"
+            label="$i18n{siteSettingsWindowPlacement}">
+        </site-details-permission>
+      </template>
+    </div>

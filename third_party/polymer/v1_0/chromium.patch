@@ -1,0 +1,247 @@
+diff --git a/components-chromium/font-roboto/roboto.html b/components-chromium/font-roboto/roboto.html
+index 7a24999..4eefcba 100644
+--- a/components-chromium/font-roboto/roboto.html
++++ b/components-chromium/font-roboto/roboto.html
+@@ -7,5 +7,4 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
+ Code distributed by Google as part of the polymer project is also
+ subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ -->
+-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
+-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
++<link rel="stylesheet" href="chrome://resources/css/roboto.css">
+diff --git a/components-chromium/html-imports/html-imports.min.js b/components-chromium/html-imports/html-imports.min.js
+index 3365917e8b99..8750aefdefb1 100644
+--- a/components-chromium/html-imports/html-imports.min.js
++++ b/components-chromium/html-imports/html-imports.min.js
+@@ -23,5 +23,3 @@ if(d&&b.parentNode!==document.head){var e=document.createElement(b.localName);e.
+ "complete"),a.dispatchEvent(y(a.import?"load":"error",{bubbles:!1,cancelable:!1,detail:void 0})))};h.prototype.w=function(a){var b=this;g(a,function(a){return g(a.addedNodes,function(a){a&&a.nodeType===Node.ELEMENT_NODE&&(r(a)?b.l(a):b.loadImports(a))})})};var x=null;if(u)g(k(document,"link[rel=import]"),function(a){a.import&&"loading"===a.import.readyState||(a.__loaded=!0)}),n=function(a){a=a.target;r(a)&&(a.__loaded=!0)},document.addEventListener("load",n,!0),document.addEventListener("error",n,
+ !0);else{var p=Object.getOwnPropertyDescriptor(Node.prototype,"baseURI");Object.defineProperty((!p||p.configurable?Node:Element).prototype,"baseURI",{get:function(){var a=r(this)?this:m(this);return a?a.href:p&&p.get?p.get.call(this):(document.querySelector("base")||window.location).href},configurable:!0,enumerable:!0});Object.defineProperty(HTMLLinkElement.prototype,"import",{get:function(){return this.__import||null},configurable:!0,enumerable:!0});z(function(){x=new h})}A(function(){return document.dispatchEvent(y("HTMLImportsLoaded",
+ {cancelable:!0,bubbles:!0,detail:void 0}))});q.useNative=u;q.whenReady=A;q.importForElement=m;q.loadImports=function(a){x&&x.loadImports(a)}})(window.HTMLImports=window.HTMLImports||{});
+-
+-//# sourceMappingURL=html-imports.min.js.map
+diff --git a/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js b/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
+index 2edddb115d46..d3c7fbe36d63 100644
+--- a/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
++++ b/components-chromium/iron-iconset-svg/iron-iconset-svg-extracted.js
+@@ -131,6 +131,18 @@
+       return null;
+     },
+
++    /**
++     * Produce installable clone of the SVG element matching `id` in this
++     * iconset, or `undefined` if there is no matching element.
++     * @param {string} iconName Name of the icon to apply.
++     * @param {boolean} targetIsRTL Whether the target element is RTL.
++     * @return {Element} Returns an installable clone of the SVG element
++     *     matching `id`.
++     */
++    createIcon: function(iconName, targetIsRTL) {
++      return this._cloneIcon(iconName, this.rtlMirroring && targetIsRTL);
++    },
++
+     /**
+      * Remove an icon from the given element by undoing the changes effected
+      * by `applyIcon`.
+diff --git a/components-chromium/iron-list/iron-list-extracted.js b/components-chromium/iron-list/iron-list-extracted.js
+index 43c59653a39b..26652936735c 100644
+--- a/components-chromium/iron-list/iron-list-extracted.js
++++ b/components-chromium/iron-list/iron-list-extracted.js
+@@ -128,6 +128,14 @@
+       scrollOffset: {
+         type: Number,
+         value: 0
++      },
++
++      /**
++       * If set to true, focus on an element will be preserved after rerender.
++       */
++      preserveFocus: {
++        type: Boolean,
++        value: false
+       }
+     },
+
+@@ -786,11 +794,53 @@
+       newGrid && this._updateGridMetrics();
+     },
+
++    /**
++     * Finds and returns the focused element (both within self and children's
++     * Shadow DOM).
++     * @return {?HTMLElement}
++     */
++    _getFocusedElement: function() {
++      function doSearch(node, query) {
++        let result = null;
++        let type = node.nodeType;
++        if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_FRAGMENT_NODE)
++          result = node.querySelector(query);
++        if (result)
++          return result;
++
++        let child = node.firstChild;
++        while (child !== null && result === null) {
++          result = doSearch(child, query);
++          child = child.nextSibling;
++        }
++        if (result)
++          return result;
++
++        const shadowRoot = node.shadowRoot;
++        return shadowRoot ? doSearch(shadowRoot, query) : null;
++      }
++
++      // Find out if any of the items are focused first, and only search
++      // recursively in the item that contains focus, to avoid a slow
++      // search of the entire list.
++      const focusWithin = doSearch(this, ':focus-within');
++      return focusWithin ? doSearch(focusWithin, ':focus') : null;
++    },
++
+     /**
+      * Called when the items have changed. That is, reassignments
+      * to `items`, splices or updates to a single item.
+      */
+     _itemsChanged: function(change) {
++      var rendering = /^items(\.splices){0,1}$/.test(change.path);
++      var lastFocusedIndex, focusedElement;
++      if (rendering && this.preserveFocus) {
++        lastFocusedIndex = this._focusedVirtualIndex;
++        focusedElement = this._getFocusedElement();
++      }
++
++      var preservingFocus = rendering && this.preserveFocus && focusedElement;
++
+       if (change.path === 'items') {
+         this._virtualStart = 0;
+         this._physicalTop = 0;
+@@ -804,7 +854,7 @@
+         this._physicalItems = this._physicalItems || [];
+         this._physicalSizes = this._physicalSizes || [];
+         this._physicalStart = 0;
+-        if (this._scrollTop > this._scrollOffset) {
++        if (this._scrollTop > this._scrollOffset && !preservingFocus) {
+           this._resetScrollPosition(0);
+         }
+         this._removeFocusedItem();
+@@ -834,6 +884,17 @@
+       } else if (change.path !== 'items.length') {
+         this._forwardItemPath(change.path, change.value);
+       }
++
++      // If the list was in focus when updated, preserve the focus on item.
++      if (preservingFocus) {
++        Polymer.dom.flush();
++        focusedElement.blur(); // paper- elements breaks when focused twice.
++        this._focusPhysicalItem(
++            Math.min(this.items.length - 1, lastFocusedIndex));
++        if (!this._isIndexVisible(this._focusedVirtualIndex)) {
++          this.scrollToIndex(this._focusedVirtualIndex);
++        }
++      }
+     },
+
+     _forwardItemPath: function(path, value) {
+diff --git a/components-chromium/iron-overlay-behavior/iron-overlay-manager-extracted.js b/components-chromium/iron-overlay-behavior/iron-overlay-manager-extracted.js
+index ccd2e3c5b551..7bca4b1ae49a 100644
+--- a/components-chromium/iron-overlay-behavior/iron-overlay-manager-extracted.js
++++ b/components-chromium/iron-overlay-behavior/iron-overlay-manager-extracted.js
+@@ -30,7 +30,7 @@
+     // NOTE: enable tap on <html> to workaround Polymer/polymer#4459
+     // Pass no-op function because MSEdge 15 doesn't handle null as 2nd argument
+     // https://github.com/Microsoft/ChakraCore/issues/3863
+-    Polymer.Gestures.add(document.documentElement, 'tap', function() {});
++    Polymer.Gestures.addListener(document.documentElement, 'tap', function() {});
+     document.addEventListener('tap', this._onCaptureClick.bind(this), true);
+     document.addEventListener('focus', this._onCaptureFocus.bind(this), true);
+     document.addEventListener('keydown', this._onCaptureKeyDown.bind(this), true);
+diff --git a/components-chromium/iron-flex-layout/iron-flex-layout.html b/components-chromium/iron-flex-layout/iron-flex-layout.html
+index 082b0c1e4af2..d985829702a2 100644
+--- a/components-chromium/iron-flex-layout/iron-flex-layout.html
++++ b/components-chromium/iron-flex-layout/iron-flex-layout.html
+@@ -409,4 +409,4 @@ A complete [guide](https://elements.polymer-project.org/guides/flex-layout) to `
+     }
+   </style>
+ </custom-style>
+-<script src="iron-flex-layout-extracted.js"></script></body></html>
+\ No newline at end of file
++</body></html>
+\ No newline at end of file
+diff --git a/components-chromium/paper-input/paper-input-container.html b/components-chromium/paper-input/paper-input-container.html
+index 55714942c93c..46fb9adf6a04 100644
+--- a/components-chromium/paper-input/paper-input-container.html
++++ b/components-chromium/paper-input/paper-input-container.html
+@@ -254,8 +254,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
+         @apply --paper-input-container-label-floating;
+       }
+
+-      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(label),
+-      :host(:dir(rtl)) .input-content.label-is-floating ::slotted(.paper-input-label) {
++      :host-context([dir="rtl"]) .input-content.label-is-floating ::slotted(label),
++      :host-context([dir="rtl"]) .input-content.label-is-floating ::slotted(.paper-input-label) {
+         right: 0;
+         left: auto;
+         transform-origin: right top;
+diff --git a/components-chromium/paper-tooltip/paper-tooltip-extracted.js b/components-chromium/paper-tooltip/paper-tooltip-extracted.js
+index 2830d229760c..2116f616a93b 100644
+--- a/components-chromium/paper-tooltip/paper-tooltip-extracted.js
++++ b/components-chromium/paper-tooltip/paper-tooltip-extracted.js
+@@ -123,12 +123,16 @@ Polymer({
+       },
+       /**
+        * Returns the target element that this tooltip is anchored to. It is
+-       * either the element given by the `for` attribute, or the immediate parent
+-       * of the tooltip.
++       * either the element given by the `for` attribute, the element manually
++       * specified through the `target` attribute, or the immediate parent of
++       * the tooltip.
+        *
+        * @type {Node}
+        */
+       get target() {
++        if (this._manualTarget)
++          return this._manualTarget;
++
+         var parentNode = Polymer.dom(this).parentNode;
+         // If the parentNode is a document fragment, then we need to use the host.
+         var ownerRoot = Polymer.dom(this).getOwnerRoot();
+@@ -142,6 +146,15 @@ Polymer({
+         return target;
+       },
+
++      /**
++       * Sets the target element that this tooltip will be anchored to.
++       * @param {Node} target
++       */
++      set target(target) {
++        this._manualTarget = target;
++        this._findTarget();
++      },
++
+       /**
+        * @return {void}
+        */
+diff --git a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html b/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
+index 7306c651407e..9c88699a3924 100644
+--- a/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
++++ b/components-chromium/polymer2/lib/legacy/legacy-element-mixin.html
+@@ -11,7 +11,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+ <link rel="import" href="../../../shadycss/apply-shim.html">
+ <link rel="import" href="../mixins/element-mixin.html">
+ <link rel="import" href="../mixins/gesture-event-listeners.html">
+-<link rel="import" href="../mixins/dir-mixin.html">
+ <link rel="import" href="../utils/mixin.html">
+ <link rel="import" href="../utils/import-href.html">
+ <link rel="import" href="../utils/render-status.html">
+@@ -47,9 +46,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+      * @extends {base}
+      * @implements {Polymer_ElementMixin}
+      * @implements {Polymer_GestureEventListeners}
+-     * @implements {Polymer_DirMixin}
+      * @private
+      */
+-    const legacyElementBase = Polymer.DirMixin(Polymer.GestureEventListeners(Polymer.ElementMixin(base)));
++    const legacyElementBase = Polymer.GestureEventListeners(Polymer.ElementMixin(base));
+
+     /**
+      * Map of simple names to touch action names

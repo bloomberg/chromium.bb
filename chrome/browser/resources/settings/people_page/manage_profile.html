@@ -1,0 +1,32 @@
+    <style include="cr-shared-style settings-shared iron-flex">
+      cr-input {
+        --cr-input-error-display: none;
+      }
+
+      #selector {
+        margin: 16px 48px;
+      }
+    </style>
+    <div class="cr-row first">
+      <cr-input id="name" value="[[profileName]]" pattern="[[pattern_]]"
+          on-change="onProfileNameChanged_" on-keydown="onProfileNameKeydown_"
+          disabled="[[isProfileNameDisabled_(syncStatus)]]" maxlength="500"
+          aria-label="$i18n{nameInputLabel}" auto-validate required
+          spellcheck="false">
+      </cr-input>
+    </div>
+    <template is="dom-if" if="[[isProfileShortcutSettingVisible_]]">
+      <div class="cr-row first">
+        <div id="showShortcutLabel" class="flex cr-padded-text">
+          $i18n{showShortcutLabel}
+        </div>
+        <cr-toggle id="hasShortcutToggle"
+            checked="{{hasProfileShortcut_}}"
+            on-change="onHasProfileShortcutChange_"
+            aria-labelledby="showShortcutLabel">
+        </cr-toggle>
+      </div>
+    </template>
+    <cr-profile-avatar-selector id="selector" avatars="[[availableIcons]]"
+        selected-avatar="{{profileAvatar_}}" ignore-modified-key-events>
+    </cr-profile-avatar-selector>

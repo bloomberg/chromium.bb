@@ -1,0 +1,6 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++radioGroup name='My group'
+++++++++radioButton name='Radio 1' checkedState=false radioGroupIds=radioButton,radioButton
+++++++++radioButton name='Radio 2' checkedState=false radioGroupIds=radioButton,radioButton

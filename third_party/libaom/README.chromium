@@ -1,0 +1,34 @@
+Name: Alliance for Open Media Video Codec
+Short Name: libaom
+URL: https://aomedia.googlesource.com/aom/
+Version: 0
+Date: Friday May 01 2020
+Branch: master
+Commit: c810066815b80dd1ac8ade15170ce962d6646368
+License: BSD
+License File: source/libaom/LICENSE
+Security Critical: yes
+
+Description:
+Provides tools for:
+ - creating AV1 bitstreams for storage and transmission.
+ - decoding AV1 bitstreams for display.
+
+Please follow these steps to update libaom source code:
+
+1. Update the code:
+     roll_dep.py \
+       -r <libaom OWNER> \
+       --log-limit 20 \
+       --roll-to <libaom hash> \
+       src/third_party/libaom/source/libaom
+
+   Use the generated commit message for the roll.
+
+2. Generate the config files:
+    ./cmake_update.sh
+    # See prerequisites in file comments.
+
+  This will also update this file with the new revision.
+
+Local Modifications:

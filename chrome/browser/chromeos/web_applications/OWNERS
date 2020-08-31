@@ -1,0 +1,11 @@
+tapted@chromium.org
+dstockwell@chromium.org
+bugsnash@chromium.org
+ortuno@chromium.org
+
+per-file chrome_help_app*=carpenterr@chromium.org
+per-file terminal_source*=calamity@chromium.org
+per-file terminal_source*=joelhockey@chromium.org
+
+# TEAM: cros-essential-apps-dev@chromium.org
+# COMPONENT: Platform>Apps>SystemWebApps

@@ -1,0 +1,7 @@
+Tests popver for spread operator.
+
+Request popover for array:
+Array(3)
+Request popover for object:
+Object
+

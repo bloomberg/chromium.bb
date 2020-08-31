@@ -1,0 +1,11 @@
+CONSOLE WARNING: line 21: Element.createShadowRoot is deprecated and will be removed in M80, around February 2020. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 and https://developers.google.com/web/updates/2019/07/web-components-time-to-upgrade for more details.
+This test checks that content-editable is not propagated from shadow host to a shadow subtree.
+
+This p is required to produce the issue.
+
+This div and parent div are required to produce the issue.
+PASS getComputedStyle(nodeInShadowRoot1).webkitUserModify is "read-only"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

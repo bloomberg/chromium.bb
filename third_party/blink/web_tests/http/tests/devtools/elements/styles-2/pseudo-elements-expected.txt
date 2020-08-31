@@ -1,0 +1,194 @@
+Tests that pseudo elements and their styles are handled properly.
+
+
+Running: dumpOriginalTree
+Original elements tree:
+- <div id="container">
+    - <div id="inspected">
+          ::marker
+          ::before
+          "Text"
+          ::after
+      </div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: dumpNormalNodeStyles
+[expanded] 
+element.style { ()
+
+[expanded] 
+[$#inspected$] { (<style>)
+    display: list-item;
+
+[expanded] 
+[$div$] { (user agent stylesheet)
+/-- overloaded --/     display: block;
+
+======== Pseudo ::before element ========
+[expanded] 
+[$#inspected:before, $].some-other-selector { (<style>)
+    content: "BEFORE";
+
+======== Pseudo ::after element ========
+[expanded] 
+[$#inspected:after$] { (<style>)
+    content: "AFTER";
+
+======== Pseudo ::marker element ========
+[expanded] 
+[$#inspected::marker$] { (<style>)
+    content: "MARKER";
+
+
+Running: dumpBeforeStyles
+[expanded] 
+[$#inspected:before, $].some-other-selector { (<style>)
+    content: "BEFORE";
+
+
+Running: dumpAfterStyles
+[expanded] 
+[$#inspected:after$] { (<style>)
+    content: "AFTER";
+
+
+Running: dumpMarkerStyles
+[expanded] 
+[$#inspected::marker$] { (<style>)
+    content: "MARKER";
+
+
+Running: removeAfter
+- <div id="container">
+    - <div id="inspected">
+          ::marker
+          ::before
+          "Text"
+      </div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: removeBefore
+- <div id="container">
+    - <div id="inspected">
+          ::marker
+          "Text"
+      </div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: removeMarker
+- <div id="container">
+      <div id="inspected">Text</div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: addAfter
+- <div id="container">
+    + <div id="inspected">…</div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+== Expanding: ==
+- <div id="container">
+    - <div id="inspected">
+          "Text"
+          ::after
+      </div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: addBefore
+- <div id="container">
+    - <div id="inspected">
+          ::before
+          "Text"
+          ::after
+      </div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: addMarker
+- <div id="container">
+    - <div id="inspected">
+          ::marker
+          ::before
+          "Text"
+          ::after
+      </div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: modifyTextContent
+- <div id="container">
+    - <div id="inspected">
+          ::marker
+          ::before
+          "bar"
+          ::after
+      </div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: clearTextContent
+- <div id="container">
+    - <div id="inspected">
+          ::marker
+          ::before
+          ::after
+      </div>
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+
+Running: removeNodeAndCheckPseudoElementsUnbound
+- <div id="container">
+    - <div id="empty">
+          ::marker
+          ::before
+          ::after
+      </div>
+  </div>
+inspected:before DOMNode in DOMAgent: false
+inspected:after DOMNode in DOMAgent: false
+inspected::marker DOMNode in DOMAgent: false
+

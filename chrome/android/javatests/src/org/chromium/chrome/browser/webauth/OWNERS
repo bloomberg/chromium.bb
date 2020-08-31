@@ -1,0 +1,4 @@
+file://chrome/android/java/src/org/chromium/chrome/browser/webauth/OWNERS
+
+# COMPONENT: Blink>WebAuthentication
+# TEAM: identity-dev@chromium.org

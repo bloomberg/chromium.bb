@@ -1,0 +1,6 @@
+<script src="common.js"></script>
+<script>
+  observeAndReportResourceLoadPriority(new URL('../../resources/dummy.html', location));
+</script>
+
+<iframe src="../../resources/dummy.html" onload="reportLoaded()" onerror="rejector()"></iframe>

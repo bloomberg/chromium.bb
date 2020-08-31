@@ -1,0 +1,4 @@
+include_rules = [
+  "+third_party/decklink",
+  "+services/video_capture/public/uma",
+]

@@ -1,0 +1,6 @@
+file://chrome/android/OWNERS
+
+per-file shortcut_*=dominickn@chromium.org
+
+# COMPONENT: UI>Browser>Mobile
+# OS: Android

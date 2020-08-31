@@ -1,0 +1,20 @@
+Document
+++List
+++++ListItem
+++++++Group
+++++++++Text Name='• ' IsControlElement=false
+++++++Text Name='First item properly groups itself despite ' IsControlElement=false
+++++++Text Name='bolded' IsControlElement=false
+++++++Text Name=' text.' IsControlElement=false
+++++ListItem
+++++++Group
+++++++++Text Name='• ' IsControlElement=false
+++++++Text Name='This should also be ' IsControlElement=false
+++++++Text Name='seen' IsControlElement=false
+++++++Text Name=' as a group.' IsControlElement=false
+++++ListItem
+++++++Group
+++++++++Text Name='• ' IsControlElement=false
+++++++Text Name='Some ' IsControlElement=false
+++++++Text Name='more' IsControlElement=false
+++++++Text Name=' text.' IsControlElement=false

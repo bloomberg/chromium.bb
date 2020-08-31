@@ -1,0 +1,9 @@
+Tests frame lifetime events.
+Attached
+Started loading
+RequestWillBeSent .../inspector-protocol/resources/blank.html
+Navigated
+Started loading
+Navigated
+Detached
+

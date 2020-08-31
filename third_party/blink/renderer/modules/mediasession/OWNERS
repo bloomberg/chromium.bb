@@ -1,0 +1,9 @@
+beccahughes@chromium.org
+foolip@chromium.org
+mlamouri@chromium.org
+
+per-file *_mojom_traits*.*=set noparent
+per-file *_mojom_traits*.*=file://ipc/SECURITY_OWNERS
+
+# TEAM: media-dev@chromium.org
+# COMPONENT: Blink>Media>Session

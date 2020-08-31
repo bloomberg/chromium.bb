@@ -1,0 +1,18 @@
+rootWebArea
+++genericContainer
+++++video name='Unable to play media.' restriction=disabled
+++++++genericContainer
+++++++++genericContainer
+++++++++genericContainer
+++++++++++genericContainer
+++++++++++++button name='play' restriction=disabled
+++++++++++++genericContainer name='elapsed time: 0:00'
+++++++++++++++staticText name='0:00'
+++++++++++++++++inlineTextBox name='0:00'
+++++++++++++genericContainer
+++++++++++++++genericContainer
+++++++++++++++button name='mute' restriction=disabled
+++++++++++++button name='enter full screen' restriction=disabled
+++++++++++++button description='more options' name='show more media controls' descriptionFrom=attribute restriction=disabled
+++++++++++slider horizontal description='video time scrubber' value='0:00' descriptionFrom=uninitialized restriction=disabled valueForRange=0.00 minValueForRange=0.00 maxValueForRange=0.00
+++++++++++++sliderThumb

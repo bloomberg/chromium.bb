@@ -1,0 +1,11 @@
+<iframe id="i"></iframe>
+<script>
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
+
+var iframe = document.getElementById("i");
+iframe.src = "javascript:\"<script>var w = window; parent.document.body.innerHTML = 'PASS if no crash.'; if (w.testRunner) testRunner.notifyDone();</scri" + "pt>\"";
+document.body.appendChild(iframe)
+</script>

@@ -1,0 +1,54 @@
+<style include="print-preview-shared">
+<if expr="chromeos">
+  :host([has-pin-setting_]) {
+    margin-bottom: 0 !important;
+  }
+</if>
+</style>
+<print-preview-user-manager id="userManager" active-user="{{activeUser_}}"
+    cloud-print-disabled="[[cloudPrintDisabled_]]"
+    users="{{users_}}" destination-store="[[destinationStore_]]"
+    invitation-store="[[invitationStore_]]"
+    should-reload-cookies="[[isDialogOpen_]]">
+</print-preview-user-manager>
+<if expr="not chromeos">
+  <print-preview-destination-select id="destinationSelect"
+      active-user="[[activeUser_]]" dark="[[dark]]"
+      destination="[[destination]]"
+      disabled="[[shouldDisableDropdown_(
+                      destinationState, state, disabled)]]"
+      drive-destination-key="[[driveDestinationKey_]]"
+      loaded="[[loaded_]]"
+      no-destinations="[[noDestinations_]]"
+      pdf-printer-disabled="[[pdfPrinterDisabled_]]"
+      recent-destination-list="[[displayedDestinations_]]"
+      on-selected-option-change="onSelectedDestinationOptionChange_">
+  </print-preview-destination-select>
+</if>
+<if expr="chromeos">
+  <print-preview-destination-select-cros id="destinationSelect"
+      active-user="[[activeUser_]]" dark="[[dark]]"
+      destination="[[destination]]"
+      disabled="[[shouldDisableDropdown_(
+                      destinationState, state, disabled)]]"
+      drive-destination-key="[[driveDestinationKey_]]"
+      loaded="[[loaded_]]"
+      no-destinations="[[noDestinations_]]"
+      pdf-printer-disabled="[[pdfPrinterDisabled_]]"
+      recent-destination-list="[[displayedDestinations_]]"
+      on-selected-option-change="onSelectedDestinationOptionChange_">
+  </print-preview-destination-select-cros>
+</if>
+<cr-lazy-render id="destinationDialog">
+  <template>
+    <print-preview-destination-dialog
+        cloud-print-disabled="[[cloudPrintDisabled_]]"
+        destination-store="[[destinationStore_]]"
+        invitation-store="[[invitationStore_]]"
+        recent-destination-list="[[recentDestinationList_]]"
+        active-user="[[activeUser_]]" users="[[users_]]"
+        current-destination-account="[[destination.account]]"
+        on-account-change="onAccountChange_" on-close="onDialogClose_">
+    </print-preview-destination-dialog>
+  </template>
+</cr-lazy-render>

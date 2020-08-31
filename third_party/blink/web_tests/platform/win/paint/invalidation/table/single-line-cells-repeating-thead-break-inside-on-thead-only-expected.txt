@@ -1,0 +1,20 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [1059, 585],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "invalidations": [
+        [10, 74, 835, 19]
+      ]
+    },
+    {
+      "name": "ContentsLayer for Horizontal Scrollbar Layer",
+      "position": [0, 585],
+      "bounds": [800, 15],
+      "contentsOpaque": true
+    }
+  ]
+}
+

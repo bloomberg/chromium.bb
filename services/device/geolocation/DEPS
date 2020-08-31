@@ -1,0 +1,11 @@
+include_rules = [
+  "+chromeos",
+  "+components/location",
+  "+dbus",
+  "+net/base",
+  "+net/traffic_annotation",
+  "+services/network/public/cpp",
+  "+services/device/public/cpp/device_features.h",
+  "+services/network/test",
+  "+third_party/cros_system_api/dbus",
+]
