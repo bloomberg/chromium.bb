@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import("//testing/test.gni")
-import("//third_party/google_benchmark/buildconfig.gni")
+enable_google_benchmarks = false
 
 # Only applied to CRC32C source and tests. (not exported)
 config("crc32c_config") {
