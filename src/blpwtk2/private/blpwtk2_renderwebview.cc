@@ -1602,6 +1602,21 @@ void RenderWebView::notifyRoutingId(int id)
     d_compositor = RenderCompositorFactory::GetInstance()->CreateCompositor(
         d_renderWidgetRoutingId, d_hwnd.get(), d_profile);
 
+    // Destroy any upstream compositor previously created for this widget
+    // by hiding it and then calling 'ReleaseLayerTreeFrameSink':
+    auto was_visible = rv->GetWidget()->
+        layer_tree_view()->layer_tree_host()->IsVisible();
+    if (was_visible) {
+        rv->GetWidget()->
+            layer_tree_view()->SetVisible(false);
+    }
+    rv->GetWidget()->
+        layer_tree_view()->layer_tree_host()->ReleaseLayerTreeFrameSink();
+    if (was_visible) {
+        rv->GetWidget()->
+            layer_tree_view()->SetVisible(true);
+    }
+
     updateVisibility();
     updateGeometry();
 
