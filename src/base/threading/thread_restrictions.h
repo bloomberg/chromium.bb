@@ -287,6 +287,10 @@ namespace webrtc {
 class DesktopConfigurationMonitor;
 }
 
+namespace blpwtk2 {
+class BrowserMainRunner;
+}
+
 namespace base {
 
 namespace sequence_manager {
@@ -367,6 +371,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class AdjustOOMScoreHelper;
   friend class StackSamplingProfiler;
   friend class android_webview::ScopedAllowInitGLBindings;
+  friend class blpwtk2::BrowserMainRunner;
   friend class chromeos::MojoUtils;  // http://crbug.com/1055467
   friend class content::BrowserProcessSubThread;
   friend class content::PepperPrintSettingsManagerImpl;

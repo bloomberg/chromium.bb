@@ -76,6 +76,14 @@ class NET_EXPORT ProxyResolutionService {
   // before the ProxyResolutionService itself.
   virtual void OnShutdown() = 0;
 
+  // blpwtk2: Keep ResetConfigService existing in Chromium 74
+  // Tells this ProxyResolutionService to start using a new ProxyConfigService
+  // to retrieve its ProxyConfig from. The new ProxyConfigService will
+  // immediately be queried for new config info which will be used for all
+  // subsequent ResolveProxy calls.
+  void ResetConfigService(
+      std::unique_ptr<ProxyConfigService> new_proxy_config_service) {};
+
   // Explicitly trigger proxy fallback for the given |results| by updating our
   // list of bad proxies to include the first entry of |results|, and,
   // additional bad proxies (can be none). Will retry after |retry_delay| if

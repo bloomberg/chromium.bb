@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 # import the use_x11 variable
+import("//blpwtk2/blpwtk2.gni")
 import("gni/angle.gni")
 if (angle_has_build) {
   import("//build/config/linux/pkg_config.gni")
@@ -795,16 +796,21 @@ config("shared_library_public_config") {
   }
 }
 
+optional_bb_suffix = ""
+if (bb_version != "") {
+  optional_bb_suffix = ".${bb_version}"
+}
+
 config("library_name_config") {
   if (is_component_build && is_android) {
     defines = [
-      "ANGLE_EGL_LIBRARY_NAME=\"libEGL${angle_libs_suffix}.cr\"",
-      "ANGLE_GLESV2_LIBRARY_NAME=\"libGLESv2${angle_libs_suffix}.cr\"",
+      "ANGLE_EGL_LIBRARY_NAME=\"libEGL${optional_bb_suffix}.cr\"",
+      "ANGLE_GLESV2_LIBRARY_NAME=\"libGLESv2${optional_bb_suffix}.cr\"",
     ]
   } else {
     defines = [
-      "ANGLE_EGL_LIBRARY_NAME=\"libEGL${angle_libs_suffix}\"",
-      "ANGLE_GLESV2_LIBRARY_NAME=\"libGLESv2${angle_libs_suffix}\"",
+      "ANGLE_EGL_LIBRARY_NAME=\"libEGL${optional_bb_suffix}\"",
+      "ANGLE_GLESV2_LIBRARY_NAME=\"libGLESv2${optional_bb_suffix}\"",
     ]
   }
 }
@@ -822,7 +828,8 @@ config("angle_static") {
 
 set_defaults("angle_libGLESv2") {
   sources = []
-  output_name = "libGLESv2"
+  output_name = "blpcr_glesv2"
+  optional_bb_suffix = "${optional_bb_suffix}"
 }
 
 template("angle_libGLESv2") {
@@ -833,12 +840,19 @@ template("angle_libGLESv2") {
       sources += [ "src/libGLESv2/${invoker.output_name}_autogen.def" ]
     }
 
-    output_name = "${invoker.output_name}${angle_libs_suffix}"
+    output_name = "${invoker.output_name}${invoker.optional_bb_suffix}${angle_libs_suffix}"
 
     configs += [
       ":angle_gl_visibility_config",
       ":debug_annotations_config",
       ":gl_prototypes",
+    ]
+
+    if (bb_generate_map_files) {
+      configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+    }
+    public_configs = [
+      "//blpwtk2:blpwtk2_public"
     ]
 
     defines = [ "LIBGLESV2_IMPLEMENTATION" ]
@@ -856,6 +870,7 @@ angle_libGLESv2("libGLESv2") {
     deps = [ ":libANGLE" ]
   }
 }
+
 
 # Output capture lib when `angle_with_capture_by_default` disabled, vice versa.
 angle_libGLESv2("libGLESv2_capture_complement") {
@@ -901,6 +916,12 @@ angle_static_library("libGLESv2_static") {
   public_configs += [ ":angle_static" ]
   deps = [ ":includes" ]
   public_deps = [ ":libANGLE" ]
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_deps += [
+    "//blpwtk2:blpwtk2_generate_sources",
+  ]
 }
 
 angle_shared_library("libGLESv1_CM") {
@@ -951,11 +972,18 @@ angle_source_set("libEGL_egl_loader") {
 
 angle_shared_library("libEGL") {
   sources = libegl_sources
-  output_name = "libEGL${angle_libs_suffix}"
+  output_name = "blpcr_egl${optional_bb_suffix}"
 
   configs += [
     ":debug_annotations_config",
     ":library_name_config",
+  ]
+
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_configs = [
+    "//blpwtk2:blpwtk2_public"
   ]
 
   defines = [ "LIBEGL_IMPLEMENTATION" ]
@@ -988,7 +1016,12 @@ angle_static_library("libEGL_static") {
     ":debug_annotations_config",
     ":library_name_config",
   ]
-
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
+  ]
   public_configs += [ ":angle_static" ]
 
   deps = [

@@ -11,6 +11,8 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "content/browser/bad_message.h"
+#include "base/command_line.h"
+
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolated_origin_util.h"
@@ -41,6 +43,7 @@ GURL SchemeAndHostToSite(const std::string& scheme, const std::string& host) {
 
 }  // namespace
 
+int SiteInstance::kNoProcessAffinity = RenderProcessHostImpl::kInvalidId;
 int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
 // static
@@ -271,7 +274,20 @@ bool SiteInstanceImpl::HasProcess() {
   return false;
 }
 
-RenderProcessHost* SiteInstanceImpl::GetProcess() {
+RenderProcessHost* SiteInstanceImpl::GetProcess(int affinity) {
+  // blpwtk2: Lookup the RenderProessHost based on the host id (aka. affinity)
+  if (!process_) {
+    BrowserContext* browser_context = browsing_instance_->GetBrowserContext();
+
+    if (affinity != SiteInstance::kNoProcessAffinity) {
+      process_ = RenderProcessHost::FromID(affinity);
+      if (process_) {
+        DCHECK(RenderProcessHostImpl::IsSuitableHost(
+            process_, browser_context, GetIsolationContext(), site_, site_));
+      }
+    }
+  }
+
   // TODO(erikkay) It would be nice to ensure that the renderer type had been
   // properly set before we get here.  The default tab creation case winds up
   // with no site set at this point, so it will default to TYPE_NORMAL.  This

@@ -104,7 +104,7 @@ if (is_component_build) {
   }
 } else {
   group("content") {
-    public_deps = content_shared_components
+    public_deps = content_shared_components + [ "//content/public/app:both" ]
   }
 }
 

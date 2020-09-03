@@ -868,7 +868,8 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
     const char* field_trial_handle_switch,
     const char* enable_features_switch,
     const char* disable_features_switch,
-    CommandLine* cmd_line) {
+    CommandLine* cmd_line,
+    base::ProcessHandle child_process) {
 #if !defined(OS_FUCHSIA)  // TODO(752368): Not yet supported on Fuchsia.
   // Use shared memory to communicate field trial state to child processes.
   // The browser is the only process that has write access to the shared memory.
@@ -884,7 +885,8 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
 
   global_->field_trial_allocator_->UpdateTrackingHistograms();
   std::string switch_value =
-      SerializeSharedMemoryRegionMetadata(global_->readonly_allocator_region_);
+      SerializeSharedMemoryRegionMetadata(global_->readonly_allocator_region_,
+                                          child_process);
   cmd_line->AppendSwitchASCII(field_trial_handle_switch, switch_value);
 
   // Append --enable-features and --disable-features switches corresponding
@@ -1150,12 +1152,22 @@ void FieldTrialList::RestoreInstanceForTesting(FieldTrialList* instance) {
 
 // static
 std::string FieldTrialList::SerializeSharedMemoryRegionMetadata(
-    const ReadOnlySharedMemoryRegion& shm) {
+    const ReadOnlySharedMemoryRegion& shm, base::ProcessHandle child_process) {
   std::stringstream ss;
 #if defined(OS_WIN)
   // Tell the child process the name of the inherited HANDLE.
   uintptr_t uintptr_handle =
       reinterpret_cast<uintptr_t>(shm.GetPlatformHandle());
+
+  if (child_process) {
+    HANDLE child_handle = 0;
+    BOOL rc = ::DuplicateHandle(GetCurrentProcess(), shm.GetPlatformHandle(),
+            child_process, &child_handle, 0, FALSE,
+            DUPLICATE_SAME_ACCESS);
+    PCHECK(rc != 0);
+    uintptr_handle = reinterpret_cast<uintptr_t>(child_handle);
+  }
+
   ss << uintptr_handle << ",";
 #elif defined(OS_FUCHSIA)
   ss << shm.GetPlatformHandle()->get() << ",";

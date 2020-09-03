@@ -527,6 +527,24 @@ class ConfiguredProxyResolutionService::InitProxyResolver {
       decider_->OnShutdown();
   }
 
+
+  void ProxyResolutionService::ResetConfigService(
+      std::unique_ptr<ProxyConfigService> new_proxy_config_service) {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    State previous_state = ResetProxyConfig(true);
+
+    // Release the old configuration service.
+    if (config_service_.get())
+      config_service_->RemoveObserver(this);
+
+    // Set the new configuration service.
+    config_service_ = std::move(new_proxy_config_service);
+    config_service_->AddObserver(this);
+
+    if (previous_state != STATE_NONE)
+      ApplyProxyConfigIfAvailable();
+  }
+
   void set_quick_check_enabled(bool enabled) { quick_check_enabled_ = enabled; }
   bool quick_check_enabled() const { return quick_check_enabled_; }
 

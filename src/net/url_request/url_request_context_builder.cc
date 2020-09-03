@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/lazy_instance.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/notreached.h"
@@ -65,6 +66,9 @@
 namespace net {
 
 namespace {
+
+static base::LazyInstance<URLRequestContextBuilder::InterceptorInjector>::DestructorAtExit
+  g_interceptor_injector_ = LAZY_INSTANCE_INITIALIZER;
 
 class BasicNetworkDelegate : public NetworkDelegateImpl {
  public:
@@ -179,9 +183,17 @@ URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
     : type(IN_MEMORY), max_size(0), reset_cache(false) {}
 URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() = default;
 
-URLRequestContextBuilder::URLRequestContextBuilder() = default;
+URLRequestContextBuilder::URLRequestContextBuilder() {
+  if (g_interceptor_injector_.Get()) {
+    url_request_interceptors_.push_back(g_interceptor_injector_.Get()());
+  }
+}
 
 URLRequestContextBuilder::~URLRequestContextBuilder() = default;
+
+void URLRequestContextBuilder::set_interceptor_injector(InterceptorInjector injector) {
+  g_interceptor_injector_.Get() = injector;
+}
 
 void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
     const URLRequestContext* request_context,
@@ -284,6 +296,37 @@ void URLRequestContextBuilder::set_persistent_reporting_and_nel_store(
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+<<<<<<< HEAD
+||||||| merged common ancestors
+void URLRequestContextBuilder::SetInterceptors(
+    std::vector<std::unique_ptr<URLRequestInterceptor>>
+        url_request_interceptors) {
+  url_request_interceptors_ = std::move(url_request_interceptors);
+}
+
+void URLRequestContextBuilder::set_create_intercepting_job_factory(
+    CreateInterceptingJobFactory create_intercepting_job_factory) {
+  DCHECK(!create_intercepting_job_factory_);
+  create_intercepting_job_factory_ = std::move(create_intercepting_job_factory);
+}
+
+=======
+void URLRequestContextBuilder::SetInterceptors(
+    std::vector<std::unique_ptr<URLRequestInterceptor>>
+        url_request_interceptors) {
+  url_request_interceptors_ = std::move(url_request_interceptors);
+  if (g_interceptor_injector_.Get()) {
+    url_request_interceptors_.push_back(g_interceptor_injector_.Get()());
+  }
+}
+
+void URLRequestContextBuilder::set_create_intercepting_job_factory(
+    CreateInterceptingJobFactory create_intercepting_job_factory) {
+  DCHECK(!create_intercepting_job_factory_);
+  create_intercepting_job_factory_ = std::move(create_intercepting_job_factory);
+}
+
+>>>>>>> origin/feature/blpwtk2
 void URLRequestContextBuilder::SetCookieStore(
     std::unique_ptr<CookieStore> cookie_store) {
   cookie_store_set_by_client_ = true;

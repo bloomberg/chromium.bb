@@ -603,7 +603,7 @@ FILE* OS::OpenTemporaryFile() {
 
 
 // Open log file in binary mode to avoid /n -> /r/n conversion.
-const char* const OS::LogFileOpenMode = "wb";
+//const char* const OS::LogFileOpenMode = "wb";
 
 
 // Print (debug) message to console.
@@ -1179,11 +1179,11 @@ bool result =
 // Load the symbols for generating stack traces.
 static std::vector<OS::SharedLibraryAddress> LoadSymbols(
     HANDLE process_handle) {
-  static std::vector<OS::SharedLibraryAddress> result;
+  static LazyInstance<std::vector<OS::SharedLibraryAddress>>::type result = LAZY_INSTANCE_INITIALIZER;
 
   static bool symbols_loaded = false;
 
-  if (symbols_loaded) return result;
+  if (symbols_loaded) return result.Get();
 
   BOOL ok;
 
@@ -1191,7 +1191,7 @@ static std::vector<OS::SharedLibraryAddress> LoadSymbols(
   ok = _SymInitialize(process_handle,  // hProcess
                       nullptr,         // UserSearchPath
                       false);          // fInvadeProcess
-  if (!ok) return result;
+  if (!ok) return result.Get();
 
   DWORD options = _SymGetOptions();
   options |= SYMOPT_LOAD_LINES;
@@ -1203,13 +1203,13 @@ static std::vector<OS::SharedLibraryAddress> LoadSymbols(
   if (!ok) {
     int err = GetLastError();
     OS::Print("%d\n", err);
-    return result;
+    return result.Get();
   }
 
   HANDLE snapshot = _CreateToolhelp32Snapshot(
       TH32CS_SNAPMODULE,       // dwFlags
       GetCurrentProcessId());  // th32ProcessId
-  if (snapshot == INVALID_HANDLE_VALUE) return result;
+  if (snapshot == INVALID_HANDLE_VALUE) return result.Get();
   MODULEENTRY32W module_entry;
   module_entry.dwSize = sizeof(module_entry);  // Set the size of the structure.
   BOOL cont = _Module32FirstW(snapshot, &module_entry);
@@ -1228,8 +1228,8 @@ static std::vector<OS::SharedLibraryAddress> LoadSymbols(
       int err = GetLastError();
       if (err != ERROR_MOD_NOT_FOUND &&
           err != ERROR_INVALID_HANDLE) {
-        result.clear();
-        return result;
+        result.Pointer()->clear();
+        return result.Get();
       }
     }
     int lib_name_length = WideCharToMultiByte(
@@ -1237,7 +1237,7 @@ static std::vector<OS::SharedLibraryAddress> LoadSymbols(
     std::string lib_name(lib_name_length, 0);
     WideCharToMultiByte(CP_UTF8, 0, module_entry.szExePath, -1, &lib_name[0],
                         lib_name_length, nullptr, nullptr);
-    result.push_back(OS::SharedLibraryAddress(
+    result.Pointer()->push_back(OS::SharedLibraryAddress(
         lib_name, reinterpret_cast<uintptr_t>(module_entry.modBaseAddr),
         reinterpret_cast<uintptr_t>(module_entry.modBaseAddr +
                                     module_entry.modBaseSize)));
@@ -1246,7 +1246,7 @@ static std::vector<OS::SharedLibraryAddress> LoadSymbols(
   CloseHandle(snapshot);
 
   symbols_loaded = true;
-  return result;
+  return result.Get();
 }
 
 

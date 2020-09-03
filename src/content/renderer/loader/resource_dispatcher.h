@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/previews_state.h"
+#include "content/renderer/loader/resource_loader_bridge.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -176,6 +177,7 @@ class CONTENT_EXPORT ResourceDispatcher {
   struct PendingRequestInfo {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
                        network::mojom::RequestDestination request_destination,
+                       std::unique_ptr<ResourceLoaderBridge> bridge,
                        int render_frame_id,
                        const GURL& request_url,
                        std::unique_ptr<NavigationResponseOverrideParameters>
@@ -185,6 +187,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
     std::unique_ptr<RequestPeer> peer;
     network::mojom::RequestDestination request_destination;
+    std::unique_ptr<ResourceLoaderBridge> bridge;
     int render_frame_id;
     bool is_deferred = false;
     // Original requested url.

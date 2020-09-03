@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "content/public/common/child_process_host.h"
+#include "content/public/browser/site_instance.h"
+
 #include "ipc/ipc_message.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 
@@ -23,6 +25,7 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
       opener_render_frame_id(MSG_ROUTING_NONE),
       opener_suppressed(false),
       created_with_opener(false),
+      render_process_affinity(SiteInstance::kNoProcessAffinity),
       initially_hidden(false),
       guest_delegate(nullptr),
       context(nullptr),

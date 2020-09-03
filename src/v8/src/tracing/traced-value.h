@@ -58,7 +58,7 @@ class V8_EXPORT_PRIVATE TracedValue : public ConvertableToTraceFormat
   void BeginDictionary();
 
   // ConvertableToTraceFormat implementation.
-  void AppendAsTraceFormat(std::string* out) const override;
+  size_t AppendAsTraceFormat(char* out, size_t maxLen) const override;
 
 #ifdef V8_USE_PERFETTO
   // DebugAnnotation implementation.

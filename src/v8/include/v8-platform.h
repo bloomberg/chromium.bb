@@ -223,8 +223,33 @@ class ConvertableToTraceFormat {
    * data must be a valid JSON object. Strings must be properly quoted, and
    * escaped. There is no processing applied to the content after it is
    * appended.
+   *
+   * blpwtk2: The |out| parameter was previously a std::string. It was changed
+   * to char* to provide a C interface to the embedder in order to avoid STL
+   * incompatibility issues.
+   *
+   * If the caller sets |out| to nullptr, this function will return the
+   * expected buffer size that the caller needs to allocate. Once the caller
+   * allocates the buffer, it can call this function with |out| set to the
+   * base address of the buffer and |maxSize| set to the size of the buffer.
+   * The function will write the class info into the provided buffer.
    */
-  virtual void AppendAsTraceFormat(std::string* out) const = 0;
+  virtual size_t AppendAsTraceFormat(char* out, size_t maxSize) const = 0;
+};
+
+/**
+ * ConvertableToTraceFormatShim to wrap ConvertableToTraceFormat for embedder.
+ */
+class ConvertableToTraceFormatShim : public ConvertableToTraceFormat {
+ public:
+  virtual ~ConvertableToTraceFormatShim() = default;
+
+  /**
+   * Return the string to be added by the function AppendAsTraceFormat
+   */
+  virtual const char* GetToBeAppendedTraceFormat() const = 0;
+
+  V8_EXPORT size_t AppendAsTraceFormat(char* out, size_t maxLen) const final;
 };
 
 /**
