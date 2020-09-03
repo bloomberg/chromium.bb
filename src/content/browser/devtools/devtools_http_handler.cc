@@ -277,8 +277,7 @@ void StartServerOnHandlerThread(
     std::string message = base::StringPrintf(
         "\nDevTools listening on ws://%s%s\n", ip_address->ToString().c_str(),
         browser_guid.c_str());
-    fprintf(stderr, "%s", message.c_str());
-    fflush(stderr);
+    LOG(INFO) << message;
 
     // Write this port to a well-known file in the profile directory
     // so Telemetry, ChromeDriver, etc. can pick it up.
