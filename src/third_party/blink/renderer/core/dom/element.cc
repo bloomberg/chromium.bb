@@ -1896,6 +1896,262 @@ void Element::ScrollFrameTo(const ScrollToOptions* scroll_to_options) {
                             scroll_behavior);
 }
 
+int Element::bbScrollLeftNoZoomAdjust() const {
+  // blpwtk2: This function should be identical to Element::scrollLeft except
+  //          that it shouldn't call AdjustForAbsoluteZoom::AdjustScroll
+
+  if (!InActiveDocument())
+    return 0;
+
+  GetDocument().UpdateStyleAndLayoutForNode(this);
+
+  if (GetDocument().ScrollingElementNoLayout() == this) {
+    if (GetDocument().domWindow())
+      return GetDocument().domWindow()->scrollX();
+    return 0;
+  }
+
+  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    DCHECK(GetLayoutBox());
+
+    if (HasLeftwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+    }
+
+    // In order to keep the behavior of element scroll consistent with document
+    // scroll, and consistent with the behavior of other vendors, the scrollLeft
+    // of a box is changed to the offset from |ScrollOrigin()|.
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      return scrollable_area->GetScrollOffset().Width();
+    } else {
+      return scrollable_area->ScrollPosition().X();
+    }
+  }
+
+  return 0;
+}
+
+int Element::bbScrollTopNoZoomAdjust() const {
+  // blpwtk2: This function should be identical to Element::scrollTop except
+  //          that it shouldn't call AdjustForAbsoluteZoom::AdjustScroll
+
+  if (!InActiveDocument())
+    return 0;
+
+  GetDocument().UpdateStyleAndLayoutForNode(this);
+
+  if (GetDocument().ScrollingElementNoLayout() == this) {
+    if (GetDocument().domWindow())
+      return GetDocument().domWindow()->scrollY();
+    return 0;
+  }
+
+  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    DCHECK(GetLayoutBox());
+
+    if (HasUpwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+    }
+
+    // In order to keep the behavior of element scroll consistent with document
+    // scroll, and consistent with the behavior of other vendors, the scrollTop
+    // of a box is changed to the offset from |ScrollOrigin()|.
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      return scrollable_area->GetScrollOffset().Height();
+    } else {
+      return scrollable_area->ScrollPosition().Y();
+    }
+  }
+
+  return 0;
+}
+
+void Element::setBbScrollLeftNoZoomAdjust(int new_left) {
+  // blpwtk2: This function should be identical to Element::setScrollLeft except
+  //          that it shouldn't multiply the offset by EffectiveZoom()
+
+  if (!InActiveDocument())
+    return;
+
+  GetDocument().UpdateStyleAndLayoutForNode(this);
+
+  new_left = ScrollableArea::NormalizeNonFiniteScroll(new_left);
+
+  if (GetDocument().ScrollingElementNoLayout() == this) {
+    if (LocalDOMWindow* window = GetDocument().domWindow()) {
+      ScrollToOptions* options = ScrollToOptions::Create();
+      options->setLeft(new_left);
+      window->scrollTo(options);
+    }
+  } else if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    LayoutBox* box = GetLayoutBox();
+    DCHECK(box);
+
+    if (HasLeftwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+      if (new_left > 0) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::
+                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
+      }
+    }
+
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      ScrollOffset end_offset(new_left,
+                              scrollable_area->GetScrollOffset().Height());
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(
+                  scrollable_area->ScrollOffsetToPosition(end_offset)),
+              true, false);
+      base::Optional<FloatPoint> snap_point =
+          scrollable_area->GetSnapPositionAndSetTarget(*strategy);
+      if (snap_point.has_value()) {
+        end_offset =
+            scrollable_area->ScrollPositionToOffset(snap_point.value());
+      }
+      scrollable_area->SetScrollOffset(end_offset, kProgrammaticScroll,
+                                       kScrollBehaviorAuto);
+    } else {
+      FloatPoint end_point(new_left,
+                           scrollable_area->ScrollPosition().Y());
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(end_point), true, false);
+      end_point =
+          scrollable_area->GetSnapPositionAndSetTarget(*strategy).value_or(
+              end_point);
+
+      FloatPoint new_position(end_point.X(),
+                              scrollable_area->ScrollPosition().Y());
+      scrollable_area->ScrollToAbsolutePosition(new_position,
+                                                kScrollBehaviorAuto);
+    }
+  }
+}
+
+void Element::setBbScrollTopNoZoomAdjust(int new_top) {
+  // blpwtk2: This function should be identical to Element::setScrollTop except
+  //          that it shouldn't multiply the offset by EffectiveZoom()
+
+  if (!InActiveDocument())
+    return;
+
+  GetDocument().UpdateStyleAndLayoutForNode(this);
+
+  new_top = ScrollableArea::NormalizeNonFiniteScroll(new_top);
+
+  if (GetDocument().ScrollingElementNoLayout() == this) {
+    if (LocalDOMWindow* window = GetDocument().domWindow()) {
+      ScrollToOptions* options = ScrollToOptions::Create();
+      options->setTop(new_top);
+      window->scrollTo(options);
+    }
+  } else if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    LayoutBox* box = GetLayoutBox();
+    DCHECK(box);
+
+    if (HasUpwardDirection(*this)) {
+      UseCounter::Count(
+          GetDocument(),
+          WebFeature::
+              kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTop);
+      if (new_top > 0) {
+        UseCounter::Count(
+            GetDocument(),
+            WebFeature::
+                kElementWithLeftwardOrUpwardOverflowDirection_ScrollLeftOrTopSetPositive);
+      }
+    }
+
+    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
+      ScrollOffset end_offset(scrollable_area->GetScrollOffset().Width(),
+                              new_top);
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(
+                  scrollable_area->ScrollOffsetToPosition(end_offset)),
+              false, true);
+      base::Optional<FloatPoint> snap_point =
+          scrollable_area->GetSnapPositionAndSetTarget(*strategy);
+      if (snap_point.has_value()) {
+        end_offset =
+            scrollable_area->ScrollPositionToOffset(snap_point.value());
+      }
+
+      scrollable_area->SetScrollOffset(end_offset, kProgrammaticScroll,
+                                       kScrollBehaviorAuto);
+    } else {
+      FloatPoint end_point(scrollable_area->ScrollPosition().X(),
+                           new_top);
+      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+          cc::SnapSelectionStrategy::CreateForEndPosition(
+              gfx::ScrollOffset(end_point), false, true);
+      end_point =
+          scrollable_area->GetSnapPositionAndSetTarget(*strategy).value_or(
+              end_point);
+      FloatPoint new_position(scrollable_area->ScrollPosition().X(),
+                              end_point.Y());
+      scrollable_area->ScrollToAbsolutePosition(new_position,
+                                                kScrollBehaviorAuto);
+    }
+  }
+}
+
+int Element::bbScrollWidthNoZoomAdjust() const {
+  // blpwtk2: This function should be identical to Element::scrollWidth except
+  //          that it shouldn't call AdjustForAbsoluteZoom::AdjustInt
+
+  if (!InActiveDocument())
+    return 0;
+
+  GetDocument().UpdateStyleAndLayoutForNode(this);
+
+  if (GetDocument().ScrollingElementNoLayout() == this) {
+    if (GetDocument().View()) {
+      return GetDocument().View()->LayoutViewport()->ContentsSize().Width();
+    }
+    return 0;
+  }
+
+  if (LayoutBox* box = GetLayoutBox()) {
+    return box->PixelSnappedScrollWidth();
+  }
+  return 0;
+}
+
+int Element::bbScrollHeightNoZoomAdjust() const {
+  // blpwtk2: This function should be identical to Element::scrollHeight except
+  //          that it shouldn't call AdjustForAbsoluteZoom::AdjustInt
+
+  if (!InActiveDocument())
+    return 0;
+
+  GetDocument().UpdateStyleAndLayoutForNode(this);
+
+  if (GetDocument().ScrollingElementNoLayout() == this) {
+    if (GetDocument().View()) {
+      return GetDocument().View()->LayoutViewport()->ContentsSize().Height();
+    }
+    return 0;
+  }
+
+  if (LayoutBox* box = GetLayoutBox()) {
+    return box->PixelSnappedScrollHeight();
+  }
+  return 0;
+}
+
 IntRect Element::BoundsInViewport() const {
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kUnknown);
