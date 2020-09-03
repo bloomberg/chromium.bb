@@ -51,7 +51,7 @@ class CORE_EXPORT PrintContext : public GarbageCollected<PrintContext> {
   // reduced smaller to make the widest line fit, we just clip instead (this
   // behavior matches MacIE and Mozilla, at least).
   // TODO(rhogan): Decide if this quirk is still required.
-  static constexpr float kPrintingMaximumShrinkFactor = 2;
+  static constexpr float kPrintingMaximumShrinkFactor = 200;
 
   PrintContext(LocalFrame*, bool use_printing_layout);
   virtual ~PrintContext();
