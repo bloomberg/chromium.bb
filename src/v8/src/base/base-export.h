@@ -17,6 +17,14 @@
 #define V8_BASE_EXPORT
 #endif  // BUILDING_V8_BASE_SHARED
 
+# ifdef BUILDING_V8_SHARED
+#  define BLPV8_BASE_EXPORT __declspec(dllexport)
+# elif USING_V8_SHARED
+#  define BLPV8_BASE_EXPORT __declspec(dllimport)
+# else
+#  define BLPV8_BASE_EXPORT
+# endif  // BUILDING_V8_SHARED
+
 #else  // !V8_OS_WIN
 
 // Setup for Linux shared library export.

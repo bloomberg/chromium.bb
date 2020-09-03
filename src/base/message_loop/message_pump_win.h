@@ -23,6 +23,9 @@
 
 namespace base {
 
+// The application-defined code passed to the hook procedure.
+static const int kMessageFilterCode = 0x5001;
+
 // MessagePumpWin serves as the base for specialized versions of the MessagePump
 // for Windows. It provides basic functionality like handling of observers and
 // controlling the lifetime of the message pump.
@@ -38,6 +41,7 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
  protected:
   struct RunState {
     Delegate* delegate;
+    RunState* previous_state;
 
     // Used to flag that the current Run() invocation should return ASAP.
     bool should_quit;
@@ -45,6 +49,10 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
     // Used to count how many Run() invocations are on the stack.
     int run_depth;
   };
+
+  void PushRunState(RunState* run_state,
+                    Delegate* delegate);
+  void PopRunState();
 
   virtual void DoRunLoop() = 0;
 
@@ -145,6 +153,15 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* obseerver);
+  void HandleWorkMessage();
+
+ protected:
+  bool DoIdleWork();
+  void ResetWorkState();
+
+  // Determines if the pump should dispatch a non-Chrome message
+  // to reduce starvation
+  bool should_process_pump_replacement_ = true;
 
  private:
   bool MessageCallback(UINT message,
@@ -153,7 +170,6 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
                        LRESULT* result);
   void DoRunLoop() override;
   void WaitForWork(Delegate::NextWorkInfo next_work_info);
-  void HandleWorkMessage();
   void HandleTimerMessage();
   void ScheduleNativeTimer(Delegate::NextWorkInfo next_work_info);
   void KillNativeTimer();
@@ -161,6 +177,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   bool ProcessMessageHelper(const MSG& msg);
   bool ProcessPumpReplacementMessage();
 
+ protected:
   base::win::MessageWindow message_window_;
 
   // Whether MessagePumpForUI responds to WM_QUIT messages or not.

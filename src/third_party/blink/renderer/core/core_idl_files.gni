@@ -329,6 +329,7 @@ core_idl_files =
                     "page/color_page_popup_controller.idl",
                     "page/page_popup_controller.idl",
                     "page/scrolling/scroll_state.idl",
+                    "page/bb_window_hooks.idl",
                     "resize_observer/resize_observer.idl",
                     "resize_observer/resize_observer_entry.idl",
                     "resize_observer/resize_observer_size.idl",

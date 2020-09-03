@@ -37,21 +37,19 @@ class Domain;
 
 class V8_EXPORT StringView {
  public:
-  StringView() : m_is8Bit(true), m_length(0), m_characters8(nullptr) {}
+  StringView();
 
-  StringView(const uint8_t* characters, size_t length)
-      : m_is8Bit(true), m_length(length), m_characters8(characters) {}
+  StringView(const uint8_t* characters, size_t length);
 
-  StringView(const uint16_t* characters, size_t length)
-      : m_is8Bit(false), m_length(length), m_characters16(characters) {}
+  StringView(const uint16_t* characters, size_t length);
 
-  bool is8Bit() const { return m_is8Bit; }
-  size_t length() const { return m_length; }
+  bool is8Bit() const;
+  size_t length() const;
 
   // TODO(dgozman): add DCHECK(m_is8Bit) to accessors once platform can be used
   // here.
-  const uint8_t* characters8() const { return m_characters8; }
-  const uint16_t* characters16() const { return m_characters16; }
+  const uint8_t* characters8() const;
+  const uint16_t* characters16() const;
 
  private:
   bool m_is8Bit;
@@ -70,9 +68,9 @@ class V8_EXPORT StringBuffer {
   static std::unique_ptr<StringBuffer> create(StringView);
 };
 
-class V8_EXPORT V8ContextInfo {
+class V8ContextInfo {
  public:
-  V8ContextInfo(v8::Local<v8::Context> context, int contextGroupId,
+  V8_EXPORT V8ContextInfo(v8::Local<v8::Context> context, int contextGroupId,
                 StringView humanReadableName)
       : context(context),
         contextGroupId(contextGroupId),
@@ -87,7 +85,7 @@ class V8_EXPORT V8ContextInfo {
   StringView auxData;
   bool hasMemoryOnConsole;
 
-  static int executionContextId(v8::Local<v8::Context> context);
+  V8_EXPORT static int executionContextId(v8::Local<v8::Context> context);
 
   // Disallow copying and allocating this one.
   enum NotNullTagEnum { NotNullLiteral };
@@ -241,7 +239,6 @@ struct V8_EXPORT V8StackTraceId {
                  bool should_pause);
   explicit V8StackTraceId(StringView);
   V8StackTraceId& operator=(const V8StackTraceId&) = default;
-  V8StackTraceId& operator=(V8StackTraceId&&) noexcept = default;
   ~V8StackTraceId() = default;
 
   bool IsInvalid() const;
@@ -250,7 +247,7 @@ struct V8_EXPORT V8StackTraceId {
 
 class V8_EXPORT V8Inspector {
  public:
-  static std::unique_ptr<V8Inspector> create(v8::Isolate*, V8InspectorClient*);
+  static V8Inspector* create(v8::Isolate*, V8InspectorClient*);
   virtual ~V8Inspector() = default;
 
   // Contexts instrumentation.
@@ -288,7 +285,11 @@ class V8_EXPORT V8Inspector {
   // Connection.
   class V8_EXPORT Channel {
    public:
-    virtual ~Channel() = default;
+    // Destructor
+    // Since this header file does not have a corresponding source file, this
+    // destructor is defined in v8-inspector-impl.cc
+    Channel();
+    virtual ~Channel();
     virtual void sendResponse(int callId,
                               std::unique_ptr<StringBuffer> message) = 0;
     virtual void sendNotification(std::unique_ptr<StringBuffer> message) = 0;

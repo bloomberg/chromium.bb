@@ -32,7 +32,7 @@
 #include "components/services/quarantine/quarantine_impl.h"  // nogncheck
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
 #include "chrome/services/sharing/sharing_impl.h"
@@ -77,8 +77,10 @@
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"  // nogncheck
 #endif
 
+#if BUILDFLAG(ENABLE_PAINT_PREVIEW)
 #include "components/services/paint_preview_compositor/paint_preview_compositor_collection_impl.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"  // nogncheck
@@ -126,7 +128,7 @@ auto RunWindowsUtility(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver) {
 }
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
 auto RunProxyResolver(
     mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolverFactory>
         receiver) {
@@ -251,7 +253,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
     RunLanguageDetectionService,
     RunQRCodeGeneratorService,
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
     RunProfileImporter,
     RunMirroringService,
     RunSharing,
@@ -307,7 +309,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 mojo::ServiceFactory* GetIOThreadServiceFactory() {
   // clang-format off
   static base::NoDestructor<mojo::ServiceFactory> factory {
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
     RunProxyResolver,
 #endif  // !defined(OS_ANDROID)
   };
