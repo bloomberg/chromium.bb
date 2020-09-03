@@ -1,5 +1,3 @@
-import("//build/config/gclient_args.gni")
-
 declare_args() {
   # Enable encoding and decoding AV1 video files.
   enable_libaom = false

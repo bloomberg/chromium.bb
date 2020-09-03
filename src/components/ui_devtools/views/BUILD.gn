@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//extensions/buildflags/buildflags.gni")
 
 source_set("views") {
   cflags = []
@@ -29,10 +30,15 @@ source_set("views") {
 
   deps = [
     "//components/ui_devtools",
-    "//extensions/common",
     "//skia",
     "//ui/views",
   ]
+
+  if (enable_extensions) {
+    deps += [
+      "//extensions/common"
+    ]
+  }
 
   if (use_aura) {
     sources += [

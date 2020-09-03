@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//base/trace_event/features.gni")
-import("//build/config/gclient_args.gni")
+build_with_chromium = true
 
 # Uncomment these to specify a different NDK location and version in
 # non-Chromium builds.

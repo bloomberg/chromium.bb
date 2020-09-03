@@ -28,7 +28,7 @@ const base::Feature kNetworkService {
 #else
   "NetworkServiceNotSupported",
 #endif
-      base::FEATURE_ENABLED_BY_DEFAULT
+      base::FEATURE_DISABLED_BY_DEFAULT
 };
 
 // Out of Blink CORS for browsers is launched at m79 (http://crbug.com/1001450),

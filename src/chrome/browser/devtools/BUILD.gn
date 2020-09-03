@@ -113,6 +113,13 @@ static_library("devtools") {
       "//third_party/leveldatabase",
       "//ui/base/cursor/mojom:cursor_type",
     ]
+
+    if (enable_extensions) {
+      deps += [
+        "//chrome/common/extensions/api",
+      ]
+    }
+
     sources += [
       "chrome_devtools_manager_delegate.cc",
       "chrome_devtools_manager_delegate.h",

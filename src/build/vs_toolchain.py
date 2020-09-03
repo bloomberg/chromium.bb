@@ -35,6 +35,8 @@ MSVC_TOOLSET_VERSION = {
    '2017' : 'VC141',
 }
 
+DEVKIT_VERSION = '84a'
+
 def _HostIsWindows():
   """Returns True if running on a Windows host (including under cygwin)."""
   return sys.platform in ('win32', 'cygwin')
@@ -436,7 +438,7 @@ def _GetDesiredVsToolchainHashes():
   # libraries and UWP support.
   # See go/chromium-msvc-toolchain for instructions about how to update the
   # toolchain.
-  toolchain_hash = '9ff60e43ba91947baca460d0ca3b1b980c3a2c23'
+  toolchain_hash = '067969d19c8cdd793887541143be5bdbf3cf9770'
   # Third parties that do not have access to the canonical toolchain can map
   # canonical toolchain version to their own toolchain versions.
   toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash
@@ -506,6 +508,8 @@ def Update(force=False, no_download=False):
                     'get_toolchain_if_necessary.py'),
         '--output-json', json_data_file,
       ] + _GetDesiredVsToolchainHashes()
+    base_url = os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL', '')
+    os.environ['DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL'] = os.path.join(base_url, DEVKIT_VERSION)
     if force:
       get_toolchain_args.append('--force')
     if no_download:

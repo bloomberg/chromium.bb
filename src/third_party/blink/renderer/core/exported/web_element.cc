@@ -50,6 +50,18 @@
 
 namespace blink {
 
+WebElement::~WebElement() {
+}
+
+WebElement& WebElement::operator=(const WebElement& e) {
+  WebNode::Assign(e);
+  return *this;
+}
+
+void WebElement::Assign(const WebElement& e) {
+  WebNode::Assign(e);
+}
+
 bool WebElement::IsFormControlElement() const {
   return ConstUnwrap<Element>()->IsFormControlElement();
 }

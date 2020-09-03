@@ -204,7 +204,9 @@ def CompareToMsRcOutput(preprocessed_output, is_utf8, flags):
   with open(msrc_in, 'wb') as f:
     f.write(preprocessed_output)
 
-  msrc_out = flags.output + '_ms_rc'
+  # ilee: skip rc result comparison
+  #msrc_out = flags.output + '_ms_rc'
+  msrc_out = flags.output
   msrc_cmd = ['rc', '/nologo', '/x', '/fo' + msrc_out]
 
   # Make sure rc-relative resources can be found. rc.exe looks for external
@@ -234,7 +236,8 @@ def CompareToMsRcOutput(preprocessed_output, is_utf8, flags):
   # Assert Microsoft rc.exe and rc.py produced identical .res files.
   if rc_exe_exit_code == 0:
     import filecmp
-    assert filecmp.cmp(msrc_out, flags.output)
+    # ilee: skip rc result comparison
+    #assert filecmp.cmp(msrc_out, flags.output)
   return rc_exe_exit_code
 
 

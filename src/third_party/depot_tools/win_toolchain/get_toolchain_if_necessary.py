@@ -176,7 +176,7 @@ def CalculateHash(root, expected_hash):
       path_without_hash = path_without_hash.replace(
           os.path.join(root, expected_hash).replace('/', '\\'), root)
     digest.update(path_without_hash.lower())
-    with open(path, 'rb') as f:
+    with open("\\\\?\\%s\\%s" % (os.path.abspath('.'), path), 'rb') as f:
       digest.update(f.read())
 
   # Save the timestamp file if the calculated hash is the expected one.
@@ -208,13 +208,14 @@ def SaveTimestampsAndHash(root, sha1):
   """Saves timestamps and the final hash to be able to early-out more quickly
   next time."""
   file_list = GetFileList(os.path.join(root, sha1))
+  cwd = os.path.abspath('.')
+  abs_file_list = ["\\\\?\\%s\\%s" % (cwd, f) for f in file_list]
   timestamps_data = {
-    'files': [[f, os.path.getmtime(f)] for f in file_list],
+    'files': [[f, os.path.getmtime(f)] for f in abs_file_list],
     'sha1': sha1,
   }
   with open(MakeTimestampsFileName(root, sha1), 'wb') as f:
     json.dump(timestamps_data, f)
-
 
 def HaveSrcInternalAccess():
   """Checks whether access to src-internal is available."""
@@ -356,7 +357,7 @@ def DoTreeMirror(target_dir, tree_sha1):
   sys.stdout.write('Extracting %s...\n' % local_zip)
   sys.stdout.flush()
   with zipfile.ZipFile(local_zip, 'r', zipfile.ZIP_DEFLATED, True) as zf:
-    zf.extractall(target_dir)
+    zf.extractall("\\\\?\\%s" % os.path.abspath(target_dir))
   if temp_dir:
     RmDir(temp_dir)
 
@@ -518,6 +519,10 @@ def main():
       if not CanAccessToolchainBucket():
         RequestGsAuthentication()
     if not should_use_file and not should_use_gs and not should_use_http:
+      print ('\n\nNo local toolchain exist. To use local toolchain from file,\n' \
+             'please make sure environment variable DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL\n' \
+             'is set properly and the right wtk2_toolchain devkit is installed.')
+
       if sys.platform not in ('win32', 'cygwin'):
         doc = 'https://chromium.googlesource.com/chromium/src/+/master/docs/' \
               'win_cross.md'
@@ -539,6 +544,8 @@ def main():
     DoTreeMirror(toolchain_target_dir, desired_hash)
 
     got_new_toolchain = True
+  else:
+    print ('Windows toolchain with desired hash %s already exist.' % desired_hash)
 
   win_sdk = os.path.join(abs_toolchain_target_dir, 'win_sdk')
   try:

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<Profile FormatVersion="1">
+  <Tools>
+    <Tool Filename="python" AllowIntercept="false" AllowRemote="false"/>
+    <Tool Filename="rc" AllowIntercept="false" AllowRemote="false"/>
+    <Tool Filename="as" AllowIntercept="true" DistinctStdErr="true"/>
+    <Tool Filename="cl" AllowRemote="true" DeriveCaptionFrom="lastparam" VCCompiler="true" VCCompilerUnbatch="false" DistinctStdErr="true"/>
+    <Tool Filename="clang" AllowRemote="true" DeriveCaptionFrom="lastparam" VCCompiler="true" VCCompilerUnbatch="false" DistinctStdErr="true"/>
+    <Tool Filename="clang-cl" AllowRemote="true" DeriveCaptionFrom="lastparam" VCCompiler="true" VCCompilerUnbatch="false" DistinctStdErr="true" AutoRecover="Assertion failed: (!RequiresNullTerminator || BufEnd[0] == 0)"/>
+    <Tool Filename="gperf" AllowIntercept="true" DistinctStdErr="true"/>
+    <Tool Filename="x86_64-w64-mingw32-as" AllowIntercept="true" DistinctStdErr="true"/>
+  </Tools>
+</Profile>

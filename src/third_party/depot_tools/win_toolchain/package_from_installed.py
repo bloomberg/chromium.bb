@@ -472,10 +472,8 @@ def main():
 
     AddEnvSetup(files, options.arm)
 
-  if False:
     for f in files:
       print(f[0], '->', f[1])
-    return 0
 
   output = 'out.zip'
   if os.path.exists(output):

@@ -88,6 +88,12 @@ static_library("router") {
       "//ui/base:buildflags",
     ]
 
+    if (enable_extensions) {
+      deps += [
+        "//extensions/browser",
+      ]
+    }
+
     sources += [
       "data_decoder_util.cc",
       "data_decoder_util.h",
@@ -194,9 +200,15 @@ static_library("test_support") {
       "discovery",
       "//chrome/common/media_router/mojom:media_router",
       "//chrome/common/media_router/mojom:media_router_test_interfaces",
-      "//extensions/browser",
-      "//extensions/common",
     ]
+
+    if (enable_extensions) {
+      deps += [
+        "//extensions/common",
+        "//extensions/browser",
+      ]
+    }
+
     sources += [
       "test/media_router_mojo_test.cc",
       "test/media_router_mojo_test.h",

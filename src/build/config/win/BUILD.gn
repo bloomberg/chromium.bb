@@ -448,7 +448,7 @@ config("default_crt") {
     # exceptions on.
     configs = [ ":dynamic_crt" ]
   } else {
-    if (current_os == "winuwp") {
+    if (current_os == "winuwp" || use_dynamic_crt) {
       # https://blogs.msdn.microsoft.com/vcblog/2014/06/10/the-great-c-runtime-crt-refactoring/
       # contains a details explanation of what is happening with the Windows
       # CRT in Visual Studio releases related to Windows store applications.

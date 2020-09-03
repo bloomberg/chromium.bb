@@ -165,6 +165,10 @@ declare_args() {
   is_component_build = is_debug && current_os != "ios"
 }
 
+declare_args() {
+  use_dynamic_crt = false
+}
+
 assert(!(is_debug && is_official_build), "Can't do official debug builds")
 
 # ==============================================================================
