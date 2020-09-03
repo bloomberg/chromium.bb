@@ -185,8 +185,8 @@ RequestPeerReceiver::RequestPeerReceiver(
 RequestPeerReceiver::~RequestPeerReceiver() = default;
 
 void RequestPeerReceiver::OnReceivedResponse(
-    network::mojom::URLResponseHeadPtr info) {
-  peer_->OnReceivedResponse(std::move(info));
+    network::mojom::URLResponseHeadPtr head) {
+  head_ = std::move(head);
 }
 
 void RequestPeerReceiver::OnReceivedData(const char* data,
@@ -197,15 +197,21 @@ void RequestPeerReceiver::OnReceivedData(const char* data,
 void RequestPeerReceiver::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& completeStatus,
     const GURL&) {
-  mojo::DataPipe data_pipe(received_data_.size());
-  peer_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-  uint32_t len = received_data_.size();
-  MojoResult result = data_pipe.producer_handle->WriteData(
-      received_data_.data(), &len, MOJO_WRITE_DATA_FLAG_NONE);
-  // when peer_ does not have a client, consumer_handle would be closed that
-  // results in MOJO_RESULT_FAILED_PRECONDITION
-  DCHECK(result == MOJO_RESULT_OK || result == MOJO_RESULT_FAILED_PRECONDITION);
-  data_pipe.producer_handle.reset();
+  if (head_) {
+    peer_->OnReceivedResponse(std::move(head_));
+  }
+  if (!received_data_.empty()) {
+    mojo::DataPipe data_pipe(received_data_.size());
+    peer_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
+    uint32_t len = received_data_.size();
+    MojoResult result = data_pipe.producer_handle->WriteData(
+        received_data_.data(), &len, MOJO_WRITE_DATA_FLAG_NONE);
+    // when peer_ does not have a client, consumer_handle would be closed that
+    // results in MOJO_RESULT_FAILED_PRECONDITION
+    DCHECK(result == MOJO_RESULT_OK || result == MOJO_RESULT_FAILED_PRECONDITION);
+    data_pipe.producer_handle.reset();
+  }
+
   peer_->OnCompletedRequest(completeStatus);
   if (RenderThreadImpl* thread_impl = RenderThreadImpl::current()) {
     if (ResourceDispatcher* dispatcher = thread_impl->resource_dispatcher()) {
