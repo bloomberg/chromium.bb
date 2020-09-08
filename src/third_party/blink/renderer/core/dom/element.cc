@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <bitset>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <utility>
@@ -1595,7 +1596,7 @@ void Element::setScrollTop(double new_top) {
           scrollable_area->GetSnapPositionAndSetTarget(*strategy).value_or(
               end_point);
       FloatPoint new_position(scrollable_area->ScrollPosition().X(),
-                              end_point.Y());
+                              std::round(end_point.Y()));
       scrollable_area->ScrollToAbsolutePosition(
           new_position, mojom::blink::ScrollBehavior::kAuto);
     }
