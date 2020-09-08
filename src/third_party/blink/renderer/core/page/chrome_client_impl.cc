@@ -35,6 +35,7 @@
 #include <utility>
 
 #include "base/debug/alias.h"
+#include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
@@ -572,7 +573,7 @@ void ChromeClientImpl::ShowMouseOverURL(LocalFrame& frame, const HitTestResult& 
       WebLocalFrameImpl* webFrame =
           WebLocalFrameImpl::FromFrame(&frame)->LocalRoot();
       webFrame->FrameWidgetImpl()->Client()->SetToolTipText(String(),
-		                                       kWebTextDirectionLeftToRight);
+          base::i18n::TextDirection::LEFT_TO_RIGHT);
       m_lastTooltipHadText = false;
   }
 
