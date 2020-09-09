@@ -111,6 +111,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   WebPreferences GetWebkitPreferences() override;
   void UpdateWebkitPreferences(const WebPreferences& prefs) override;
   void OnWebkitPreferencesChanged() override;
+  void EnableAltDragRubberbanding(bool enable) override;
 
   // RenderProcessHostObserver implementation
   void RenderProcessExited(RenderProcessHost* host,
