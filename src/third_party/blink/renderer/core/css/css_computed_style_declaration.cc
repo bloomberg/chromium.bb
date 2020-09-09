@@ -242,6 +242,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kWebkitTextFillColor, CSSPropertyID::kWebkitTextOrientation,
     CSSPropertyID::kWebkitTextSecurity, CSSPropertyID::kWebkitTextStrokeColor,
     CSSPropertyID::kWebkitTextStrokeWidth, CSSPropertyID::kWebkitUserDrag,
+    CSSPropertyID::kBbLcdBackgroundColor,
     CSSPropertyID::kWebkitUserModify, CSSPropertyID::kWebkitWritingMode};
 
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
