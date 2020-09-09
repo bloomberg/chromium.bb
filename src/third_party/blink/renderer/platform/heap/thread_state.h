@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "gin/public/multi_heap_tracer.h"
 
 namespace v8 {
 class EmbedderGraph;
@@ -310,6 +311,10 @@ class PLATFORM_EXPORT ThreadState final {
   }
   bool InAtomicSweepingPause() const {
     return in_atomic_pause() && IsSweepingInProgress();
+  }
+
+  gin::MultiHeapTracer* GetMultiHeapTracer() {
+    return &multi_heap_tracer_;
   }
 
   bool IsIncrementalMarking() const { return incremental_marking_; }
@@ -603,6 +608,9 @@ class PLATFORM_EXPORT ThreadState final {
   size_t concurrently_marked_bytes_ = 0;
 
   std::unique_ptr<CancelableTaskScheduler> sweeper_scheduler_;
+
+  gin::MultiHeapTracer multi_heap_tracer_;
+  int multi_heap_tracer_id_ = 0;
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;
