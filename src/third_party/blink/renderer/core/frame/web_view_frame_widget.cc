@@ -183,6 +183,10 @@ WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }
 
+void WebViewFrameWidget::DidChangeWindowRect() {
+  return web_view_->DidChangeWindowRect();
+}
+
 void WebViewFrameWidget::DidDetachLocalFrameTree() {
   web_view_->DidDetachLocalMainFrame();
 }

@@ -71,6 +71,8 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   WebURL GetURLForDebugTrace() override;
 
+  void DidChangeWindowRect() override;
+
   // WebFrameWidget overrides:
   void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
