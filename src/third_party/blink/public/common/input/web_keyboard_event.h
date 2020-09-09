@@ -48,6 +48,10 @@ class BLINK_COMMON_EXPORT WebKeyboardEvent : public WebInputEvent {
   // easier to leave it always false than ifdef.
   bool is_system_key = false;
 
+  // This specifies whether the NumLock was active when the keyboard event
+  // occurred.
+  bool is_num_lock = false;
+
   // Whether the event forms part of a browser-handled keyboard shortcut.
   // This can be used to conditionally suppress Char events after a
   // shortcut-triggering RawKeyDown goes unhandled.
