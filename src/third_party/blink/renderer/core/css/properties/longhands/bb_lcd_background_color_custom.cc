@@ -21,7 +21,7 @@ const CSSValue* BbLcdBackgroundColor::ParseSingleValue(
   // Allow the special focus color even in HTML Standard parsing mode.
   if (range.Peek().Id() == CSSValueID::kAuto || range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  return css_property_parser_helpers::ConsumeColor(range, context.Mode());
+  return css_property_parser_helpers::ConsumeColor(range, context);
 }
 
 const CSSValue* BbLcdBackgroundColor::CSSValueFromComputedStyleInternal(
