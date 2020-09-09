@@ -33,6 +33,7 @@
 #include <content/browser/renderer_host/display_util.h>
 #include <content/common/drag_messages.h>
 #include <content/common/frame_messages.h>
+#include <content/common/page_messages.h>
 #include <content/common/view_messages.h>
 #include <content/common/widget_messages.h>
 #include <content/public/renderer/render_view_observer.h>
@@ -786,12 +787,20 @@ void RenderWebView::updateVisibility()
 
     if (d_visible) {
         dispatchToRenderWidget(
+            PageMsg_VisibilityChanged(d_renderViewRoutingId,
+                content::PageVisibilityState::kVisible));
+
+        dispatchToRenderWidget(
             WidgetMsg_WasShown(d_renderWidgetRoutingId,
                 base::TimeTicks::Now(), false, base::nullopt));
     }
     else {
         dispatchToRenderWidget(
             WidgetMsg_WasHidden(d_renderWidgetRoutingId));
+
+        dispatchToRenderWidget(
+            PageMsg_VisibilityChanged(d_renderViewRoutingId,
+                content::PageVisibilityState::kHidden));
 
         d_tooltip->Hide();
     }
@@ -1601,21 +1610,6 @@ void RenderWebView::notifyRoutingId(int id)
     // content::RenderWidget:
     d_compositor = RenderCompositorFactory::GetInstance()->CreateCompositor(
         d_renderWidgetRoutingId, d_hwnd.get(), d_profile);
-
-    // Destroy any upstream compositor previously created for this widget
-    // by hiding it and then calling 'ReleaseLayerTreeFrameSink':
-    auto was_visible = rv->GetWidget()->
-        layer_tree_view()->layer_tree_host()->IsVisible();
-    if (was_visible) {
-        rv->GetWidget()->
-            layer_tree_view()->SetVisible(false);
-    }
-    rv->GetWidget()->
-        layer_tree_view()->layer_tree_host()->ReleaseLayerTreeFrameSink();
-    if (was_visible) {
-        rv->GetWidget()->
-            layer_tree_view()->SetVisible(true);
-    }
 
     updateVisibility();
     updateGeometry();
