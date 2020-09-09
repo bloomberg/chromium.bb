@@ -161,7 +161,7 @@ public:
         combination is supported.
         @return        created SkColorInfo
     */
-    SkColorInfo(SkColorType ct, SkAlphaType at, sk_sp<SkColorSpace> cs, SkColor lcdbc)
+    SkColorInfo(SkColorType ct, SkAlphaType at, sk_sp<SkColorSpace> cs, SkColor lcdbc = SK_ColorTRANSPARENT)
             : fColorSpace(std::move(cs)), fColorType(ct), fAlphaType(at), fDefaultLCDBackgroundColor(lcdbc) {}
 
     SkColorInfo(const SkColorInfo&) = default;

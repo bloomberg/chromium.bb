@@ -9,6 +9,7 @@
 #define SkPatchUtils_DEFINED
 
 #include "include/core/SkMatrix.h"
+#include "include/core/SkRefCnt.h"
 #include "include/private/SkColorData.h"
 
 class SkColorSpace;

@@ -8,6 +8,8 @@
 #ifndef SkColor_DEFINED
 #define SkColor_DEFINED
 
+#include <algorithm>
+
 #include "include/core/SkScalar.h"
 #include "include/core/SkTypes.h"
 
