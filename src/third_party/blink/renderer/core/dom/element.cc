@@ -1903,7 +1903,7 @@ int Element::bbScrollLeftNoZoomAdjust() const {
   if (!InActiveDocument())
     return 0;
 
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this, DocumentUpdateReason::kJavaScript);
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().domWindow())
@@ -1941,7 +1941,7 @@ int Element::bbScrollTopNoZoomAdjust() const {
   if (!InActiveDocument())
     return 0;
 
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this, DocumentUpdateReason::kJavaScript);
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().domWindow())
@@ -1979,7 +1979,7 @@ void Element::setBbScrollLeftNoZoomAdjust(int new_left) {
   if (!InActiveDocument())
     return;
 
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this, DocumentUpdateReason::kJavaScript);
 
   new_left = ScrollableArea::NormalizeNonFiniteScroll(new_left);
 
@@ -2020,8 +2020,9 @@ void Element::setBbScrollLeftNoZoomAdjust(int new_left) {
         end_offset =
             scrollable_area->ScrollPositionToOffset(snap_point.value());
       }
-      scrollable_area->SetScrollOffset(end_offset, kProgrammaticScroll,
-                                       kScrollBehaviorAuto);
+      scrollable_area->SetScrollOffset(end_offset,
+                                       mojom::blink::ScrollType::kProgrammatic,
+                                       mojom::blink::ScrollBehavior::kAuto);
     } else {
       FloatPoint end_point(new_left,
                            scrollable_area->ScrollPosition().Y());
@@ -2035,7 +2036,7 @@ void Element::setBbScrollLeftNoZoomAdjust(int new_left) {
       FloatPoint new_position(end_point.X(),
                               scrollable_area->ScrollPosition().Y());
       scrollable_area->ScrollToAbsolutePosition(new_position,
-                                                kScrollBehaviorAuto);
+                                                mojom::blink::ScrollBehavior::kAuto);
     }
   }
 }
@@ -2047,7 +2048,7 @@ void Element::setBbScrollTopNoZoomAdjust(int new_top) {
   if (!InActiveDocument())
     return;
 
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this, DocumentUpdateReason::kJavaScript);
 
   new_top = ScrollableArea::NormalizeNonFiniteScroll(new_top);
 
@@ -2089,8 +2090,9 @@ void Element::setBbScrollTopNoZoomAdjust(int new_top) {
             scrollable_area->ScrollPositionToOffset(snap_point.value());
       }
 
-      scrollable_area->SetScrollOffset(end_offset, kProgrammaticScroll,
-                                       kScrollBehaviorAuto);
+      scrollable_area->SetScrollOffset(end_offset,
+                                       mojom::blink::ScrollType::kProgrammatic,
+                                       mojom::blink::ScrollBehavior::kAuto);
     } else {
       FloatPoint end_point(scrollable_area->ScrollPosition().X(),
                            new_top);
@@ -2103,7 +2105,7 @@ void Element::setBbScrollTopNoZoomAdjust(int new_top) {
       FloatPoint new_position(scrollable_area->ScrollPosition().X(),
                               end_point.Y());
       scrollable_area->ScrollToAbsolutePosition(new_position,
-                                                kScrollBehaviorAuto);
+                                                mojom::blink::ScrollBehavior::kAuto);
     }
   }
 }
@@ -2115,7 +2117,7 @@ int Element::bbScrollWidthNoZoomAdjust() const {
   if (!InActiveDocument())
     return 0;
 
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this, DocumentUpdateReason::kJavaScript);
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View()) {
@@ -2137,7 +2139,7 @@ int Element::bbScrollHeightNoZoomAdjust() const {
   if (!InActiveDocument())
     return 0;
 
-  GetDocument().UpdateStyleAndLayoutForNode(this);
+  GetDocument().UpdateStyleAndLayoutForNode(this, DocumentUpdateReason::kJavaScript);
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View()) {
