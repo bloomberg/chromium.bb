@@ -233,6 +233,7 @@ class WebViewImpl final : public WebView,
     void replaceMisspelledRange(const StringRef& text) override;
     void rootWindowPositionChanged() override;
     void rootWindowSettingsChanged() override;
+    void rootWindowCompositionChanged() override;
 
     void handleInputEvents(const InputEvent *events, size_t eventsCount) override;
     void setDelegate(WebViewDelegate* delegate) override;
