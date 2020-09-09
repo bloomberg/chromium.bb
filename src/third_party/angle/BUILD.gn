@@ -1028,6 +1028,7 @@ angle_shared_library("libEGL") {
   ]
 
   public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
     ":includes",
   ]
 
