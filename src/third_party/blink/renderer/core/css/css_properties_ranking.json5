@@ -695,6 +695,7 @@
         "syntax",
         "content-visibility",
         "origin-trial-test-property",
+        "-bb-lcd-background-color",
     ],
     "properties": {}
 }
