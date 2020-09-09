@@ -123,6 +123,10 @@ class WebViewClientDelegate
         // This method is called when the setParent call is done   
         // If successful, status 0 will be returned, otherwise error code from GetLassError()
         // will be returned as status 
+
+    virtual void didInterceptMessage() = 0;
+        // This method is called when the embedder intercepts a window message
+        // that would've been processed for this webview.
 };
 
 }  // close namespace blpwtk2
