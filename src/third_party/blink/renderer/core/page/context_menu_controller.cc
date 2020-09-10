@@ -535,12 +535,11 @@ static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const Web
   ExposeBool(isolate, detail_obj, "isSpellCheckingEnabled", data.is_spell_checking_enabled);
   ExposeStringVector(isolate, detail_obj, "dictionarySuggestions", data.dictionary_suggestions);
   ExposeString(isolate, detail_obj, "selectedText", data.selected_text.Utf8());
-  ExposeInt(isolate, detail_obj, "mousePositionX", data.mouse_position.x);
-  ExposeInt(isolate, detail_obj, "mousePositionY", data.mouse_position.y);
+  ExposeInt(isolate, detail_obj, "mousePositionX", data.mouse_position.x());
+  ExposeInt(isolate, detail_obj, "mousePositionY", data.mouse_position.y());
   ExposeString(isolate, detail_obj, "linkURL", data.link_url.GetString().Utf8());
   ExposeBool(isolate, detail_obj, "isEditable", data.is_editable);
   ExposeString(isolate, detail_obj, "frameEncoding", data.frame_encoding.Utf8());
-  ExposeString(isolate, detail_obj, "frameURL", data.frame_url.GetString().Utf8());
   ExposeBool(isolate, detail_obj, "hasImageContents", data.has_image_contents);
   ExposeString(isolate, detail_obj, "srcURL", data.src_url.GetString().Utf8());
   ExposeBool(isolate, detail_obj, "fromContextMenuKey", data.source_type == kMenuSourceContextMenuKey);
