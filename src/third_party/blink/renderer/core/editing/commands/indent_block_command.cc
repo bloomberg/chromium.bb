@@ -70,15 +70,15 @@ void IndentBlockCommand::IndentSiblings(Node* prpFirstSibling, Node* prpLastSibl
 
     Node* previousSibling = PreviousRenderedSiblingExcludingWhitespace(firstSibling);
     if (previousSibling && previousSibling->IsElementNode()
-            && ToElement(previousSibling)->HasTagName(blockQName)) {
-        blockForIndent = ToElement(previousSibling);
+            && To<Element>(previousSibling)->HasTagName(blockQName)) {
+        blockForIndent = To<Element>(previousSibling);
         firstSibling = previousSibling->nextSibling();
     }
 
     Node* nextSibling = NextRenderedSiblingExcludingWhitespace(lastSibling);
     if (nextSibling && nextSibling->HasTagName(blockQName) && !lastNode->IsDescendantOf(nextSibling)) {
         if (!blockForIndent) {
-            blockForIndent = ToElement(nextSibling);
+            blockForIndent = To<Element>(nextSibling);
             refChild = nextSibling->firstChild();
         }
         else if (nextSibling->firstChild())
