@@ -57,6 +57,8 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual void SetFilenames(const std::vector<FileInfo>& file_names) = 0;
   virtual void SetPickledData(const ClipboardFormatType& format,
                               const base::Pickle& data) = 0;
+  virtual void SetCustomData(const FORMATETC& format,
+                              const base::string16& data) {}
 
   virtual bool GetString(base::string16* data) const = 0;
   virtual bool GetURLAndTitle(FilenameToURLPolicy policy,
@@ -66,6 +68,10 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
   virtual bool GetFilenames(std::vector<FileInfo>* file_names) const = 0;
   virtual bool GetPickledData(const ClipboardFormatType& format,
                               base::Pickle* data) const = 0;
+
+  virtual void EnumerateCustomData(std::vector<FORMATETC>* formats) const {}
+  virtual bool GetCustomData(const FORMATETC& format,
+                              base::string16* data) const {return false;}
 
   virtual bool HasString() const = 0;
   virtual bool HasURL(FilenameToURLPolicy policy) const = 0;
