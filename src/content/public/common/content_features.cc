@@ -217,7 +217,7 @@ const base::Feature kFirstScrollLatencyMeasurement{
 // font name or postscript name. Rolling out behind a flag, as enabling this
 // enables a font indexer on Android which we need to test in the field first.
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 // Feature controlling whether or not memory pressure signals will be forwarded

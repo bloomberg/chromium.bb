@@ -19,12 +19,27 @@
 
 namespace blink {
 
+static void AdjustedFontDescriptionForBoldItalic(FontDescription& fontDescription,
+                                                 WTF::String& fontName)
+{
+    if (fontName.EndsWith(" Italic")) {
+        fontDescription.SetStyle(ItalicSlopeValue());
+        fontName = fontName.Substring(0, fontName.length() - 7);
+    }
+    if (fontName.EndsWith(" Bold")) {
+        fontDescription.SetWeight(BoldWeightValue());
+        fontName = fontName.Substring(0, fontName.length() - 5);
+    }
+}
+
 LocalFontFaceSource::LocalFontFaceSource(CSSFontFace* css_font_face,
                                          FontSelector* font_selector,
                                          const String& font_name)
     : face_(css_font_face),
       font_selector_(font_selector),
-      font_name_(font_name) {}
+      font_name_(font_name),
+      need_to_adjust_for_bold_italic_(font_name.EndsWith(" Bold") ||
+                                      font_name.EndsWith(" Italic")) {}
 
 LocalFontFaceSource::~LocalFontFaceSource() {}
 
@@ -38,6 +53,21 @@ bool LocalFontFaceSource::IsLocalNonBlocking() const {
 
 bool LocalFontFaceSource::IsLocalFontAvailable(
     const FontDescription& font_description) const {
+  if (need_to_adjust_for_bold_italic_) {
+    FontDescription adjustedFontDescription = font_description;
+    WTF::String adjustedFontNameStr = font_name_.GetString();
+    AdjustedFontDescriptionForBoldItalic(adjustedFontDescription, adjustedFontNameStr);
+    WTF::AtomicString adjustedFontName(adjustedFontNameStr);
+    bool adjustedFontAvailable =
+      FontCache::GetFontCache()->IsPlatformFontUniqueNameMatchAvailable(
+        adjustedFontDescription, adjustedFontName);
+    if (adjustedFontAvailable)
+      font_selector_->ReportSuccessfulLocalFontMatch(adjustedFontName);
+    else
+      font_selector_->ReportFailedLocalFontMatch(adjustedFontName);
+    return adjustedFontAvailable;
+  }
+
   // TODO(crbug.com/1027158): Remove metrics code after metrics collected.
   // TODO(crbug.com/1025945): Properly handle Windows prior to 10 and Android.
   bool font_available =
@@ -93,10 +123,23 @@ scoped_refptr<SimpleFontData> LocalFontFaceSource::CreateFontData(
   unstyled_description.SetStyle(NormalSlopeValue());
   unstyled_description.SetWeight(NormalWeightValue());
 #endif
-  scoped_refptr<SimpleFontData> font_data =
-      FontCache::GetFontCache()->GetFontData(
-          unstyled_description, font_name_,
+  scoped_refptr<SimpleFontData> font_data;
+  if (need_to_adjust_for_bold_italic_) {
+      FontDescription adjustedFontDescription = font_description;
+      WTF::String adjustedFontName = font_name_.GetString();
+      AdjustedFontDescriptionForBoldItalic(adjustedFontDescription, adjustedFontName);
+
+      font_data = FontCache::GetFontCache()->GetFontData(
+          adjustedFontDescription,
+          WTF::AtomicString(adjustedFontName),
           AlternateFontName::kLocalUniqueFace);
+  }
+  else {
+      font_data = FontCache::GetFontCache()->GetFontData(
+          unstyled_description, font_name_,  AlternateFontName::kLocalUniqueFace);
+  }
+
+
   histograms_.Record(font_data.get());
   return font_data;
 }
