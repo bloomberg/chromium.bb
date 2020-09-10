@@ -97,6 +97,8 @@ class CORE_EXPORT DOMSelection final : public ScriptWrappable,
 
   String toString();
 
+  String getClipboardCopyString() const;
+
   // Microsoft Selection Object API
   void empty();
 
