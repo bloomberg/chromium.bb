@@ -1982,7 +1982,7 @@ void CompositeEditCommand::FinishBlockCommand(ContainerNode* start_scope,
                                               int start_index,
                                               int end_index)
 {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);
 
   DCHECK_EQ(start_scope, end_scope);
   DCHECK_GE(start_index, 0);

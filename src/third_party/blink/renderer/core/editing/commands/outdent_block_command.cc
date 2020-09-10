@@ -90,7 +90,7 @@ Node* OutdentBlockCommand::SplitStart(Node* ancestor, Node* prpChild)
     while (child != ancestor) {
         Node* previous = PreviousRenderedSiblingExcludingWhitespace(child);
         if (previous)
-            SplitElement(ToElement(child->parentNode()), previous->nextSibling());
+            SplitElement(To<Element>(child->parentNode()), previous->nextSibling());
         child = child->parentNode();
     }
 
@@ -109,7 +109,7 @@ Node* OutdentBlockCommand::SplitEnd(Node* ancestor, Node* prpChild)
         reachedAncestor = child->parentNode() == ancestor;
         Node* next = NextRenderedSiblingExcludingWhitespace(child);
         if (next)
-            SplitElement(ToElement(child->parentNode()), next);
+            SplitElement(To<Element>(child->parentNode()), next);
         child = child->parentNode();
     }
 
