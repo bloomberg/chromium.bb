@@ -1164,9 +1164,9 @@ float PictureLayerImpl::CalculateDirectlyCompositedImageRasterScale() const {
 // directly composited image.
 void PictureLayerImpl::LogDirectlyCompositedImageRasterScaleUMAs() const {
   base::CheckedNumeric<int> actual_area =
-      ScaleToCeiledSize(bounds(), raster_source_scale_).GetCheckedArea();
+      ScaleToCeiledSize(bounds(), raster_source_scale_, raster_source_scale_ * scale_aspect_ratio_).GetCheckedArea();
   base::CheckedNumeric<int> ideal_area =
-      ScaleToCeiledSize(bounds(), ideal_source_scale_).GetCheckedArea();
+      ScaleToCeiledSize(bounds(), ideal_source_scale_, ideal_source_scale_ * scale_aspect_ratio_).GetCheckedArea();
   if (actual_area.IsValid() && ideal_area.IsValid()) {
     int area_difference =
         std::abs(static_cast<int>((actual_area - ideal_area).ValueOrDie()));

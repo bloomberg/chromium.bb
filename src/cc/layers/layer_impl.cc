@@ -825,7 +825,7 @@ gfx::Rect LayerImpl::GetEnclosingRectInTargetSpace() const {
 gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace1(float scale) const {
   gfx::Transform scaled_draw_transform = DrawTransform();
   scaled_draw_transform.Scale(SK_Scalar1 / scale, SK_Scalar1 / scale);
-  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
+  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale, scale);
   return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
                                            gfx::Rect(scaled_bounds));
 }
