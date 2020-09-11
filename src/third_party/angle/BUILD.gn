@@ -1004,7 +1004,10 @@ angle_shared_library("libEGL") {
     ":libEGL_egl_loader",
   ]
 
-  public_deps = [ ":includes" ]
+  public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
+    ":includes",
+  ]
 
   data_deps = [ ":libGLESv2" ]
 }
