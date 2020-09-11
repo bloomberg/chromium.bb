@@ -147,8 +147,11 @@ static void RasterizeSourceOOP(
   ri->BeginRasterCHROMIUM(
       raster_source->background_color(), playback_settings.msaa_sample_count,
       playback_settings.use_lcd_text, color_space, mailbox->name);
-  float recording_to_raster_scale =
-      transform.scale() / raster_source->recording_scale_factor();
+
+  float recording_to_raster_scale_w =
+      transform.scale().width() / raster_source->recording_scale_factor();
+  float recording_to_raster_scale_h =
+      transform.scale().height() / raster_source->recording_scale_factor();
   gfx::Size content_size = raster_source->GetContentSize(transform.scale());
 
   // TODO(enne): could skip the clear on new textures, as the service side has
@@ -157,7 +160,8 @@ static void RasterizeSourceOOP(
   ri->RasterCHROMIUM(
       raster_source->GetDisplayItemList().get(),
       playback_settings.image_provider, content_size, raster_full_rect,
-      playback_rect, transform.translation(), recording_to_raster_scale,
+      playback_rect, transform.translation(),
+      recording_to_raster_scale_w, recording_to_raster_scale_h,
       raster_source->requires_clear(),
       const_cast<RasterSource*>(raster_source)->max_op_size_hint());
   ri->EndRasterCHROMIUM();
