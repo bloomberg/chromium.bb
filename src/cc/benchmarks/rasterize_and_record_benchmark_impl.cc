@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define DISALLOW_UNIFORM_SCALE_ENFORCEMENT
+
 #include "cc/benchmarks/rasterize_and_record_benchmark_impl.h"
 
 #include <stddef.h>
@@ -30,7 +32,7 @@ const int kDefaultRasterizeRepeatCount = 100;
 void RunBenchmark(RasterSource* raster_source,
                   ImageDecodeCache* image_decode_cache,
                   const gfx::Rect& content_rect,
-                  float contents_scale,
+                  const gfx::SizeF& contents_scale,
                   size_t repeat_count,
                   base::TimeDelta* min_time,
                   bool* is_solid_color) {
@@ -48,7 +50,7 @@ void RunBenchmark(RasterSource* raster_source,
                          kTimeCheckInterval);
     SkColor color = SK_ColorTRANSPARENT;
     gfx::Rect layer_rect =
-        gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale);
+        gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale.width(), 1.f / contents_scale.height());
     *is_solid_color =
         raster_source->PerformSolidColorAnalysis(layer_rect, &color);
 
@@ -225,7 +227,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     DCHECK(*it);
 
     gfx::Rect content_rect = (*it)->content_rect();
-    float contents_scale = (*it)->raster_transform().scale();
+    const gfx::SizeF& contents_scale = (*it)->raster_transform().scale();
 
     base::TimeDelta min_time;
     bool is_solid_color = false;
