@@ -90,10 +90,9 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     void decrementWebViewCount();
     void launchDevToolsServerIfNecessary();
 
-    mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
-      bool in_memory,
-      const base::FilePath& relative_partition_path,
-      std::string user_agent);
+    void ConfigureNetworkContextParams(
+        std::string user_agent,
+        network::mojom::NetworkContextParams* network_context_params);
 
     net::ProxyConfig *proxyConfig() { return d_proxyConfig.get(); }
 

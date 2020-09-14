@@ -133,10 +133,13 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
 
-  mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
+  void ConfigureNetworkContextParams(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path);
+      const base::FilePath& relative_partition_path,
+      network::mojom::NetworkContextParams* network_context_params,
+      network::mojom::CertVerifierCreationParams*
+          cert_verifier_creation_params) override;
 
   bool ShouldLockToOrigin(content::BrowserContext* browser_context,
                           const GURL& effective_url) override;
