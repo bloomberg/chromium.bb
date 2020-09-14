@@ -558,8 +558,7 @@ int ResourceDispatcher::StartAsync(
     bridge->Start(std::make_unique<RequestPeerReceiver>(peer.get(), request_id,
                                                         loading_task_runner));
     pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-        std::move(peer), std::move(bridge),
-        static_cast<ResourceType>(request->resource_type),
+        std::move(peer), request->destination, std::move(bridge),
         request->render_frame_id, request->url,
         std::move(response_override_params));
 

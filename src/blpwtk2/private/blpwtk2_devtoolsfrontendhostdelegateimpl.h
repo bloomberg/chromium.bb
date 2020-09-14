@@ -72,7 +72,7 @@ class DevToolsFrontendHostDelegateImpl
 
     // ========= DevToolsAgentHostClient overrides =========
     void DispatchProtocolMessage(content::DevToolsAgentHost* agentHost,
-                                 const std::string& message) override;
+                                 base::span<const uint8_t> message) override;
     void AgentHostClosed(content::DevToolsAgentHost* agentHost) override;
 
     // ========= net::URLFetcherDelegate overrides =========

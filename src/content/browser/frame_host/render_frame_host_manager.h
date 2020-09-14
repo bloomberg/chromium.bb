@@ -176,7 +176,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // affinity will be used.
   //
   // You must call one of the Init*() methods before using this class.
-  RenderFrameHostManager(FrameTreeNode* frame_tree_node, Delegate* delegate);
+  RenderFrameHostManager(FrameTreeNode* frame_tree_node, Delegate* delegate, int render_process_affinity);
   ~RenderFrameHostManager();
 
   // Initialize this frame as the root of a new FrameTree.

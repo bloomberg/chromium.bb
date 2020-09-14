@@ -544,7 +544,7 @@
     "structures": [3480],
   },
   "third_party/blink/public/blink_inspector_resources.grd": {
-    "includes": [30380],
+    "includes": [3490],
   },
   "third_party/blink/public/blink_resources.grd": {
     "includes": [3500],

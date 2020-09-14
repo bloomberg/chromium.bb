@@ -155,7 +155,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
   // immediately be queried for new config info which will be used for all
   // subsequent ResolveProxy calls.
   void ResetConfigService(
-      std::unique_ptr<ProxyConfigService> new_proxy_config_service);
+      std::unique_ptr<ProxyConfigService> new_proxy_config_service) override;
 
   // Returns the last configuration fetched from ProxyConfigService.
   const base::Optional<ProxyConfigWithAnnotation>& fetched_config() const {

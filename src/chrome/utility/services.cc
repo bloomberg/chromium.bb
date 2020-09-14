@@ -53,8 +53,10 @@
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #endif
 
+#if !defined(BLPWTK2_IMPLEMENTATION)
 #include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
 #include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
@@ -102,6 +104,7 @@ auto RunUnzipper(mojo::PendingReceiver<unzip::mojom::Unzipper> receiver) {
   return std::make_unique<unzip::UnzipperImpl>(std::move(receiver));
 }
 
+#if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
 auto RunLanguageDetectionService(
     mojo::PendingReceiver<language_detection::mojom::LanguageDetectionService>
         receiver) {
@@ -115,6 +118,7 @@ auto RunQRCodeGeneratorService(
   return std::make_unique<qrcode_generator::QRCodeGeneratorServiceImpl>(
       std::move(receiver));
 }
+#endif
 
 #if defined(OS_WIN)
 auto RunQuarantineService(
@@ -250,10 +254,10 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory {
     RunFilePatcher,
     RunUnzipper,
-    RunLanguageDetectionService,
-    RunQRCodeGeneratorService,
 
 #if !defined(OS_ANDROID) && !defined(BLPWTK2_IMPLEMENTATION)
+    RunLanguageDetectionService,
+    RunQRCodeGeneratorService,
     RunProfileImporter,
     RunMirroringService,
     RunSharing,

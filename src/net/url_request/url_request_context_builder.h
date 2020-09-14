@@ -94,11 +94,6 @@ class NET_EXPORT URLRequestContextBuilder {
       base::OnceCallback<std::unique_ptr<HttpTransactionFactory>(
           HttpNetworkSession* session)>;
 
-  using InterceptorInjector = std::function<std::unique_ptr<URLRequestInterceptor>()>;
-
-  // Call before constructing URLRequestContextBuilder
-  static void set_interceptor_injector(InterceptorInjector injector);
-
   struct NET_EXPORT HttpCacheParams {
     enum Type {
       // In-memory cache.

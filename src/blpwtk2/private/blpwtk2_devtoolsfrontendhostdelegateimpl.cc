@@ -24,6 +24,7 @@
 
 #include <blpwtk2_urlrequestcontextgetterimpl.h>
 
+#include <base/containers/span.h>
 #include <base/files/file_path.h>
 #include <base/files/file_util.h>
 #include <base/json/json_reader.h>
@@ -46,7 +47,6 @@
 #include <net/http/http_response_headers.h>
 #include <net/url_request/url_fetcher.h>
 #include <net/url_request/url_fetcher_response_writer.h>
-
 
 namespace blpwtk2 {
 
@@ -212,7 +212,7 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
         std::string protocol_message;
         if (!params->GetString(0, &protocol_message))
             return;
-            d_agentHost->DispatchProtocolMessage(this, protocol_message);
+        d_agentHost->DispatchProtocolMessage(this, base::as_bytes(base::make_span(protocol_message)));
     }
     else if (method == "loadCompleted") {
         web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
@@ -289,10 +289,11 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
 
 void DevToolsFrontendHostDelegateImpl::DispatchProtocolMessage(
         content::DevToolsAgentHost* agentHost,
-        const std::string& message)
+        base::span<const uint8_t> msg)
 {
     // This implementation was copied from shell_devtools_frontend.cc
 
+    std::string message((const char*)msg.data(), msg.size());
     if (message.length() < kMaxMessageChunkSize) {
         std::string param;
         base::EscapeJSONString(message, true, &param);

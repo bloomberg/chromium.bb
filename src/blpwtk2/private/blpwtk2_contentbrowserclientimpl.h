@@ -136,7 +136,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
       content::BrowserContext* context,
       bool in_memory,
-      const base::FilePath& relative_partition_path) override;
+      const base::FilePath& relative_partition_path);
 
   bool ShouldLockToOrigin(content::BrowserContext* browser_context,
                           const GURL& effective_url) override;
