@@ -187,15 +187,16 @@ void ContentBrowserClientImpl::OnNetworkServiceCreated(
     return content::ContentBrowserClient::OnNetworkServiceCreated(network_service);
 }
 
-mojo::Remote<network::mojom::NetworkContext>
-ContentBrowserClientImpl::CreateNetworkContext(
+void ContentBrowserClientImpl::ConfigureNetworkContextParams(
     content::BrowserContext* context,
     bool in_memory,
-    const base::FilePath& relative_partition_path)
+    const base::FilePath& relative_partition_path,
+    network::mojom::NetworkContextParams* network_context_params,
+    network::mojom::CertVerifierCreationParams* cert_verifier_creation_params)
 {
     DCHECK(context);
     BrowserContextImpl* pContextImpl = static_cast<BrowserContextImpl*>(context);
-    return pContextImpl->CreateNetworkContext(in_memory, relative_partition_path, GetUserAgent());
+    return pContextImpl->ConfigureNetworkContextParams(GetUserAgent(), network_context_params);
 }
 
 bool ContentBrowserClientImpl::ShouldLockToOrigin(content::BrowserContext* browser_context,

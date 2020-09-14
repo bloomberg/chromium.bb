@@ -212,25 +212,13 @@ RequestContextManager::~RequestContextManager()
     ProxyConfigMonitor::DeleteSoon(std::move(proxy_config_monitor_));
 }
 
-mojo::Remote<::network::mojom::NetworkContext>
-RequestContextManager::CreateNetworkContext(
-    bool in_memory,
-    const base::FilePath& relative_partition_path,
-    std::string user_agent)
+void RequestContextManager::ConfigureNetworkContextParams(
+    bool is_system,
+    std::string user_agent,
+    network::mojom::NetworkContextParams* context_params)
 {
-  mojo::Remote<::network::mojom::NetworkContext> network_context;
-  content::GetNetworkService()->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(),
-      CreateNetworkContextParams(/* is_system = */ false, std::move(user_agent)));
-  return network_context;
-}
-
-network::mojom::NetworkContextParamsPtr
-RequestContextManager::CreateNetworkContextParams(bool is_system, std::string user_agent)
-{
-  auto context_params = ::network::mojom::NetworkContextParams::New();
-  context_params->user_agent = std::move(user_agent);
   context_params->accept_language = "en-us,en";
+  context_params->user_agent = std::move(user_agent);
   context_params->primary_network_context = is_system;
 
   // TODO(https://crbug.com/458508): Allow
@@ -243,9 +231,16 @@ RequestContextManager::CreateNetworkContextParams(bool is_system, std::string us
     context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
         *proxy_config_, GetProxyConfigTrafficAnnotationTag());
   } else {
-    proxy_config_monitor_->AddToNetworkContextParams(context_params.get());
+    proxy_config_monitor_->AddToNetworkContextParams(context_params);
   }
-  content::UpdateCorsExemptHeader(context_params.get());
+  content::UpdateCorsExemptHeader(context_params);
+}
+
+network::mojom::NetworkContextParamsPtr
+RequestContextManager::CreateNetworkContextParams(bool is_system, std::string user_agent)
+{
+  auto context_params = ::network::mojom::NetworkContextParams::New();
+  ConfigureNetworkContextParams(is_system, user_agent, context_params.get());
   return context_params;
 }
 

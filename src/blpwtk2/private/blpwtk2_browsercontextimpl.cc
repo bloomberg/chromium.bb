@@ -186,13 +186,12 @@ BrowserContextImpl::~BrowserContextImpl()
     ShutdownStoragePartitions();
 }
 
-mojo::Remote<::network::mojom::NetworkContext>
-BrowserContextImpl::CreateNetworkContext(bool in_memory,
-                                         const base::FilePath& relative_partition_path,
-                                         std::string user_agent)
+void BrowserContextImpl::ConfigureNetworkContextParams(
+    std::string user_agent,
+    network::mojom::NetworkContextParams* network_context_params)
 {
-    return d_requestContextManager->CreateNetworkContext(
-        in_memory, relative_partition_path, std::move(user_agent));
+    return d_requestContextManager->ConfigureNetworkContextParams(
+        false, user_agent, network_context_params);
 }
 
 URLRequestContextGetterImpl* BrowserContextImpl::requestContextGetter() const

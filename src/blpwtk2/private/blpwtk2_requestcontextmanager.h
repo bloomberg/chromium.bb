@@ -50,10 +50,10 @@ class RequestContextManager {
   RequestContextManager();
   ~RequestContextManager();
 
-  mojo::Remote<::network::mojom::NetworkContext> CreateNetworkContext(
-      bool in_memory,
-      const base::FilePath& relative_partition_path,
-      std::string user_agent);
+  void ConfigureNetworkContextParams(
+    bool is_system,
+    std::string user_agent,
+    network::mojom::NetworkContextParams* network_context_params);
 
   content::ResourceContext* GetResourceContext()
   {
