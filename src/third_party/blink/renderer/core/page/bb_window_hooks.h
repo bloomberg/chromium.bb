@@ -24,9 +24,10 @@
 #ifndef BBWindowHooks_h
 #define BBWindowHooks_h
 
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -39,7 +40,7 @@ namespace blink {
     class Range;
 
     class BBWindowHooks final : public ScriptWrappable,
-                                public DOMWindowClient,
+                                public ExecutionContextClient,
                                 public Supplementable<BBWindowHooks>  {
         DEFINE_WRAPPERTYPEINFO();
         USING_GARBAGE_COLLECTED_MIXIN(BBWindowHooks);

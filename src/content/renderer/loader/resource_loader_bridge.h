@@ -27,10 +27,9 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
-#include "content/public/common/resource_load_info.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "content/public/renderer/request_peer.h"
 #include "net/base/request_priority.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 
@@ -112,7 +111,7 @@ class CONTENT_EXPORT BodyLoaderRequestInfoProvider
       const network::mojom::URLLoaderClientEndpointsPtr& client_endpoints,
       scoped_refptr<base::SingleThreadTaskRunner> runner,
       int render_frame_id,
-      const mojom::ResourceLoadInfoPtr& resource_load_info);
+      const blink::mojom::ResourceLoadInfoPtr& resource_load_info);
   ~BodyLoaderRequestInfoProvider() override;
 };
 

@@ -58,12 +58,6 @@ if (enable_plugins) {
   content_app_deps += [ "//content/ppapi_plugin:ppapi_plugin_sources" ]
 }
 
-if(target_name != "browser") {
-  # blpwtk2: Added this so that we can initialize V8's ICU in
-  #          content_main_runner.
-  content_app_deps += ["//v8"]
-}
-
 # Compile content_main_runner_impl.[h, cc] in a separate target to exempt from
 # GN header checking without exempting any other source file. These files
 # includes headers of all process types and varies significantly per platform
@@ -88,6 +82,9 @@ source_set("content_main_runner_app") {
            "//content/public/utility:utility_sources",
            "//content/renderer",
            "//content/utility",
+           # blpwtk2: Added this so that we can initialize V8's ICU in
+           #          content_main_runner.           
+           "//v8",
          ]
 }
 

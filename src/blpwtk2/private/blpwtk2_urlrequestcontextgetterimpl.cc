@@ -46,7 +46,7 @@
 #include "net/http/http_server_properties.h"
 #include <net/proxy_resolution/proxy_config_service.h>
 #include <net/proxy_resolution/proxy_config_service_fixed.h>
-#include <net/proxy_resolution/proxy_resolution_service.h>
+#include <net/proxy_resolution/configured_proxy_resolution_service.h>
 #include <net/ssl/ssl_config_service_defaults.h>
 #include <net/url_request/static_http_user_agent_settings.h>
 #include <net/url_request/url_request_context.h>
@@ -127,7 +127,7 @@ void URLRequestContextGetterImpl::useSystemProxyConfig()
     // because it must synchronously run on the glib message loop.  This
     // will be passed to the ProxyServer on the IO thread.
     net::ProxyConfigService* proxyConfigService =
-        net::ProxyResolutionService::CreateSystemProxyConfigService(ioLoop).release();
+        net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(ioLoop).release();
 
     GetNetworkTaskRunner()->PostTask(
         FROM_HERE, base::Bind(&URLRequestContextGetterImpl::updateProxyConfig,
@@ -240,7 +240,6 @@ void URLRequestContextGetterImpl::initialize()
         d_protocolHandlers.clear();
     }
 
-    builder.SetInterceptors(std::move(d_requestInterceptors));
     d_urlRequestContext = builder.Build();
 }
 
@@ -258,8 +257,8 @@ void URLRequestContextGetterImpl::updateProxyConfig(
     }
 
     // TODO(jam): use v8 if possible, look at chrome code.
-    d_proxyService = net::ProxyResolutionService::CreateUsingSystemProxyResolver(
-            std::move(proxyConfigService_), 0);
+    d_proxyService = net::ConfiguredProxyResolutionService::CreateUsingSystemProxyResolver(
+            std::move(proxyConfigService_), nullptr, /*quick_check_enabled=*/true);
 }
 
 }  // close namespace blpwtk2

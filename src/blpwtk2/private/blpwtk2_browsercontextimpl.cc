@@ -129,11 +129,6 @@ BrowserContextImpl::BrowserContextImpl(const std::string& dataDir)
     // Register our preference registry to the dependency manager.
     dependencyManager->RegisterProfilePrefsForServices(d_prefRegistry.get());
 
-    // Initialize the browser context.  During this initialization, the
-    // context will ask the dependency manager to register profile
-    // preferences for all services associated with this context.
-    content::BrowserContext::Initialize(this, base::FilePath());
-
     // GetForContext(this) should be called here for all service factories.
     // This will create an instance of the service for this context.  It's
     // possible for the service to do lookups of its preference keys in the
@@ -196,11 +191,6 @@ BrowserContextImpl::CreateNetworkContext(bool in_memory,
                                          const base::FilePath& relative_partition_path,
                                          std::string user_agent)
 {
-    auto injector = []() {
-        return std::make_unique<RequestInterceptorImpl>();
-    };
-    net::URLRequestContextBuilder::set_interceptor_injector(std::move(injector));
-
     return d_requestContextManager->CreateNetworkContext(
         in_memory, relative_partition_path, std::move(user_agent));
 }

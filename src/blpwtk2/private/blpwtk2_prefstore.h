@@ -75,6 +75,7 @@ class PrefStore : public PersistentPrefStore {
     void ClearMutableValues() override;
     void ReportValueChanged(const std::string& key, uint32_t flags) override;
     void OnStoreDeletionFromDisk() override;
+    void RemoveValuesByPrefixSilently(const std::string& prefix) override;
 
 private:
     ~PrefStore() final;

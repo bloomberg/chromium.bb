@@ -64,7 +64,7 @@ static_library("chrome_blpwtk2") {
      "//chrome/services/util_win/public/mojom",
      "//chrome/services/util_win:lib",
      "//components/signin/public/base:signin_buildflags",
-     "//components/safe_browsing/web_ui:constants",
+     "//components/safe_browsing/core/web_ui:constants",
      "//components/mirroring/service:mirroring_service",
      "//components/services/print_compositor/public/mojom",
      "//content",

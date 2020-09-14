@@ -147,4 +147,9 @@ void PrefStore::OnStoreDeletionFromDisk()
     // Do nothing
 }
 
+void PrefStore::RemoveValuesByPrefixSilently(const std::string& prefix)
+{
+    d_prefs.ClearWithPrefix(prefix);
+}
+
 }  // close namespace blpwtk2

@@ -33,9 +33,9 @@
 #include <base/memory/weak_ptr.h>
 #include <content/public/browser/web_contents_delegate.h>
 #include <content/public/browser/web_contents_observer.h>
-#include <content/public/common/context_menu_params.h>
+#include <content/public/browser/context_menu_params.h>
 #include <ui/gfx/native_widget_types.h>
-#include <third_party/blink/public/web/web_text_direction.h>
+#include <base/i18n/rtl.h>
 
 namespace content {
 class WebContents;
@@ -166,8 +166,7 @@ class WebViewImpl final : public WebView,
 
     void DidFailLoad(content::RenderFrameHost *render_frame_host,
                      const GURL&               validated_url,
-                     int                       error_code,
-                     const base::string16&     error_description) override;
+                     int                       error_code) override;
         // This method is like DidFinishLoad, but when the load failed or was
         // cancelled, e.g. window.stop() is invoked.
 

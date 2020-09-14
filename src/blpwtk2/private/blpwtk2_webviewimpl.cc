@@ -904,8 +904,7 @@ void WebViewImpl::DidFinishLoad(content::RenderFrameHost *render_frame_host,
 
 void WebViewImpl::DidFailLoad(content::RenderFrameHost *render_frame_host,
                               const GURL&               validated_url,
-                              int                       error_code,
-                              const base::string16&     error_description)
+                              int                       error_code)
 {
     DCHECK(Statics::isInBrowserMainThread());
     if (d_wasDestroyed || !d_delegate) {

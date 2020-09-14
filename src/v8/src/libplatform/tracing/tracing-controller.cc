@@ -70,10 +70,10 @@ const int g_num_builtin_categories = 3;
 v8::base::AtomicWord g_category_index = g_num_builtin_categories;
 #endif  // !defined(V8_USE_PERFETTO)
 
-#if defined(MSVC_2015_PLUS)
+#if defined(_MSC_VER) && _MSC_VER >= 1900
 TracingController::TracingController() { mutex_.reset(new base::Mutex()); }
 #else
-TracingController::TracingController():recording_(false){}
+TracingController::TracingController():recording_(false) { mutex_.reset(new base::Mutex()); }
 #endif
 
 TracingController::~TracingController() {

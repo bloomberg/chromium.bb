@@ -35,6 +35,7 @@
 #include <services/network/public/cpp/features.h>
 #include <services/network/public/mojom/network_service.mojom.h>
 #include <services/network/url_request_context_builder_mojo.h>
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 
 // reference: headless_request_context_manager.cc
 namespace blpwtk2 {
@@ -92,7 +93,7 @@ class ProxyConfigMonitor
     // We must create the proxy config service on the UI loop on Linux because
     // it must synchronously run on the glib message loop.
     proxy_config_service_ =
-        net::ProxyResolutionService::CreateSystemProxyConfigService(
+        net::ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
             task_runner_);
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&net::ProxyConfigService::AddObserver,

@@ -47,7 +47,7 @@ static BBWindowHooks::PumpConfigHooks& GetPumpConfigHooks()
 }
 
 BBWindowHooks::BBWindowHooks(LocalFrame* frame)
-    : DOMWindowClient(frame)
+    : ExecutionContextClient(frame)
 {
 }
 
@@ -95,7 +95,7 @@ void BBWindowHooks::setPumpSchedulerTunable(long index, long value) {
 
 void BBWindowHooks::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   Supplementable<BBWindowHooks>::Trace(visitor);
 }
 

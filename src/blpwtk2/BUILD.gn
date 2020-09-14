@@ -310,7 +310,7 @@ shared_library("blpwtk2") {
     "//components/spellcheck/common:common",
     "//components/user_prefs",
     "//content",
-    "//content:resources",
+    "//content:content_resources",
     "//content:sandbox_helper_win",
     "//content/app/resources",
     "//ipc",

@@ -87,7 +87,7 @@ BodyLoaderRequestInfoProvider::BodyLoaderRequestInfoProvider(
     const network::mojom::URLLoaderClientEndpointsPtr& client_endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     int render_frame_id,
-    const mojom::ResourceLoadInfoPtr& resource_load_info) {
+    const blink::mojom::ResourceLoadInfoPtr& resource_load_info) {
   url_ = (common_params.url);
   firstPartyForCookies_ = (common_params.url);
   allowStoredCredentials_ = (false);
@@ -107,7 +107,7 @@ BodyLoaderRequestInfoProvider::~BodyLoaderRequestInfoProvider() = default;
 PeerRequestInfoProvider::PeerRequestInfoProvider(
     const network::ResourceRequest* request) {
   url_ = request->url;
-  firstPartyForCookies_ = request->site_for_cookies;
+  firstPartyForCookies_ = request->site_for_cookies.RepresentativeUrl();
   loadFlags_ = request->load_flags;
   httpMethod_ = request->method;
   reportUploadProgress_ = request->enable_upload_progress;

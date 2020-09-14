@@ -38,7 +38,6 @@
 #include <net/http/http_request_headers.h>
 #include <net/http/http_response_headers.h>
 #include <services/network/public/cpp/resource_request.h>
-#include <services/network/public/cpp/resource_response_info.h>
 #include <third_party/blink/public/platform/web_url_request.h>
 #include <url/gurl.h>
 
@@ -310,7 +309,17 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::addResponseHeader(
 
   if (d_responseHeaders) {
     std::string str(header.data(), header.length());
-    d_responseHeaders->AddHeader(str);
+    DCHECK_EQ('\0', str[str.size() - 2]);
+    DCHECK_EQ('\0', str[str.size() - 1]);
+
+    const std::string::size_type value_end_index = str.size()-2;
+    const std::string::size_type name_end_index = str.find(": ");
+    DCHECK(name_end_index != std::string::npos);
+    const base::StringPiece name(header.data(), name_end_index);
+    const base::StringPiece value(header.data() + name_end_index + 2,
+        value_end_index - name_end_index - 2);
+
+    d_responseHeaders->AddHeader(name, value);
   }
 }
 

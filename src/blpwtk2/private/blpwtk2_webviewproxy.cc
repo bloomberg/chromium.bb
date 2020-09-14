@@ -383,11 +383,19 @@ void WebViewProxy::handleInputEvents(const InputEvent *events, size_t eventsCoun
         << "You should wait for didFinishLoad";
     DCHECK(d_gotRenderViewInfo);
 
-    content::RenderViewImpl *rw =
-        content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
-    DCHECK(rw);
-    VALIDATE_RENDER_VIEW_VOID(rw);
-    RendererUtil::handleInputEvents(rw->GetWidget(), events, eventsCount);
+    content::RenderView *rv =
+        content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    DCHECK(rv);
+
+    blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
+    DCHECK(webFrame->IsWebLocalFrame());
+    
+    blink::WebLocalFrame* localWebFrame = webFrame->ToWebLocalFrame();
+    content::RenderFrameImpl* render_frame =
+        content::RenderFrameImpl::FromWebFrame(localWebFrame);
+    content::RenderWidget* render_widget = render_frame->GetLocalRootRenderWidget();
+    
+    RendererUtil::handleInputEvents(render_widget, events, eventsCount);
 }
 
 void WebViewProxy::setDelegate(WebViewDelegate *delegate)

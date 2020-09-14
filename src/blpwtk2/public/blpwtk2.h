@@ -27,7 +27,6 @@
 #include <blpwtk2_contextmenuitem.h>
 #include <blpwtk2_contextmenuparams.h>
 #include <blpwtk2_iatpatchfunction.h>
-#include <blpwtk2_processclientdelegate.h>
 #include <blpwtk2_profile.h>
 #include <blpwtk2_resourcecontext.h>
 #include <blpwtk2_resourceloader.h>
