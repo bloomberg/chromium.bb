@@ -149,6 +149,8 @@ shared_library("blpwtk2") {
     "private/blpwtk2_dllmain.cc",
     "private/blpwtk2_findonpage.cc",
     "private/blpwtk2_findonpage.h",
+    "private/blpwtk2_fontcollectionimpl.cc",
+    "private/blpwtk2_fontcollectionimpl.h",
     "private/blpwtk2_inprocessrenderer.cc",
     "private/blpwtk2_inprocessrenderer.h",
     "private/blpwtk2_inprocessresourceloaderbridge.cc",
