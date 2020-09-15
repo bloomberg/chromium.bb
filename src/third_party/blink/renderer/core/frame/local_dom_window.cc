@@ -122,6 +122,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -241,6 +242,14 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
       spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
       text_suggestion_controller_(
           MakeGarbageCollected<TextSuggestionController>(*this)) {}
+
+LocalDOMWindow::LocalDOMWindow()
+    : DOMWindow(),
+      visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
+      unused_preloads_timer_(Thread::MainThread()->GetTaskRunner(),
+                             this,
+                             &LocalDOMWindow::WarnUnusedPreloads),
+      should_print_when_finished_loading_(false) {}
 
 void LocalDOMWindow::ClearDocument() {
   if (!document_)
@@ -584,6 +593,19 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   if (GetFrame()->GetPage() && GetFrame()->View()) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
   }
+
+  return document_;
+}
+
+Document* LocalDOMWindow::InstallNewUnintializedDocument(
+  const String& mime_type,
+  const DocumentInit& init,
+  bool force_xhtml) {
+  DCHECK_EQ(init.GetFrame(), GetFrame());
+
+  ClearDocument();
+
+  document_ = CreateDocument(mime_type, init, force_xhtml);
 
   return document_;
 }
