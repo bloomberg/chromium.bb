@@ -242,7 +242,8 @@ void WebViewProxy::setLogicalFocus(bool focused)
         content::RenderViewImpl *rv =
             content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
         VALIDATE_RENDER_VIEW_VOID(rv);
-        rv->SetFocus(focused);
+        blink::WebView* webView = rv->GetWebView();
+        webView->SetFocus(focused);
     }
 
     // Send the message, which will update the browser-side aura::Window focus
