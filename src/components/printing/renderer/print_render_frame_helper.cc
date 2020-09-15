@@ -105,9 +105,6 @@ bool g_use_default_print_settings_ = false;
 class EmptyPrintWebViewHelperDelegate : public PrintRenderFrameHelper::Delegate {
  public:
   EmptyPrintWebViewHelperDelegate() {}
-  bool CancelPrerender(content::RenderFrame* render_frame) override {
-    return false;
-  }
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override {
     return blink::WebElement();
   }

@@ -15,7 +15,11 @@
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_job_manager.h"
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#endif
+
 #include "chrome/common/chrome_content_client.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
