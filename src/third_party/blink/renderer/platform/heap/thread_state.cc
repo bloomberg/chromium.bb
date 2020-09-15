@@ -263,7 +263,8 @@ void ThreadState::AttachToIsolate(
   isolate_ = isolate;
   v8_build_embedder_graph_ = v8_build_embedder_graph;
   unified_heap_controller_.reset(new UnifiedHeapController(this));
-  isolate_->SetEmbedderHeapTracer(unified_heap_controller_.get());
+  isolate_->SetEmbedderHeapTracer(&multi_heap_tracer_);
+  multi_heap_tracer_id_ = multi_heap_tracer_.AddHeapTracer(unified_heap_controller_.get(), gin::kEmbedderBlink);
   unified_heap_controller_.get()->SetStackStart(WTF::GetStackStart());
   if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
     profiler->AddBuildEmbedderGraphCallback(v8_build_embedder_graph, nullptr);
@@ -272,7 +273,10 @@ void ThreadState::AttachToIsolate(
 
 void ThreadState::DetachFromIsolate() {
   if (isolate_) {
+    multi_heap_tracer_.RemoveHeapTracer(multi_heap_tracer_id_);
     isolate_->SetEmbedderHeapTracer(nullptr);
+    multi_heap_tracer_id_ = 0;
+
     if (v8::HeapProfiler* profiler = isolate_->GetHeapProfiler()) {
       profiler->RemoveBuildEmbedderGraphCallback(v8_build_embedder_graph_,
                                                  nullptr);
@@ -1468,7 +1472,7 @@ class UnpoisonHandlesVisitor final
   }
 
   void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>&) final {
-    CHECK(false) << "Blink does not use v8::TracedGlobal.";
+    // CHECK(false) << "Blink does not use v8::TracedGlobal.";
   }
 
   void VisitTracedReference(const v8::TracedReference<v8::Value>& value) final {
