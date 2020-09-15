@@ -30,6 +30,7 @@
 #include <content/renderer/render_process_impl.h>
 #include <content/public/child/dwrite_font_proxy_init_win.h>
 #include <mojo/public/cpp/bindings/sync_call_restrictions.h>
+#include "third_party/blink/public/platform/platform.h"
 #include <third_party/blink/public/platform/web_runtime_features.h>
 #include <third_party/blink/public/platform/scheduler/web_thread_scheduler.h>
 #include <ui/gfx/win/direct_write.h>
@@ -145,6 +146,7 @@ void InProcessRenderer::init(
     DCHECK(Statics::isInApplicationMainThread());
     DCHECK(!g_inProcessRendererThread);
 
+    blink::Platform::InitializeBlink();
     if (Statics::isOriginalThreadMode()) {
         DCHECK(Statics::isOriginalThreadMode());
         g_inProcessRendererThread =
