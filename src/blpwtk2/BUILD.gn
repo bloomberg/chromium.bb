@@ -303,6 +303,7 @@ shared_library("blpwtk2") {
     "//base",
     "//cc",
     "//chrome/chrome_blpwtk2",
+    "//components/discardable_memory/service",
     "//components/keyed_service/content",
     "//components/services/print_compositor",
     "//components/services/print_compositor/public/mojom",
