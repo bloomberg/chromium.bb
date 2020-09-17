@@ -71,10 +71,6 @@ ContentRendererClientImpl::~ContentRendererClientImpl()
 {
 }
 
-void ContentRendererClientImpl::RenderThreadStarted() {
-    d_browser_interface_broker = blink::Platform::Current()->GetBrowserInterfaceBroker();
-}
-
 blink::ThreadSafeBrowserInterfaceBrokerProxy* ContentRendererClientImpl::GetInterfaceBroker() const
 {
     return d_browser_interface_broker.get();
@@ -85,6 +81,8 @@ void ContentRendererClientImpl::RenderThreadStarted()
     if (!d_spellcheck) {
         d_spellcheck.reset(new SpellCheck(this));
     }
+
+    d_browser_interface_broker = blink::Platform::Current()->GetBrowserInterfaceBroker();
 }
 
 void ContentRendererClientImpl::RenderViewCreated(

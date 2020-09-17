@@ -43,7 +43,7 @@
 #include <content/public/common/service_names.mojom.h>
 #include <content/public/common/url_constants.h>
 #include <content/public/common/user_agent.h>
-#include "chrome/app/builtin_service_manifests.h"
+#include "content/browser/builtin_service_manifests.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include <chrome/grit/browser_resources.h>
 #include "mojo/public/cpp/bindings/remote.h"
@@ -163,7 +163,7 @@ mojo::OutgoingInvitation* ContentBrowserClientImpl::GetClientInvitation() const
 std::vector<service_manager::Manifest>
 ContentBrowserClientImpl::GetExtraServiceManifests()
 {
-    return GetChromeBuiltinServiceManifests();;
+    return content::GetBuiltinServiceManifests();
 }
 
 base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceManifestOverlay(

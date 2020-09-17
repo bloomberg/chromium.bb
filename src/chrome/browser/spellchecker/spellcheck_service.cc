@@ -431,13 +431,11 @@ void SpellcheckService::OnCustomWordsChanged(
   std::set<std::string> words_added_copy;
   std::set<std::string> words_removed_copy;
   for (size_t i = 0; i < words_added.size(); ++i) {
-    std::string word;
-    words_added[i].CopyToString(&word);
+    std::string word(words_added[i].data(), words_added[i].length());
     words_added_copy.insert(word);
   }
   for (size_t i = 0; i < words_removed.size(); ++i) {
-    std::string word;
-    words_removed[i].CopyToString(&word);
+    std::string word(words_removed[i].data(), words_removed[i].length());
     words_removed_copy.insert(word);
   }
 
