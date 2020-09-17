@@ -488,7 +488,7 @@ void BrowserContextImpl::addCustomWords(const StringRef *words,
 {
     std::vector<base::StringPiece> wordsVector(numWords);
     for (size_t i = 0; i < numWords; ++i) {
-        wordsVector[i].set(words[i].data(), words[i].length());
+        wordsVector[i] = base::StringPiece(words[i].data(), words[i].length());
     }
     content::SpellcheckData::FromContext(this)->AdjustCustomWords(
         wordsVector,
@@ -500,7 +500,7 @@ void BrowserContextImpl::removeCustomWords(const StringRef *words,
 {
     std::vector<base::StringPiece> wordsVector(numWords);
     for (size_t i = 0; i < numWords; ++i) {
-        wordsVector[i].set(words[i].data(), words[i].length());
+        wordsVector[i] = base::StringPiece(words[i].data(), words[i].length());
     }
     content::SpellcheckData::FromContext(this)->AdjustCustomWords(
         std::vector<base::StringPiece>(),

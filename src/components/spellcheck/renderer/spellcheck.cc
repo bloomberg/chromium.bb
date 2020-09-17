@@ -594,7 +594,7 @@ void SpellCheck::CreateTextCheckingResults(
       if (SpellCheckWord(misspelled_word.c_str(), kNoOffset,
                          misspelled_word.length(), kNoTag,
                          &unused_misspelling_start, &unused_misspelling_length,
-                         nullptr)) {
+                         true, nullptr)) {
         // Correctly spelled in a Hunspell locale. If enhanced spell check was
         // used, turn the spelling mistake into a grammar mistake (local and
         // remote checks disagree, so the word is probably only contextually
