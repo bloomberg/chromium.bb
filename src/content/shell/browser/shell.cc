@@ -575,7 +575,7 @@ void Shell::NavigationStateChanged(WebContents* source,
   if (changed_flags & INVALIDATE_TYPE_URL)
     g_platform->SetAddressBarURL(this, source->GetVisibleURL());
   
-  web_contents->GetRenderViewHost()->EnableAltDragRubberbanding(true);
+  source->GetRenderViewHost()->EnableAltDragRubberbanding(true);
 }
 
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
