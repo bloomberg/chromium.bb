@@ -7154,14 +7154,6 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   GetSecurityContext().SetAddressSpace(initializer.GetIPAddressSpace());
 }
 
-void Document::SetSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
-  // Enforce that we don't change access, we might change the reference (via
-  // IsolatedCopy but we can't change the security policy).
-  CHECK(origin);
-  //CHECK(GetSecurityOrigin()->CanAccess(origin.get()));
-  SecurityContext::SetSecurityOrigin(origin);
-}
-
 void Document::BindContentSecurityPolicy() {
   DCHECK(!GetContentSecurityPolicy()->IsBound());
   GetContentSecurityPolicy()->BindToDelegate(

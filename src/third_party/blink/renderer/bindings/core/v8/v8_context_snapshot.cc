@@ -126,7 +126,8 @@ v8::Local<v8::Context> V8ContextSnapshot::CreateContextFromSnapshot(
     const DOMWrapperWorld& world,
     v8::ExtensionConfiguration* extension_configuration,
     v8::Local<v8::Object> global_proxy,
-    Document* document) {
+    Document* document,
+    LocalDOMWindow* window) {
   if (!CanCreateContextFromSnapshot(isolate, world, document)) {
     return v8::Local<v8::Context>();
   }
@@ -135,11 +136,12 @@ v8::Local<v8::Context> V8ContextSnapshot::CreateContextFromSnapshot(
   DataForDeserializer data(document);
   v8::DeserializeInternalFieldsCallback callback =
       v8::DeserializeInternalFieldsCallback(&DeserializeInternalField, &data);
+  ExecutionContext* executionContext = window ? window->GetExecutionContext() : document->GetExecutionContext();
 
   v8::Local<v8::Context> context =
       v8::Context::FromSnapshot(
           isolate, index, callback, extension_configuration, global_proxy,
-          document->GetExecutionContext()->GetMicrotaskQueue())
+          executionContext->GetMicrotaskQueue())
           .ToLocalChecked();
 
   // In case we fail to deserialize v8::Context from snapshot,

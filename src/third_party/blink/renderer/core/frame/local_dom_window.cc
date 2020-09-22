@@ -245,11 +245,15 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
 
 LocalDOMWindow::LocalDOMWindow()
     : DOMWindow(),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
       visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
       unused_preloads_timer_(Thread::MainThread()->GetTaskRunner(),
                              this,
                              &LocalDOMWindow::WarnUnusedPreloads),
-      should_print_when_finished_loading_(false) {}
+      should_print_when_finished_loading_(false),
+      spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
+      text_suggestion_controller_(
+          MakeGarbageCollected<TextSuggestionController>(*this)) {}
 
 void LocalDOMWindow::ClearDocument() {
   if (!document_)
@@ -597,16 +601,11 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   return document_;
 }
 
-Document* LocalDOMWindow::InstallNewUnintializedDocument(
-  const String& mime_type,
-  const DocumentInit& init,
-  bool force_xhtml) {
+Document* LocalDOMWindow::InstallNewUnintializedDocument(const DocumentInit& init) {
   DCHECK_EQ(init.GetFrame(), GetFrame());
 
   ClearDocument();
-
-  document_ = CreateDocument(mime_type, init, force_xhtml);
-
+  document_ = DOMImplementation::createDocument(init);
   return document_;
 }
 
