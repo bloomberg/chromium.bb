@@ -6,7 +6,7 @@
 #define INCLUDE_CPPGC_COMMON_H_
 
 // TODO(chromium:1056170): Remove dependency on v8.
-#include "v8config.h"  // NOLINT(build/include_directory)
+#include "../v8config.h"  // NOLINT(build/include_directory)
 
 namespace cppgc {
 
