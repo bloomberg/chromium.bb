@@ -1205,7 +1205,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderViewImpl::OnEnableAltDragRubberbanding(bool enable) {
-  webview()->EnableAltDragRubberbanding(enable);
+  GetWebView()->EnableAltDragRubberbanding(enable);
 }
 
 // blink::WebViewClient ------------------------------------------------------
@@ -1612,11 +1612,13 @@ int RenderViewImpl::HistoryForwardListCount() {
 }
 
 void RenderViewImpl::setRubberbandRect(const WebRect& rect) {
-  Send(new ViewHostMsg_SetRubberbandRect(GetWidget()->routing_id(), rect));
+  Send(new ViewHostMsg_SetRubberbandRect(
+    main_render_frame_->GetLocalRootRenderWidget()->routing_id(), rect));
 }
 
 void RenderViewImpl::hideRubberbandRect() {
-  Send(new ViewHostMsg_HideRubberbandRect(GetWidget()->routing_id()));
+  Send(new ViewHostMsg_HideRubberbandRect(
+    main_render_frame_->GetLocalRootRenderWidget()->routing_id()));
 }
 
 // blink::WebWidgetClient ----------------------------------------------------

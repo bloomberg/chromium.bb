@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/web/web_view_client.h"
 
 #include "base/logging.h"
@@ -296,7 +297,7 @@ static IntRect getRubberbandRect(const IntPoint& start, const IntPoint& extent)
 
 void WebViewImpl::RubberbandWalkFrame(const RubberbandContext& context, const LocalFrame* frame, const LayoutPoint& clientTopLeft)
 {
-    frame->GetDocument()->UpdateStyleAndLayout();
+    frame->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kRubberband);
 
     LocalFrameView* view = frame->View();
 
@@ -435,7 +436,7 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
         }
 
         if (layoutObject->IsLayoutIFrame() && isVisible) {
-            const LayoutIFrame* layoutIFrame = ToLayoutIFrame(layoutObject);
+            const LayoutIFrame* layoutIFrame = static_cast<const LayoutIFrame*>(layoutObject);
             if (layoutIFrame->ChildFrameView()) {
                 LocalFrameView* frameView = DynamicTo<LocalFrameView>(layoutIFrame->ChildFrameView());
                 LayoutPoint topLeft;
@@ -823,28 +824,30 @@ bool WebViewImpl::HandleAltDragRubberbandEvent(const WebInputEvent& inputEvent)
     auto positionInWidget = mouseEvent.PositionInWidget();
 
     if (!IsRubberbanding()) {
-        if (inputEvent.GetType() == WebInputEvent::kMouseDown && PreStartRubberbanding()) {
+        if (inputEvent.GetType() == WebInputEvent::Type::kMouseDown && PreStartRubberbanding()) {
             // set the rubberbandingForcedOn_ to true not to abort the rubberband
             // when 'alt' is lifted before the mouse button.
             rubberbandingForcedOn_ = true;
             StartRubberbanding();
-            rubberbandState_->impl_->m_startPoint = IntPoint(positionInWidget.x, positionInWidget.y);
+            rubberbandState_->impl_->m_startPoint = IntPoint(positionInWidget.x(), positionInWidget.y());
             return true;
         }
 
         return false;
     }
-    else if (inputEvent.GetType() == WebInputEvent::kMouseUp) {
+    else if (inputEvent.GetType() == WebInputEvent::Type::kMouseUp) {
         IntPoint start = rubberbandState_->impl_->m_startPoint;
-        IntPoint extent = IntPoint(positionInWidget.x, positionInWidget.y);
+        IntPoint extent = IntPoint(positionInWidget.x(), positionInWidget.y());
         LayoutRect rc = ExpandRubberbandRectImpl(getRubberbandRect(start, extent));
         if (rc.IsEmpty()) {
             AbortRubberbanding();
         }
         else {
             WebString copied = FinishRubberbandingImpl(rc);
-            SystemClipboard::GetInstance().WritePlainText(copied, SystemClipboard::kCannotSmartReplace);
-            SystemClipboard::GetInstance().CommitWrite();
+            LocalFrame* frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
+            DCHECK(frame && frame->GetSystemClipboard());
+            frame->GetSystemClipboard()->WritePlainText(copied, SystemClipboard::kCannotSmartReplace);
+            frame->GetSystemClipboard()->CommitWrite();
         }
 
         return true;
@@ -853,7 +856,7 @@ bool WebViewImpl::HandleAltDragRubberbandEvent(const WebInputEvent& inputEvent)
         WebViewClient* client = AsView().client;
         if (client) {
             IntPoint start = rubberbandState_->impl_->m_startPoint;
-            IntPoint extent = IntPoint(positionInWidget.x, positionInWidget.y);
+            IntPoint extent = IntPoint(positionInWidget.x(), positionInWidget.y());
             WebRect rc = ExpandRubberbandRect(getRubberbandRect(start, extent));
             client->setRubberbandRect(rc);
         }
@@ -1063,7 +1066,7 @@ void appendCandidatesByLayoutNGText(
         }
         const blink::NGPhysicalTextFragment& physicalTextFragment =
             blink::To<blink::NGPhysicalTextFragment>(physicalFragment);
-        const blink::PhysicalOffset& offset = paintFragment->InlineOffsetToContainerBox();
+        const blink::PhysicalOffset& offset = paintFragment->OffsetInContainerBlock();
         const blink::LayoutSize fragSize{physicalTextFragment.Size().width,
                                          physicalTextFragment.Size().height};
         LayoutRect localRect{offset.ToLayoutPoint(), fragSize};

@@ -1863,15 +1863,6 @@ void RenderWidgetHostImpl::OnHideRubberbandRect() {
   view_->HideRubberbandRect();
 }
 
-void RenderWidgetHostImpl::OnSetNeedsBeginFrames(bool needs_begin_frames) {
-  if (needs_begin_frames_ == needs_begin_frames)
-    return;
-
-  needs_begin_frames_ = needs_begin_frames;
-  if (view_)
-    view_->SetNeedsBeginFrames(needs_begin_frames);
-}
-
 void RenderWidgetHostImpl::OnStartDragging(
     const DropData& drop_data,
     blink::WebDragOperationsMask drag_operations_mask,
