@@ -47,17 +47,21 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::EscapableHandleScope hs(isolate);
 
-    LocalDOMWindow *window = LocalDOMWindow::Create();
+    scoped_refptr<SecurityOrigin> blink_security_origin =
+    SecurityOrigin::CreateFromString(security_origin.ToString());
+    blink_security_origin->GrantUniversalAccess();
 
-    Document *document =
-        window->InstallNewUnintializedDocument(
-            "text/html", DocumentInit::Create(), false);
+    LocalDOMWindow *window = LocalDOMWindow::Create();
+    DocumentInit init = DocumentInit::Create().WithTypeFrom("text/html")
+                                              .WithOriginToCommit(blink_security_origin);
+
+    Document *document = window->InstallNewUnintializedDocument(init);
 
     DOMWrapperWorld& world = DOMWrapperWorld::MainWorld();
 
     v8::Local<v8::Context> context =
         V8ContextSnapshot::CreateContextFromSnapshot(
-            isolate, world, nullptr, v8::Local<v8::Object>(), document);
+            isolate, world, nullptr, v8::Local<v8::Object>(), document, window);
 
     MakeGarbageCollected<ScriptState>(context, std::move(&world));
 
@@ -74,7 +78,6 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
 
     if (world.DomDataStore().Set(
         isolate, window, wrapper_type_info, window_wrapper)) {
-        WrapperTypeInfo::WrapperCreated();
         V8DOMWrapper::SetNativeInfo(
             isolate, window_wrapper, wrapper_type_info, window);
     }
@@ -93,11 +96,6 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
     CHECK(!window_properties.IsEmpty());
     V8DOMWrapper::SetNativeInfo(
         isolate, window_properties, wrapper_type_info, window);
-
-    scoped_refptr<SecurityOrigin> blink_security_origin =
-        SecurityOrigin::CreateFromString(security_origin.ToString());
-    blink_security_origin->GrantUniversalAccess();
-    document->SetSecurityOrigin(blink_security_origin);
 
     return hs.Escape(context);
 }
