@@ -908,12 +908,6 @@ bool WebViewProxy::validateClient()
     return true;
 }
 
-{
-    if (d_delegate) {
-        d_delegate->devToolsAgentHostAttached(this);
-    }
-}
-
 void WebViewProxy::devToolsAgentHostDetached()
 {
     if (d_delegate) {
