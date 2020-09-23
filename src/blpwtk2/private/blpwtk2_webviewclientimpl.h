@@ -106,6 +106,8 @@ class WebViewClientImpl final : public WebViewClient
 
     void setParent(NativeView parent) override;
 
+    void takeKeyboardFocus() override;
+
     void find(const std::string& text,
               bool               matchCase,
               bool               forward) override;

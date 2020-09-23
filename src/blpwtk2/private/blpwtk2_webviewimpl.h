@@ -40,6 +40,7 @@
 namespace content {
 class WebContents;
 struct WebPreferences;
+class RenderWidgetHost;
 }  // close namespace content
 
 namespace views {
@@ -137,6 +138,10 @@ class WebViewImpl final : public WebView,
         // Note that this does not query the user. |type| must be
         // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
 
+    // Return true if the RWHV should take focus on mouse-down.
+    bool ShouldSetKeyboardFocusOnMouseDown() override;
+    bool ShouldSetLogicalFocusOnMouseDown() override;
+
     void FindReply(content::WebContents *source_contents,
                    int                   request_id,
                    int                   number_of_matches,
@@ -181,6 +186,11 @@ class WebViewImpl final : public WebView,
 
 
     // patch section: focus
+    void OnWebContentsFocused(content::RenderWidgetHost* render_widget_host) override;
+        // Notification that |contents| has gained focus.
+
+    void OnWebContentsLostFocus(content::RenderWidgetHost* render_widget_host) override;
+        // Invoked when focus is lost.
 
 
     // patch section: gpu
@@ -223,6 +233,8 @@ class WebViewImpl final : public WebView,
     int goForward() override;
     int reload() override;
     void stop() override;
+    void takeKeyboardFocus() override;
+    void setLogicalFocus(bool focused) override;
     void show() override;
     void hide() override;
     int setParent(NativeView parent) override;
