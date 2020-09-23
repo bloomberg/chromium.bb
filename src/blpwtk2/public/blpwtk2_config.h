@@ -60,6 +60,7 @@
 // feature 9
 #define BLPWTK2_FEATURE_TIMEZONE
 // feature 10
+#define BLPWTK2_FEATURE_V8_PLATFORM
 // feature 11
 #define BLPWTK2_FEATURE_DOCPRINTER
 // feature 12
