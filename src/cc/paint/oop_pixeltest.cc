@@ -195,12 +195,12 @@ class OopPixelTest : public testing::Test,
     raster_implementation->RasterCHROMIUM(
         display_item_list.get(), &image_provider, options.content_size,
         options.full_raster_rect, options.playback_rect, options.post_translate,
-        options.post_scale, options.requires_clear, &max_op_size_limit);
+        options.post_scale, options.post_scale, options.requires_clear, &max_op_size_limit);
     for (const auto& list : options.additional_lists) {
       raster_implementation->RasterCHROMIUM(
           list.get(), &image_provider, options.content_size,
           options.full_raster_rect, options.playback_rect,
-          options.post_translate, options.post_scale, options.requires_clear,
+          options.post_translate, options.post_scale, options.post_scale, options.requires_clear,
           &max_op_size_limit);
     }
     raster_implementation->EndRasterCHROMIUM();
