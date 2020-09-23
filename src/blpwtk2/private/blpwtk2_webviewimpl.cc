@@ -127,6 +127,7 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
 
     content::WebContents::CreateParams createParams(browserContext);
     createParams.render_process_affinity = hostAffinity;
+    createParams.initially_hidden = !initiallyVisible;
     d_webContents = content::WebContents::Create(createParams);
     d_webContents->SetDelegate(this);
     Observe(d_webContents.get());
@@ -246,7 +247,7 @@ void WebViewImpl::onRenderViewHostMadeCurrent(content::RenderViewHost *renderVie
 #endif
 
 
-
+    d_renderViewHost->GetWidget()->GetView()->SetBackgroundColor(SK_ColorBLACK);
 }
 
 void WebViewImpl::destroy()

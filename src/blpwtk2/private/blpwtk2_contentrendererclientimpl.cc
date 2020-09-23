@@ -22,6 +22,8 @@
 
 #include <blpwtk2_contentrendererclientimpl.h>
 #include <blpwtk2_inprocessresourceloaderbridge.h>
+#include <blpwtk2_rendercompositor.h>
+#include <blpwtk2_rendermessagedelegate.h>
 #include <blpwtk2_renderviewobserverimpl.h>
 #include <blpwtk2_resourceloader.h>
 #include <blpwtk2_statics.h>
@@ -74,6 +76,7 @@ ContentRendererClientImpl::ContentRendererClientImpl()
 
 ContentRendererClientImpl::~ContentRendererClientImpl()
 {
+    RenderCompositorFactory::Terminate();
 }
 
 blink::ThreadSafeBrowserInterfaceBrokerProxy* ContentRendererClientImpl::GetInterfaceBroker() const
@@ -200,6 +203,31 @@ void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binde
         task_runner);
 }
 
+bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
+{
+    if (Statics::rendererUIEnabled &&
+        RenderMessageDelegate::GetInstance()->OnMessageReceived(*msg)) {
+        delete msg;
+        return true;
+    }
+
+    return false;
+}
+
+void ContentRendererClientImpl::BindHostReceiver(
+        mojo::PendingReceiver<content::mojom::FrameSinkProvider> receiver) {
+  RenderCompositorFactory::GetInstance()->Bind(std::move(receiver));
+}
+
+bool ContentRendererClientImpl::ShouldBindFrameSinkProvider()
+{
+    if (Statics::rendererUIEnabled) {
+        return true;
+    }
+
+    return false;
+}
+
 void ContentRendererClientImpl::OnBindInterface(
         const service_manager::BindSourceInfo& source,
         const std::string& name,
@@ -251,4 +279,3 @@ bool ForwardingService::OnServiceManagerConnectionLost() {
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-

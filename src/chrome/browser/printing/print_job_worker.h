@@ -55,6 +55,7 @@ class PrintJobWorker {
                    int document_page_count,
                    bool has_selection,
                    MarginType margin_type,
+                   HWND hwnd,
                    bool is_scripted,
                    bool is_modifiable,
                    SettingsCallback callback);
@@ -144,6 +145,7 @@ class PrintJobWorker {
   // Required on Mac and Linux. Windows can display UI from non-main threads,
   // but sticks with this for consistency.
   void GetSettingsWithUI(int document_page_count,
+                         HWND hwnd,
                          bool has_selection,
                          bool is_scripted,
                          SettingsCallback callback);
