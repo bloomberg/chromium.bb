@@ -78,6 +78,7 @@
 #define BLPWTK2_FEATURE_DWM
 // feature 27
 // feature 28
+#define BLPWTK2_FEATURE_MULTIHEAPTRACER
 // feature 29
 // feature 30
 // feature 31
