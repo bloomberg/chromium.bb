@@ -74,6 +74,7 @@
 // feature 24
 // feature 25
 // feature 26
+#define BLPWTK2_FEATURE_DWM
 // feature 27
 // feature 28
 // feature 29
