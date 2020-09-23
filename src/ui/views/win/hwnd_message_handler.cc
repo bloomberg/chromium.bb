@@ -872,6 +872,12 @@ void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
     return;
   }
 
+
+  if (is_cursor_overridden_) {
+    current_cursor_ = cursor;
+    return;
+  }
+
   ::SetCursor(cursor);
   current_cursor_ = cursor;
 }
@@ -3099,7 +3105,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
     ui::MouseWheelEvent mouse_wheel_event(msg);
     // Reroute the mouse wheel to the window under the pointer if applicable.
-    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
+    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param, reroute_mouse_wheel_to_any_related_window_) ||
             delegate_->HandleMouseEvent(&mouse_wheel_event))
                ? 0
                : 1;
