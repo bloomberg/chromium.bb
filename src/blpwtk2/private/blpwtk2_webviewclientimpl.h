@@ -176,6 +176,9 @@ class WebViewClientImpl final : public WebViewClient
     void devToolsAgentHostDetached() override;
         // Notify the client that the devtools frontend is disconnected.
 
+    void didInterceptMessage(didInterceptMessageCallback callback) override;
+        // Notify the client that the host intercepted a window message.
+
     // Mojo callbacks
     void loadStatus(int status);
     void moveAck(int x, int y, int w, int h);

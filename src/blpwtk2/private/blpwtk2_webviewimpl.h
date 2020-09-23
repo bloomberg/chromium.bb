@@ -113,6 +113,12 @@ class WebViewImpl final : public WebView,
     bool OnNCDragBegin(int hitTestCode) override;
     void OnNCDragMove() override;
     void OnNCDragEnd() override;
+    void OnNCDoubleClick() override;
+    bool OnPreHandleMessage(unsigned window,
+                            unsigned message,
+                            unsigned w_param,
+                            long l_param,
+                            LONG_PTR *result) override;
     aura::Window* GetDefaultActivationWindow() override;
 
     // content::WebContentsDelegate overrides
@@ -298,4 +304,3 @@ class WebViewImpl final : public WebView,
 #endif  // INCLUDED_BLPWTK2_WEBVIEWIMPL_H
 
 // vim: ts=4 et
-

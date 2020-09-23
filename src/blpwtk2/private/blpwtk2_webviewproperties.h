@@ -34,6 +34,7 @@ struct WebViewProperties {
     bool domPasteEnabled;
     bool javascriptCanAccessClipboard;
     bool rerouteMouseWheelToAnyRelatedWindow;
+    bool messageInterceptionEnabled;
 };
 
 }  // close namespace blpwtk2

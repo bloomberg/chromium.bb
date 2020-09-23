@@ -66,6 +66,7 @@
 // feature 12
 #define BLPWTK2_FEATURE_CUSTOMFONTS
 // feature 13
+#define BLPWTK2_FEATURE_MSGINTERCEPT
 // feature 14
 // feature 15
 #define BLPWTK2_FEATURE_UPDATETOOLTIP

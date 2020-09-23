@@ -43,6 +43,7 @@ WebViewHostImpl::WebViewHostImpl(
         const scoped_refptr<ProcessHostImpl::Impl>&  processHost)
     : d_clientPtr(std::move(clientPtr))
     , d_dragState({})
+    , d_messageInterceptState({})
     , d_processHost(processHost)
 {
     WebViewProperties properties;
@@ -59,6 +60,8 @@ WebViewHostImpl::WebViewHostImpl(
         params.javascriptCanAccessClipboard;
     properties.rerouteMouseWheelToAnyRelatedWindow =
         params.rerouteMouseWheelToAnyRelatedWindow;
+    properties.messageInterceptionEnabled =
+        params.messageInterceptionEnabled;
 
     d_impl = new WebViewImpl(this,              // delegate
                              0,                 // parent window
@@ -243,6 +246,12 @@ void WebViewHostImpl::ncDragEnd(WebView *source, const POINT& endPoint)
                        base::Unretained(this)));
 }
 
+void WebViewHostImpl::ncDoubleClick(WebView *source, const POINT& point)
+{
+    DCHECK(source == d_impl);
+    d_clientPtr->ncDoubleClick(point.x, point.y);
+}
+
 void WebViewHostImpl::findState(WebView *source,
                                 int      numberOfMatches,
                                 int      activeMatchOrdinal,
@@ -266,6 +275,21 @@ void WebViewHostImpl::devToolsAgentHostDetached(WebView *source)
 {
     DCHECK(source == d_impl);
     d_clientPtr->devToolsAgentHostDetached();
+}
+
+void WebViewHostImpl::didInterceptMessage(WebView *source)
+{
+    DCHECK(source == d_impl);
+
+    if (!d_messageInterceptState.pendingAck) {
+        d_messageInterceptState.pendingAck = true;
+        d_clientPtr->didInterceptMessage(
+                base::Bind(&WebViewHostImpl::onInterceptMessageAck,
+                           base::Unretained(this)));
+    }
+    else {
+        d_messageInterceptState.pendingUpdate = true;
+    }
 }
 
 // Mojo callbacks
@@ -330,6 +354,16 @@ void WebViewHostImpl::onNCDragAck()
                 break;
             }
         }
+    }
+}
+
+void WebViewHostImpl::onInterceptMessageAck()
+{
+    d_messageInterceptState.pendingAck = false;
+
+    if (d_messageInterceptState.pendingUpdate) {
+        d_messageInterceptState.pendingUpdate = false;
+        didInterceptMessage(d_impl);
     }
 }
 

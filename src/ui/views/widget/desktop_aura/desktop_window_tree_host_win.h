@@ -201,6 +201,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void HandleVisibilityChanged(bool visible) override;
   void HandleWindowMinimizedOrRestored(bool restored) override;
   void HandleClientSizeChanged(const gfx::Size& new_size) override;
+  bool HandleNCHitTest(LRESULT* result, const gfx::Point& point) override;
+  bool HandleNCDragBegin(int hit_test_code) override;
+  void HandleNCDragMove() override;
+  void HandleNCDragEnd() override;
+  void HandleNCDoubleClick() override;
   void HandleFrameChanged() override;
   void HandleNativeFocus(HWND last_focused_window) override;
   void HandleNativeBlur(HWND focused_window) override;
@@ -218,7 +223,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
                            NMHDR* l_param,
                            LRESULT* l_result) override;
   void HandleMenuLoop(bool in_menu_loop) override;
-  bool PreHandleMSG(UINT message,
+  bool PreHandleMSG(HWND window,
+                    UINT message,
                     WPARAM w_param,
                     LPARAM l_param,
                     LRESULT* result) override;

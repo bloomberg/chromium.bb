@@ -814,7 +814,6 @@ bool WebViewProxy::validateClient()
     return true;
 }
 
-void WebViewProxy::devToolsAgentHostAttached()
 {
     if (d_delegate) {
         d_delegate->devToolsAgentHostAttached(this);
@@ -828,8 +827,12 @@ void WebViewProxy::devToolsAgentHostDetached()
     }
 }
 
+void WebViewProxy::didInterceptMessage()
+        d_delegate->didInterceptMessage(this);
+    }
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
-
 

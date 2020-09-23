@@ -133,6 +133,10 @@ class WebViewClientDelegate
         // This method is called when the client receives a notification from
         // the host that a DevTools frontend is disconnected from the
         // DevTools agent associated with this webview.
+
+    virtual void didInterceptMessage() = 0;
+        // This method is called when the embedder intercepts a window message
+        // that would've been processed for this webview.
 };
 
 }  // close namespace blpwtk2

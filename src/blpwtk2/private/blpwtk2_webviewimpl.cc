@@ -981,6 +981,39 @@ void WebViewImpl::OnNCDragEnd()
     }
 }
 
+void WebViewImpl::OnNCDoubleClick()
+{
+    if (d_delegate) {
+        POINT screenPoint;
+        ::GetCursorPos(&screenPoint);
+        d_delegate->ncDoubleClick(this, screenPoint);
+    }
+}
+
+bool WebViewImpl::OnPreHandleMessage(unsigned window,
+                                     unsigned message,
+                                     unsigned w_param,
+                                     long l_param,
+                                     LONG_PTR *result)
+{
+    if (!d_properties.messageInterceptionEnabled)
+        return false;
+
+    auto *toolkitDelegate = Statics::toolkitDelegate;
+    if (toolkitDelegate) {
+        if (toolkitDelegate->onPreHandleMessage(window,
+                                                message,
+                                                w_param,
+                                                l_param,
+                                                result)) {
+            d_delegate->didInterceptMessage(this);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 aura::Window *WebViewImpl::GetDefaultActivationWindow()
 {
     DCHECK(Statics::isInBrowserMainThread());
