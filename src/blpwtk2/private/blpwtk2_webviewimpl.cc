@@ -330,7 +330,7 @@ void WebViewImpl::setRegion(NativeRegion region)
 void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
 {
     HKL currentKL = ::GetKeyboardLayout(0);
-    if (is_english_langid(LANGID(hkl)) && !is_asian_langid(LANGID(currentKL))) {
+    if (is_english_langid(LANGID(hkl)) && !is_asian_langid(LANGID((unsigned int)currentKL))) {
         // user might expecting any of the eropean keyboard layout,
         // so keep current layout unchanged if it is not an asian IME.
         return;
