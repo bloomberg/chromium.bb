@@ -77,7 +77,8 @@ class WebWidget {
   virtual cc::LayerTreeHost* InitializeCompositing(
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) = 0;
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+      int view_id) = 0;
 
   // This method closes and deletes the WebWidget. If a |cleanup_task| is
   // provided it should run on the |cleanup_runner| after the WebWidget has

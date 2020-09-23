@@ -55,6 +55,7 @@
 // feature 6
 #define BLPWTK2_FEATURE_DUMPDIAGNOSTICS
 // feature 7
+#define BLPWTK2_FEATURE_PERFORMANCETIMING
 // feature 8
 #define BLPWTK2_FEATURE_RUBBERBAND
 // feature 9

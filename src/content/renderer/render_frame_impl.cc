@@ -1397,7 +1397,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
-      render_view->widgets_never_composited());
+      render_view->widgets_never_composited(), params->view_id);
   render_widget->set_delegate(render_view);
 
   // Non-owning pointer that is self-referencing and destroyed by calling

@@ -352,11 +352,12 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
 cc::LayerTreeHost* WebPagePopupImpl::InitializeCompositing(
     cc::TaskGraphRunner* task_graph_runner,
     const cc::LayerTreeSettings& settings,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    int view_id) {
   // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
   widget_base_->InitializeCompositing(task_graph_runner, settings,
-                                      std::move(ukm_recorder_factory));
+                                      std::move(ukm_recorder_factory), view_id);
   return widget_base_->LayerTreeHost();
 }
 

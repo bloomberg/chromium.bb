@@ -387,16 +387,17 @@ void RenderWidget::InstallCreateForFrameHook(
 std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
-    bool never_composited) {
+    bool never_composited,
+    int32_t view_id) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
                                             /*hidden=*/true, never_composited,
-                                            mojo::NullReceiver());
+                                            mojo::NullReceiver(), view_id);
   }
 
   return std::make_unique<RenderWidget>(widget_routing_id, compositor_deps,
                                         /*hidden=*/true, never_composited,
-                                        mojo::NullReceiver());
+                                        mojo::NullReceiver(), view_id);
 }
 
 RenderWidget* RenderWidget::CreateForPopup(
@@ -404,17 +405,20 @@ RenderWidget* RenderWidget::CreateForPopup(
     CompositorDependencies* compositor_deps,
     bool hidden,
     bool never_composited,
-    mojo::PendingReceiver<mojom::Widget> widget_receiver) {
+    mojo::PendingReceiver<mojom::Widget> widget_receiver,
+    int32_t view_id) {
   return new RenderWidget(widget_routing_id, compositor_deps, hidden,
-                          never_composited, std::move(widget_receiver));
+                          never_composited, std::move(widget_receiver), view_id);
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
                            bool hidden,
                            bool never_composited,
-                           mojo::PendingReceiver<mojom::Widget> widget_receiver)
+                           mojo::PendingReceiver<mojom::Widget> widget_receiver,
+                           int32_t view_id)
     : routing_id_(widget_routing_id),
+      view_id_(view_id),
       compositor_deps_(compositor_deps),
       is_hidden_(hidden),
       never_composited_(never_composited),
@@ -1615,7 +1619,7 @@ void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
       GenerateLayerTreeSettings(compositor_deps_, for_child_local_root_frame_,
                                 screen_info.rect.size(),
                                 screen_info.device_scale_factor),
-      compositor_deps_->CreateUkmRecorderFactory());
+      compositor_deps_->CreateUkmRecorderFactory(), view_id_);
   DCHECK(layer_tree_host_);
   blink::scheduler::WebThreadScheduler* main_thread_scheduler =
       compositor_deps_->GetWebMainThreadScheduler();
