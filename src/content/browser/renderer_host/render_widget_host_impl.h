@@ -910,6 +910,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnTextInputStateChanged(const TextInputState& params);
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
+  void OnSetRubberbandRect(const gfx::Rect& rect);
+  void OnHideRubberbandRect();
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,

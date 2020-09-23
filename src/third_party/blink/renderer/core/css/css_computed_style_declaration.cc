@@ -70,6 +70,15 @@ const CSSPropertyID kComputedPropertyArray[] = {
     // more-specific background-position-x/y are non-standard
     CSSPropertyID::kBackgroundPosition, CSSPropertyID::kBackgroundRepeat,
     CSSPropertyID::kBackgroundSize, CSSPropertyID::kBaselineShift,
+    
+
+
+    // patch section: rubberband
+    CSSPropertyID::kBbRubberbandEmptyText,
+    CSSPropertyID::kBbRubberbandGroupDelimiter,
+
+
+
     CSSPropertyID::kBlockSize, CSSPropertyID::kBorderBlockEndColor,
     CSSPropertyID::kBorderBlockEndStyle, CSSPropertyID::kBorderBlockEndWidth,
     CSSPropertyID::kBorderBlockStartColor,
@@ -164,7 +173,8 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kPerspective, CSSPropertyID::kPerspectiveOrigin,
     CSSPropertyID::kPointerEvents, CSSPropertyID::kPosition, CSSPropertyID::kR,
     CSSPropertyID::kResize, CSSPropertyID::kRight, CSSPropertyID::kRotate,
-    CSSPropertyID::kRowGap, CSSPropertyID::kRubyPosition, CSSPropertyID::kRx,
+    CSSPropertyID::kRowGap, CSSPropertyID::kRubberbandable,
+    CSSPropertyID::kRubyPosition, CSSPropertyID::kRx,
     CSSPropertyID::kRy, CSSPropertyID::kScale, CSSPropertyID::kScrollBehavior,
     CSSPropertyID::kScrollCustomization, CSSPropertyID::kScrollMarginBlockEnd,
     CSSPropertyID::kScrollMarginBlockStart,
@@ -196,16 +206,6 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kTransitionDelay, CSSPropertyID::kTransitionDuration,
     CSSPropertyID::kTransitionProperty,
     CSSPropertyID::kTransitionTimingFunction, CSSPropertyID::kTranslate,
-
-
-
-    // patch section: lcd-text background
-
-
-    // patch section: rubberband
-
-
-
     CSSPropertyID::kUnicodeBidi, CSSPropertyID::kUserSelect,
     CSSPropertyID::kVectorEffect, CSSPropertyID::kVerticalAlign,
     CSSPropertyID::kVisibility, CSSPropertyID::kWhiteSpace,
