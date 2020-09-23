@@ -55,6 +55,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_property_changed_from_property_trees_(false),
       may_contain_video_(false),
       contents_opaque_(false),
+      contents_opaque_for_lcd_text_(false),
       should_check_backface_visibility_(false),
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
@@ -571,6 +572,13 @@ SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
 
 void LayerImpl::SetContentsOpaque(bool opaque) {
   contents_opaque_ = opaque;
+}
+
+void LayerImpl::SetContentsOpaqueForLCDText(bool opaque) {
+  if (contents_opaque_for_lcd_text_ == opaque)
+    return;
+
+  contents_opaque_for_lcd_text_ = opaque;
 }
 
 float LayerImpl::Opacity() const {

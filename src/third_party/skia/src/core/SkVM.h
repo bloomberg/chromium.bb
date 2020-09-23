@@ -17,6 +17,7 @@
 #include "src/core/SkVM_fwd.h"
 #include <vector>      // std::vector
 
+class SkColorSpace;
 class SkWStream;
 
 #if 0
