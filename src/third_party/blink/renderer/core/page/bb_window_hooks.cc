@@ -97,7 +97,7 @@ void BBWindowHooks::setPumpSchedulerTunable(long index, long value) {
 bool BBWindowHooks::matchSelector(Node *node, const String& selector)
 {
     if (node->IsElementNode() && !selector.IsEmpty()) {
-        Element *e = ToElement(node);
+        Element *e = To<Element>(node);
         return e->matches(AtomicString(selector), IGNORE_EXCEPTION_FOR_TESTING);
     }
     return false;
@@ -207,7 +207,7 @@ bool BBWindowHooks::checkSpellingForNode(Node* node)
         return false;
     }
 
-    Element* e = ToElement(node);
+    Element* e = To<Element>(node);
 
     if (e && e->IsSpellCheckingEnabled()) {
         LocalFrame *frame = e->GetDocument().GetFrame();
