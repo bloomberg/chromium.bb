@@ -1,0 +1,135 @@
+/*
+ * Copyright (C) 2018 Bloomberg Finance L.P.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+module blpwtk2.mojom;
+import "blpwtk2/private/blpwtk2_webview.mojom";
+
+// This enum must match ProxyConfigType in blpwtk2_profile.h
+enum ProxyConfigType {
+    kDirect,
+    kHTTP,
+    kSOCKS4,
+    kSOCKS5,
+    kHTTPS
+};
+
+struct WebViewCreateParams {
+    bool domPasteEnabled;
+    bool javascriptCanAccessClipboard;
+    bool rerouteMouseWheelToAnyRelatedWindow;
+
+    uint32 processId;
+        // Process in which the RenderView will live.  A value of 0 will
+        // cause Content to create a new subprocess to host the RenderView.
+};
+
+interface ProcessHost {
+    [Sync]
+    createHostChannel(uint32 pid, bool isolated, string profileDir) => (string channelInfo);
+        // Create a new instance of process host for use with the process
+        // 'pid'.  The instance will be kept alive until process 'pid'
+        // calls bindProcess() to bind with it.  Once the instance is bound
+        // to a request, its lifetime is bound by the lifetime of the request.
+        //
+        // The returned 'channelInfo' must be used by process 'pid' to
+        // initialize the toolkit.  This will allow the toolkit to establish
+        // a Mojo connection so the process can issue Mojo requests.
+
+    bindProcess(uint32 pid, bool launchDevToolsServer);
+        // Once a child process establishes a Mojo connection given a channel
+        // info, it must call bindProcess with its pid to signal the browser
+        // to associate the connection of the incoming request with the
+        // correct instance of process host.
+
+    createWebView(WebViewHost& host, WebViewCreateParams params) => (WebViewClient& client, int32 status);
+        // Create a new webview.
+
+    [Sync]
+    registerNativeViewForStreaming(uint32 view) => (string media_id);
+        // Register a NativeView as a streaming media source
+
+    [Sync]
+    registerScreenForStreaming(uint32 view) => (string media_id);
+        // Register a Display device as a streaming media source
+
+    addHttpProxy(ProxyConfigType type, string host, int32 port);
+        // Add a new proxy host 'host':'port'.  This will cause the browser
+        // to direct HTTP traffic to 'host':'port' via the 'type' protocol.
+
+    addHttpsProxy(ProxyConfigType type, string host, int32 port);
+        // Add a new proxy host 'host':'port'.  This will cause the browser
+        // to direct HTTPS traffic to 'host':'port' via the 'type' protocol.
+
+    addFtpProxy(ProxyConfigType type, string host, int32 port);
+        // Add a new proxy host 'host':'port'.  This will cause the browser
+        // to direct FTP traffic to 'host':'port' via the 'type' protocol.
+
+    addFallbackProxy(ProxyConfigType type, string host, int32 port);
+        // Add a new proxy host 'host':'port'.  This will cause the browser
+        // to direct all other traffic (that is not HTTP, HTTPS, nor FTP) to
+        // 'host':'port' via the 'type' protocol.
+
+    clearHttpProxies();
+        // Clear the registered HTTP proxies.
+    
+    clearHttpsProxies();
+        // Clear the registered HTTPS proxies.
+
+    clearFtpProxies();
+        // Clear the registered FTP proxies.
+
+    clearFallbackProxies();
+        // Clear the registered fallback proxies.
+
+    addBypassRule(string rule);
+        // Register an IP destination (in the form of hostname:port) to a
+        // proxy blacklist.  This will cause the browser to always skip over
+        // the registered proxy server if the destination IP address matches
+        // the rule.
+
+    clearBypassRules();
+        // Clear the proxy blacklist.
+
+    setPacUrl(string url);
+
+
+
+    // patch section: spellcheck
+
+
+    // patch section: printing
+
+
+    // patch section: diagnostics
+
+
+    // patch section: embedder ipc
+
+
+    // patch section: renderer ui
+
+
+
+};
+
+// vim: ts=4 et
+

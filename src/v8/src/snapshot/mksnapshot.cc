@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <iomanip>
 
-#include "include/libplatform/libplatform.h"
+#include "include/v8-default-platform.h"
 #include "src/base/platform/platform.h"
 #include "src/codegen/assembler-arch.h"
 #include "src/codegen/source-position-table.h"
@@ -227,7 +227,8 @@ int main(int argc, char** argv) {
 
   i::CpuFeatures::Probe(true);
   v8::V8::InitializeICUDefaultLocation(argv[0]);
-  std::unique_ptr<v8::Platform> platform = v8::platform::NewDefaultPlatform();
+  std::unique_ptr<v8::Platform> platform = std::unique_ptr<v8::Platform>(
+                                      v8::platform::NewDefaultPlatform());
   v8::V8::InitializePlatform(platform.get());
   v8::V8::Initialize();
 

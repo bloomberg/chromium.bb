@@ -55,6 +55,11 @@ bool TooltipWin::HandleNotify(int w_param, NMHDR* l_param, LRESULT* l_result) {
 }
 
 bool TooltipWin::EnsureTooltipWindow() {
+  if (tooltip_hwnd_ && !GetParent(tooltip_hwnd_)) {
+    DestroyWindow(tooltip_hwnd_);
+    tooltip_hwnd_ = NULL;
+  }
+
   if (tooltip_hwnd_)
     return true;
 

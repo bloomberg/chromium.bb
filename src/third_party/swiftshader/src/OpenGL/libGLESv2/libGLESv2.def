@@ -1,4 +1,7 @@
-LIBRARY libGLESv2
+; Comment out 'LIBRARY libGLESv2' that blpcr_egl.$bb_version.dll would
+; link against blpcr_glesv2.$bb_version.dll instead of libGLESv2.dll
+; LIBRARY libGLESv2
+
 EXPORTS
     glActiveTexture                 @1
     glAttachShader                  @2

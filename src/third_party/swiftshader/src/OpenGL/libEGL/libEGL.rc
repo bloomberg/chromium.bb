@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
+#include <blpwtk2/blpwtk2/public/blpwtk2_products.h>
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -28,7 +29,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE
 BEGIN
-    "resource.h\0"
+    "blpwtk2_products.h\0"
 END
 
 2 TEXTINCLUDE
@@ -52,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION MAJOR_VERSION,MINOR_VERSION,BUILD_VERSION,BUILD_REVISION
- PRODUCTVERSION MAJOR_VERSION,MINOR_VERSION,BUILD_VERSION,BUILD_REVISION
+ FILEVERSION CHROMIUM_VERSION_MAJOR,CHROMIUM_VERSION_BUILD,CHROMIUM_VERSION_PATCH,BB_PATCH_NUMBER
+ PRODUCTVERSION CHROMIUM_VERSION_MAJOR,CHROMIUM_VERSION_BUILD,CHROMIUM_VERSION_PATCH,BB_PATCH_NUMBER
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -73,13 +74,13 @@ BEGIN
 			#else
 				VALUE "FileDescription", "SwiftShader libEGL 32-bit Dynamic Link Library"
 			#endif
-            VALUE "FileVersion", VERSION_STRING
-            VALUE "InternalName", "libEGL"
+            VALUE "FileVersion", BLPWTK2_RC_VERSION
+            VALUE "InternalName", "blpcr_egl"
             VALUE "LegalCopyright", "Copyright (C) 2016 Google Inc."
-            VALUE "OriginalFilename", "libEGL.dll"
-            VALUE "PrivateBuild", VERSION_STRING
+            VALUE "OriginalFilename", BLPCR_EGL_DLL_NAME
+            VALUE "PrivateBuild", BLPWTK2_RC_VERSION
             VALUE "ProductName", "SwiftShader libEGL Dynamic Link Library"
-            VALUE "ProductVersion", VERSION_STRING
+            VALUE "ProductVersion", BLPWTK2_RC_VERSION
         END
     END
     BLOCK "VarFileInfo"

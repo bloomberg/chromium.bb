@@ -289,6 +289,7 @@ jumbo_source_set("browser_sources") {
     "render_document_host_user_data.h",
     "render_frame_host.h",
     "render_frame_metadata_provider.h",
+    "render_process_host.cc",
     "render_process_host.h",
     "render_process_host_creation_observer.h",
     "render_process_host_factory.h",

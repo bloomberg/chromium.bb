@@ -106,6 +106,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/browser/utility_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -142,6 +143,7 @@
 #include "ui/display/display_features.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/switches.h"
+#include "ui/base/ui_base_switches.h"
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
 #include "content/browser/compositor/image_transport_factory.h"
@@ -642,6 +644,14 @@ int BrowserMainLoop::EarlyInitialization() {
       return pre_early_init_error_code;
   }
 
+  // Note that we do not initialize a new FeatureList when calling this for
+  // the second time.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  base::FeatureList::InitializeInstance(
+      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+
   // Up the priority of the UI thread unless it was already high (since Mac
   // and recent versions of Android (O+) do this automatically).
 #if !defined(OS_MACOSX)
@@ -773,7 +783,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
   // TODO(boliu): kSingleProcess check is a temporary workaround for
   // in-process Android WebView. crbug.com/503724 tracks proper fix.
-  if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
+  if (!GetContentClient()->browser()->SupportsInProcessRenderer()) {
     base::DiscardableMemoryAllocator::SetInstance(
         discardable_memory::DiscardableSharedMemoryManager::Get());
   }
@@ -873,6 +883,15 @@ int BrowserMainLoop::PreCreateThreads() {
   if (parsed_command_line_.HasSwitch(switches::kSingleProcess))
     RenderProcessHost::SetRunRendererInProcess(true);
 #endif
+
+  if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
+    UtilityProcessHost::SetRunUtilityInProcess(true);
+  }
+
+  if (GetContentClient()->browser()->SupportsInProcessRenderer()) {
+    RenderProcessHost::AdjustCommandLineForInProcessRenderer(
+        base::CommandLine::ForCurrentProcess());
+  }
 
   // Initialize origins that require process isolation.  Must be done
   // after base::FeatureList is initialized, but before any navigations can
@@ -1081,9 +1100,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           base::IgnoreResult(&base::ThreadRestrictions::SetWaitAllowed), true));
-
-  if (RenderProcessHost::run_renderer_in_process())
-    RenderProcessHostImpl::ShutDownInProcessRenderer();
 
   if (parts_) {
     TRACE_EVENT0("shutdown",

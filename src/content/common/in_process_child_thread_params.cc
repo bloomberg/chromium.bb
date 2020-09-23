@@ -8,8 +8,13 @@ namespace content {
 
 InProcessChildThreadParams::InProcessChildThreadParams(
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-    mojo::OutgoingInvitation* mojo_invitation)
-    : io_runner_(std::move(io_runner)), mojo_invitation_(mojo_invitation) {}
+    mojo::OutgoingInvitation* mojo_invitation,
+    int mojo_controller_handle,
+    bool exit_process_gracefully)
+    : io_runner_(std::move(io_runner)),
+      mojo_invitation_(mojo_invitation),
+      mojo_controller_handle_(mojo_controller_handle),
+      exit_process_gracefully_(exit_process_gracefully) {}
 
 InProcessChildThreadParams::InProcessChildThreadParams(
     const InProcessChildThreadParams& other) = default;
