@@ -38,6 +38,8 @@
 
 
 #include <base/strings/utf_string_conversions.h>
+#include <components/spellcheck/renderer/spellcheck.h>
+#include <components/spellcheck/renderer/spellcheck_provider.h>
 #include <content/child/font_warmup_win.h>
 #include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_thread.h>
@@ -74,13 +76,18 @@ ContentRendererClientImpl::~ContentRendererClientImpl()
 {
 }
 
-void ContentRendererClientImpl::RenderThreadStarted() {
-    d_browser_interface_broker = blink::Platform::Current()->GetBrowserInterfaceBroker();
-}
-
 blink::ThreadSafeBrowserInterfaceBrokerProxy* ContentRendererClientImpl::GetInterfaceBroker() const
 {
     return d_browser_interface_broker.get();
+}
+
+void ContentRendererClientImpl::RenderThreadStarted()
+{
+    if (!d_spellcheck) {
+        d_spellcheck.reset(new SpellCheck(this));
+    }
+
+    d_browser_interface_broker = blink::Platform::Current()->GetBrowserInterfaceBroker();
 }
 
 void ContentRendererClientImpl::RenderViewCreated(
@@ -100,6 +107,9 @@ void ContentRendererClientImpl::RenderFrameCreated(
 
 
     // patch section: spellcheck
+
+    // Create an instance of SpellCheckProvider.
+    new SpellCheckProvider(render_frame, d_spellcheck.get(), this);
 
 
     // patch section: printing
@@ -178,6 +188,16 @@ bool ContentRendererClientImpl::OverrideCreatePlugin(
 void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binders)
 {
     // blpwtk2: expose services to browser
+    auto task_runner = base::SequencedTaskRunnerHandle::Get();
+
+    binders->Add(
+        base::BindRepeating(
+            [](SpellCheck* spellcheck,
+                mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver) {
+                    spellcheck->BindReceiver(std::move(receiver));
+                },
+                base::Unretained(d_spellcheck.get())),
+        task_runner);
 }
 
 void ContentRendererClientImpl::OnBindInterface(

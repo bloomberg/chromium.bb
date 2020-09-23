@@ -42,6 +42,7 @@ jumbo_source_set("browser") {
   ldflags = []
 
   deps = [
+    ":builtin_service_manifests",
     "//base",
     "//base:base_static",
     "//base:clang_profiling_buildflags",
@@ -597,8 +598,6 @@ jumbo_source_set("browser") {
     "browsing_data/storage_partition_code_cache_data_remover.h",
     "browsing_instance.cc",
     "browsing_instance.h",
-    "builtin_service_manifests.cc",
-    "builtin_service_manifests.h",
     "byte_stream.cc",
     "byte_stream.h",
     "cache_storage/cache_storage.cc",
@@ -2788,4 +2787,15 @@ group("for_internal_webauthn") {
   if (!is_component_build) {
     public_deps = [ ":browser" ]
   }
+}
+
+source_set("builtin_service_manifests") {
+  sources = [
+    "builtin_service_manifests.cc",
+    "builtin_service_manifests.h",
+  ]
+  deps = [
+    "//ui/gfx:color_space",
+    "//content/public/app:content_browser_manifest"
+  ]
 }
