@@ -48,6 +48,7 @@
 #define BLPWTK2_FEATURE_CRTHANDLER
 // feature 4
 // feature 5
+#define BLPWTK2_FEATURE_DEVTOOLSINTEGRATION
 // feature 6
 // feature 7
 // feature 8
