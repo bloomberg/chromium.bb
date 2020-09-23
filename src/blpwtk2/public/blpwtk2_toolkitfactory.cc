@@ -168,6 +168,7 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
                                            hostChannel,
                                            commandLineSwitches,
                                            params.isIsolatedProfile(),
+                                           params.browserV8Enabled(),
                                            profileDirectory);
 
     std::vector<std::wstring> font_files;
