@@ -7163,8 +7163,11 @@ void Document::BindContentSecurityPolicy() {
 }
 
 bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
-  DCHECK(GetFrame())
-      << "you are querying canExecuteScripts on a non contextDocument.";
+  // Allow script execution for a document without a frame, since it may
+  // have been created for a 'web script context':
+  if (!GetFrame()) {
+    return true;
+  }
 
   // Normally, scripts are not allowed in sandboxed contexts that disallow them.
   // However, there is an exception for cases when the script should bypass the

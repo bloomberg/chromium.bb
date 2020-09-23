@@ -87,6 +87,7 @@
 // feature 29
 // feature 30
 // feature 31
+#define BLPWTK2_FEATURE_WEBSCRIPTCONTEXT
 // feature 32
 #define BLPWTK2_FEATURE_BROWSER_V8
 // feature 33
