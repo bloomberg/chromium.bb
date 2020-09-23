@@ -173,7 +173,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
     return WebScreenInfo();
   }
   void ContentsSizeChanged(LocalFrame*, const IntSize&) const override {}
-  void ShowMouseOverURL(const HitTestResult&) override {}
+  void ShowMouseOverURL(LocalFrame&, const HitTestResult&) override {}
+
   void SetToolTip(LocalFrame&, const String&, TextDirection) override {}
   void PrintDelegate(LocalFrame*) override {}
   ColorChooser* OpenColorChooser(LocalFrame*,

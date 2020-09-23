@@ -509,7 +509,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
  protected:
   ChromeClient() = default;
 
-  virtual void ShowMouseOverURL(const HitTestResult&) = 0;
+  virtual void ShowMouseOverURL(LocalFrame&, const HitTestResult&) = 0;
   virtual void SetWindowRect(const IntRect&, LocalFrame&) = 0;
   virtual bool OpenBeforeUnloadConfirmPanelDelegate(LocalFrame*,
                                                     bool is_reload) = 0;
