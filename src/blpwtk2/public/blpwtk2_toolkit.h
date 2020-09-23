@@ -125,11 +125,6 @@ class ProcessHostDelegate;
 
 class Toolkit {
   public:
-    // TYPES
-    enum class DiagnosticInfoType {
-        DIAGNOSTIC_INFO_GPU
-    };
-
     virtual bool hasDevTools() = 0;
         // Return true if the blpwtk2_devtools pak file was detected and has
         // been loaded.  This method determines whether

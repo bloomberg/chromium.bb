@@ -136,7 +136,11 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
 
 
     // patch section: diagnostics
+    void dumpDiagnostics(DiagnosticInfoType type,
+                         const StringRef&   path) override;
 
+    std::string getGpuInfo() override;
+    
 
     // patch section: embedder ipc
     void opaqueMessageToBrowserAsync(const StringRef& msg) override;

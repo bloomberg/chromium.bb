@@ -53,6 +53,7 @@
 // feature 5
 #define BLPWTK2_FEATURE_DEVTOOLSINTEGRATION
 // feature 6
+#define BLPWTK2_FEATURE_DUMPDIAGNOSTICS
 // feature 7
 // feature 8
 #define BLPWTK2_FEATURE_RUBBERBAND

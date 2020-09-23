@@ -188,6 +188,10 @@ class ProfileImpl : public Profile, public mojom::ProcessClient {
 
 
     // patch section: diagnostics
+    void dumpDiagnostics(DiagnosticInfoType type,
+                         const StringRef&   path) override;
+
+    std::string getGpuInfo() override;
 
 
     // patch section: embedder ipc

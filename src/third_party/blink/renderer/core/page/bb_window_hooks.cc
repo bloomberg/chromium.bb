@@ -47,6 +47,12 @@ static BBWindowHooks::PumpConfigHooks& GetPumpConfigHooks()
     return *hooks;
 }
 
+static BBWindowHooks::ProfileHooks& GetProfileHooks()
+{
+    static base::NoDestructor<BBWindowHooks::ProfileHooks> hooks;
+    return *hooks;
+}
+
 BBWindowHooks::BBWindowHooks(LocalFrame* frame)
     : ExecutionContextClient(frame)
 {
@@ -56,6 +62,12 @@ BBWindowHooks::BBWindowHooks(LocalFrame* frame)
 void BBWindowHooks::InstallPumpConfigHooks(PumpConfigHooks hooks)
 {
     GetPumpConfigHooks() = hooks;
+}
+
+// static
+void BBWindowHooks::InstallProfileHooks(ProfileHooks hooks)
+{
+    GetProfileHooks() = hooks;
 }
 
 String BBWindowHooks::listPumpSchedulers() {
@@ -239,6 +251,11 @@ bool BBWindowHooks::isOverwriteModeEnabled(Document* document)
 void BBWindowHooks::toggleOverwriteMode(Document* document)
 {
     document->GetFrame()->GetEditor().ToggleOverwriteModeEnabled();
+}
+
+String BBWindowHooks::getGpuInfo() {
+    std::string diagnostics = GetProfileHooks().getGpuInfo.Run();
+    return String::FromUTF8(diagnostics.data(), diagnostics.size());
 }
 
 void BBWindowHooks::Trace(blink::Visitor* visitor) {
