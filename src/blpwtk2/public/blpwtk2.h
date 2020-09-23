@@ -43,6 +43,7 @@
 
 
 // patch section: screen printing
+#include <blpwtk2_pdfutil.h>
 
 
 // patch section: embedder ipc

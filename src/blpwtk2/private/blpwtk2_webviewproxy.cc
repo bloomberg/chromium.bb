@@ -166,6 +166,20 @@ void WebViewProxy::inspectElementAt(const POINT& point)
     d_client->proxy()->inspectElementAt(point.x, point.y);
 }
 
+void WebViewProxy::drawContentsToBlob(Blob *blob, const DrawParams& params)
+{
+    DCHECK(Statics::isRendererMainThreadMode());
+    DCHECK(Statics::isInApplicationMainThread());
+    DCHECK(d_isMainFrameAccessible)
+        << "You should wait for didFinishLoad";
+    DCHECK(d_gotRenderViewInfo);
+    DCHECK(blob);
+
+    content::RenderView* rv = content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    VALIDATE_RENDER_VIEW_VOID(rv);
+    RendererUtil::drawContentsToBlob(rv, blob, params);
+}
+
 int WebViewProxy::goBack()
 {
     DCHECK(Statics::isInApplicationMainThread());

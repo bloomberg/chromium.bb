@@ -44,6 +44,7 @@
 // feature 0
 #define BLPWTK2_FEATURE_FOCUS
 // feature 1
+#define BLPWTK2_FEATURE_SCREENPRINT
 // feature 2
 #define BLPWTK2_FEATURE_PRINTPDF
 // feature 3
