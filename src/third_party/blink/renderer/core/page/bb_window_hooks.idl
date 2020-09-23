@@ -39,7 +39,7 @@
     void removeHighlightMarker(Range range);
     Range findPlainText(Range range, DOMString target, long options);
     boolean checkSpellingForNode(Node node);
-    ClientRect getAbsoluteCaretRectAtOffset(Node node, long offset);
-    bool isOverwriteModeEnabled(Document document);
+    DOMRect getAbsoluteCaretRectAtOffset(Node node, long offset);
+    boolean isOverwriteModeEnabled(Document document);
     void toggleOverwriteMode(Document document);
 };
