@@ -908,6 +908,13 @@ bool WebViewProxy::validateClient()
     return true;
 }
 
+void WebViewProxy::devToolsAgentHostAttached()
+{
+    if (d_delegate) {
+        d_delegate->devToolsAgentHostAttached(this);
+    }
+}
+
 void WebViewProxy::devToolsAgentHostDetached()
 {
     if (d_delegate) {
@@ -916,8 +923,8 @@ void WebViewProxy::devToolsAgentHostDetached()
 }
 
 void WebViewProxy::didInterceptMessage()
-        d_delegate->didInterceptMessage(this);
-    }
+{
+    d_delegate->didInterceptMessage(this);
 }
 
 }  // close namespace blpwtk2
