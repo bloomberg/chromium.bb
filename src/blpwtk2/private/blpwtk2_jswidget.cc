@@ -163,7 +163,7 @@ void JsWidget::UpdateVisibility(bool isVisible)
 }
 
 blink::WebInputEventResult JsWidget::HandleInputEvent(
-    const blink::WebCoalescedInputEvent&, blink::WebCursorInfo&)
+    const blink::WebCoalescedInputEvent&, ui::Cursor*)
 {
     return blink::WebInputEventResult::kNotHandled;
 }
@@ -184,12 +184,12 @@ void JsWidget::DetachFromLayout()
 
 blink::WebRect JsWidget::LocalToRootFrameRect(const blink::WebRect& localRect) const
 {
-    blink::WebPoint rect_corner0 = d_container->LocalToRootFramePoint(blink::WebPoint(localRect.x, localRect.y));
-    blink::WebPoint rect_corner1 = d_container->LocalToRootFramePoint(blink::WebPoint(localRect.x + localRect.width, localRect.y + localRect.height));
-    int x = rect_corner0.x <= rect_corner1.x ? rect_corner0.x : rect_corner1.x;
-    int width = rect_corner0.x <= rect_corner1.x ? (rect_corner1.x - rect_corner0.x) : (rect_corner0.x - rect_corner1.x);
-     int y = rect_corner0.y <= rect_corner1.y ? rect_corner0.y : rect_corner1.y;
-    int height = rect_corner0.y <= rect_corner1.y ? (rect_corner1.y - rect_corner0.y) : (rect_corner0.y - rect_corner1.y);
+    gfx::Point rect_corner0 = d_container->LocalToRootFramePoint(gfx::Point(localRect.x, localRect.y));
+    gfx::Point rect_corner1 = d_container->LocalToRootFramePoint(gfx::Point(localRect.x + localRect.width, localRect.y + localRect.height));
+    int x = rect_corner0.x() <= rect_corner1.x() ? rect_corner0.x() : rect_corner1.x();
+    int width = rect_corner0.x() <= rect_corner1.x() ? (rect_corner1.x() - rect_corner0.x()) : (rect_corner0.x() - rect_corner1.x());
+    int y = rect_corner0.y() <= rect_corner1.y() ? rect_corner0.y() : rect_corner1.y();
+    int height = rect_corner0.y() <= rect_corner1.y() ? (rect_corner1.y() - rect_corner0.y()) : (rect_corner0.y() - rect_corner1.y());
     return blink::WebRect(x, y, width, height);
 }
 
