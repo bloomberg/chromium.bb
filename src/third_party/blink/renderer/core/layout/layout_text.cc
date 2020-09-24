@@ -1728,8 +1728,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
         style_to_use->GetFont().Width(text_run, nullptr, &glyph_bounds);
     // If the text is not wrapping we don't care if it fits or not in the
     // container as it's not going to be split in multiple lines.
-    if (!style_to_use->AutoWrap() ||
-        (text_width <= ContainingBlock()->ContentLogicalWidth())) {
+    if (text_width <= ContainingBlock()->ContentLogicalWidth()) {
       FirstTextBox()->ManuallySetStartLenAndLogicalWidth(
           offset, text->length(), LayoutUnit(text_width));
       SetFirstTextBoxLogicalLeft(text_width);
