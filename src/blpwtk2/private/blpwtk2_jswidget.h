@@ -25,8 +25,10 @@
 
 #include <blpwtk2_config.h>
 
+#include <third_party/blink/public/common/metrics/document_update_reason.h>
 #include <third_party/blink/public/web/web_element.h>
 #include <third_party/blink/public/web/web_plugin.h>
+#include <ui/base/cursor/cursor.h>
 
 namespace blink {
 class WebDOMEvent;
@@ -54,15 +56,15 @@ class JsWidget : public blink::WebPlugin {
     void UpdateGeometry(
         const blink::WebRect& windowRect, const blink::WebRect& clipRect,
         const blink::WebRect& unobscuredRect, bool isVisible) override;
-    void UpdateFocus(bool, blink::WebFocusType) override {}
+    void UpdateFocus(bool, blink::mojom::FocusType) override {}
     void UpdateVisibility(bool isVisible) override;
     blink::WebInputEventResult HandleInputEvent(
-        const blink::WebCoalescedInputEvent&, blink::WebCursorInfo&) override;
+        const blink::WebCoalescedInputEvent&, ui::Cursor*) override;
     void DidReceiveResponse(const blink::WebURLResponse&) override {}
     void DidReceiveData(const char* data, size_t dataLength) override {}
     void DidFinishLoading() override {}
     void DidFailLoading(const blink::WebURLError&) override {}
-    void UpdateAllLifecyclePhases(blink::WebWidget::LifecycleUpdateReason) override {}
+    void UpdateAllLifecyclePhases(blink::DocumentUpdateReason) override {}
     void AttachToLayout() override;
     void DetachFromLayout() override;
 
