@@ -102,8 +102,6 @@ jumbo_component("base") {
     "dragdrop/drag_drop_types.h",
     "dragdrop/drop_target_event.cc",
     "dragdrop/drop_target_event.h",
-    "dragdrop/os_exchange_data_provider.cc",
-    "dragdrop/os_exchange_data_provider.h",
     "dragdrop/os_exchange_data.cc",
     "dragdrop/os_exchange_data.h",
     "dragdrop/os_exchange_data_provider_factory.cc",

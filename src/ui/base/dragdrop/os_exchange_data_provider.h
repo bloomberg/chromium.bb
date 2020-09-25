@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(UI_BASE_DATA_EXCHANGE) OSExchangeDataProvider {
 
   virtual void EnumerateCustomData(std::vector<FORMATETC>* formats) const {}
   virtual bool GetCustomData(const FORMATETC& format,
-                             base::string16* data) const;
+                             base::string16* data) const = 0;
 
   virtual bool HasString() const = 0;
   virtual bool HasURL(FilenameToURLPolicy policy) const = 0;
