@@ -702,6 +702,11 @@ void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {
   widget_base_->SetCursor(cursor);
 }
 
+void WebFrameWidgetBase::setNewWidgetHostInterface(
+  CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {
+  widget_base_->setNewWidgetHostInterface(std::move(widgetHost));
+}
+
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
   GetAssociatedFrameWidgetHost()->AutoscrollStart(std::move(position));
 }
@@ -917,6 +922,11 @@ void WebFrameWidgetBase::NotifySwapAndPresentationTime(
 scheduler::WebRenderWidgetSchedulingState*
 WebFrameWidgetBase::RendererWidgetSchedulingState() {
   return widget_base_->RendererWidgetSchedulingState();
+}
+
+mojo::PendingAssociatedRemote<mojom::blink::FrameWidget> WebFrameWidgetBase::BindNewFrameWidgetInterfaces() {
+  receiver_.reset();
+  return receiver_.BindNewEndpointAndPassDedicatedRemoteForTesting();
 }
 
 }  // namespace blink
