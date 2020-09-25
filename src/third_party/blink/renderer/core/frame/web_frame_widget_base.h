@@ -280,6 +280,11 @@ class CORE_EXPORT WebFrameWidgetBase
   // BeginMainFrame, and update the document lifecycle.
   void SynchronouslyCompositeForTesting(base::TimeTicks frame_time);
 
+  // blpwtk2: for RenderWebView
+  mojo::PendingAssociatedRemote<mojom::blink::FrameWidget> BindNewFrameWidgetInterfaces() override;
+  void setNewWidgetHostInterface(
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) override;
+
  protected:
   enum DragAction { kDragEnter, kDragOver };
 

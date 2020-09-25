@@ -37,10 +37,12 @@
 #include <content/common/view_messages.h>
 #include <content/common/widget_messages.h>
 #include <content/public/renderer/render_view_observer.h>
-#include <content/renderer/compositor/layer_tree_view.h>
 #include <content/renderer/render_thread_impl.h>
 #include <content/renderer/render_view_impl.h>
+#include <content/renderer/render_frame_impl.h>
+#include <third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h>
 #include <third_party/blink/public/web/web_local_frame.h>
+#include <third_party/blink/public/web/web_widget.h>
 #include <third_party/blink/public/web/web_view.h>
 #include <ui/base/ime/init/input_method_factory.h>
 #include <ui/base/ime/input_method.h>
@@ -48,6 +50,7 @@
 #include <ui/base/win/mouse_wheel_util.h>
 #include <ui/display/display.h>
 #include <ui/display/screen.h>
+#include <ui/events/base_event_utils.h>
 #include <ui/events/blink/web_input_event.h>
 #include <ui/base/win/session_change_observer.h>
 
@@ -180,18 +183,7 @@ RenderWebView::RenderWebView(ProfileImpl              *profile,
     updateVisibility();
     updateGeometry();
 
-    // Set input event routing:
-    d_inputRouterImpl.reset(
-        new content::InputRouterImpl(
-            this, this, this, content::InputRouter::Config()));
-
-    mojo::PendingRemote<content::mojom::WidgetInputHandlerHost> input_handler_host;
-    content::RenderWidget::FromRoutingID(routingId)->
-        SetupWidgetInputHandler(
-            mojo::MakeRequest(&d_widgetInputHandler), std::move(input_handler_host));
-
-    d_inputRouterImpl->BindNewFrameHost();
-
+    setWidgetMojo();
     updateFocus();
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
@@ -292,7 +284,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
     case WM_NCDESTROY: {
         if (d_gotRenderViewInfo) {
             content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId)->
-                layer_tree_view()->SetVisible(false);
+                layer_tree_host()->SetVisible(false);
         }
 
         if (d_compositor) {
@@ -448,8 +440,8 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
                         d_mouseEntered = true;
 
                         d_mouseScreenPosition.SetPoint(
-                            event.PositionInScreen().x,
-                            event.PositionInScreen().y);
+                            event.PositionInScreen().x(),
+                            event.PositionInScreen().y());
                     }
                 }
             } break;
@@ -457,8 +449,8 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
                 d_mouseEntered = false;
 
                 d_mouseScreenPosition.SetPoint(
-                    event.PositionInScreen().x,
-                    event.PositionInScreen().y);
+                    event.PositionInScreen().x(),
+                    event.PositionInScreen().y());
             } break;
             case WM_LBUTTONDOWN:
             case WM_MBUTTONDOWN:
@@ -488,12 +480,12 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
             } break;
             }
 
-            event.movement_x = event.PositionInScreen().x - d_mouseScreenPosition.x();
-            event.movement_y = event.PositionInScreen().y - d_mouseScreenPosition.y();
+            event.movement_x = event.PositionInScreen().x() - d_mouseScreenPosition.x();
+            event.movement_y = event.PositionInScreen().y() - d_mouseScreenPosition.y();
 
             d_mouseScreenPosition.SetPoint(
-                event.PositionInScreen().x,
-                event.PositionInScreen().y);
+                event.PositionInScreen().x(),
+                event.PositionInScreen().y());
 
             if (d_mouseLocked) {
                 event.SetPositionInWidget(
@@ -505,9 +497,9 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
             }
             else {
                 d_unlockedMouseWebViewPosition.SetPoint(
-                    event.PositionInWidget().x, event.PositionInWidget().y);
+                    event.PositionInWidget().x(), event.PositionInWidget().y());
                 d_unlockedMouseScreenPosition.SetPoint(
-                    event.PositionInScreen().x, event.PositionInScreen().y);
+                    event.PositionInScreen().x(), event.PositionInScreen().y());
             }
 
             if (d_inputRouterImpl) {
@@ -548,7 +540,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
                 ui::MakeWebMouseWheelEvent(
                     ui::MouseWheelEvent(msg));
 
-            gfx::Vector2dF location(event.PositionInWidget().x, event.PositionInWidget().y);
+            gfx::Vector2dF location(event.PositionInWidget().x(), event.PositionInWidget().y());
 
             event.has_synthetic_phase = true;
 
@@ -683,7 +675,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
         }
 
         d_isCursorOverridden = true;
-        SetCursor(
+        ::SetCursor(
             LoadCursor(NULL, cursor));
     } return 1;
     case WM_MOUSEACTIVATE: {
@@ -784,11 +776,12 @@ void RenderWebView::updateVisibility()
     }
 
     d_compositor->SetVisible(d_visible);
+    content::RenderViewImpl *rv = content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
 
     if (d_visible) {
-        dispatchToRenderWidget(
-            PageMsg_VisibilityChanged(d_renderViewRoutingId,
-                content::PageVisibilityState::kVisible));
+        if (rv) {
+            rv->OnPageVisibilityChanged(content::PageVisibilityState::kVisible);
+        }
 
         dispatchToRenderWidget(
             WidgetMsg_WasShown(d_renderWidgetRoutingId,
@@ -798,9 +791,9 @@ void RenderWebView::updateVisibility()
         dispatchToRenderWidget(
             WidgetMsg_WasHidden(d_renderWidgetRoutingId));
 
-        dispatchToRenderWidget(
-            PageMsg_VisibilityChanged(d_renderViewRoutingId,
-                content::PageVisibilityState::kHidden));
+        if (rv) {
+            rv->OnPageVisibilityChanged(content::PageVisibilityState::kHidden);
+        }
 
         d_tooltip->Hide();
     }
@@ -886,11 +879,12 @@ bool RenderWebView::dispatchToRenderWidget(const IPC::Message& message)
         v8::Context::Scope contextScope(
             webFrame->ToWebLocalFrame()->MainWorldScriptContext());
 
-        rv->GetWidget()->LockSize(false);
+        content::RenderWidget* renderWidget = content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId);
+        renderWidget->LockSize(false);
         bool rc = static_cast<IPC::Listener *>(
             content::RenderThreadImpl::current())
                 ->OnMessageReceived(message);
-        rv->GetWidget()->LockSize(true);
+        renderWidget->LockSize(true);
 
         return rc;
     }
@@ -924,11 +918,11 @@ void RenderWebView::setPlatformCursor(HCURSOR cursor)
     }
 
     if (cursor) {
-        d_previousPlatformCursor = SetCursor(cursor);
+        d_previousPlatformCursor = ::SetCursor(cursor);
         d_currentPlatformCursor = cursor;
     }
     else if (d_previousPlatformCursor) {
-        SetCursor(d_previousPlatformCursor);
+        ::SetCursor(d_previousPlatformCursor);
         d_previousPlatformCursor = NULL;
     }
 }
@@ -1165,7 +1159,8 @@ void RenderWebView::setLogicalFocus(bool focused)
         v8::Context::Scope contextScope(
             webFrame->ToWebLocalFrame()->MainWorldScriptContext());
 
-        rv->SetFocus(focused);
+        blink::WebView* webView = rv->GetWebView();
+        webView->SetFocus(focused);
     }
 }
 #endif
@@ -1594,7 +1589,10 @@ void RenderWebView::notifyRoutingId(int id)
     RenderMessageDelegate::GetInstance()->AddRoute(
         d_renderViewRoutingId, this);
 
-    d_renderWidgetRoutingId = rv->GetWidget()->routing_id();
+    content::RenderFrameImpl* renderFrame = rv->GetMainRenderFrame();
+    DCHECK(renderFrame);
+    content::RenderWidget* renderWidget = renderFrame->GetLocalRootRenderWidget();
+    d_renderWidgetRoutingId = renderWidget->routing_id();
 
     RenderMessageDelegate::GetInstance()->AddRoute(
         d_renderWidgetRoutingId, this);
@@ -1616,20 +1614,11 @@ void RenderWebView::notifyRoutingId(int id)
 
     rv->GetWebView()->SetHwnd(d_hwnd.get());
 
-    // Set input event routing:
-    d_inputRouterImpl.reset(
-        new content::InputRouterImpl(
-            this, this, this, content::InputRouter::Config()));
-
-    mojo::PendingRemote<content::mojom::WidgetInputHandlerHost> input_handler_host;
-    rv->GetWidget()->SetupWidgetInputHandler(
-        mojo::MakeRequest(&d_widgetInputHandler), std::move(input_handler_host));
-
-    d_inputRouterImpl->BindNewFrameHost();
+    setWidgetMojo();
 
     updateFocus();
 
-    rv->GetWidget()->LockSize(true);
+    renderWidget->LockSize(true);
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     updateAltDragRubberBanding();
@@ -1641,14 +1630,6 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(RenderWebView, message)
-        // Mouse locking:
-        IPC_MESSAGE_HANDLER(WidgetHostMsg_LockMouse,
-            OnLockMouse)
-        IPC_MESSAGE_HANDLER(WidgetHostMsg_UnlockMouse,
-            OnUnlockMouse)
-        // Cursor setting:
-        IPC_MESSAGE_HANDLER(WidgetHostMsg_SetCursor,
-            OnSetCursor)
         // Keyboard events:
         IPC_MESSAGE_HANDLER(WidgetHostMsg_SelectionBoundsChanged,
             OnSelectionBoundsChanged)
@@ -1656,7 +1637,6 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
             OnSelectionChanged)
         IPC_MESSAGE_HANDLER(WidgetHostMsg_TextInputStateChanged,
             OnTextInputStateChanged)
-        IPC_MESSAGE_UNHANDLED(handled = false)
         // Drag and drop:
         IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging,
             OnStartDragging)
@@ -1677,17 +1657,18 @@ bool RenderWebView::OnMessageReceived(const IPC::Message& message)
         IPC_MESSAGE_HANDLER(ViewHostMsg_SetRubberbandRect,
             OnSetRubberbandRect)
 #endif
+        IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
     return handled;
 }
 
 // content::InputRouterClient overrides:
-content::InputEventAckState RenderWebView::FilterInputEvent(
+blink::mojom::InputEventResultState RenderWebView::FilterInputEvent(
     const blink::WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info)
 {
-    return content::INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+    return blink::mojom::InputEventResultState::kNotConsumed;
 }
 
 void RenderWebView::ForwardGestureEventWithLatencyInfo(
@@ -1708,6 +1689,24 @@ bool RenderWebView::IsWheelScrollInProgress()
 bool RenderWebView::IsAutoscrollInProgress()
 {
     return false;
+}
+
+void RenderWebView::SetMouseCapture(bool capture)
+{
+}
+
+void RenderWebView::RequestMouseLock(
+      bool from_user_gesture,
+      bool privileged,
+      bool unadjusted_movement,
+      content::mojom::WidgetInputHandlerHost::RequestMouseLockCallback response)
+{
+    OnLockMouse(from_user_gesture, privileged, unadjusted_movement);
+    d_mouse_lock_context.reset();
+    mojo::PendingRemote<blink::mojom::PointerLockContext> context = d_mouse_lock_context.BindNewPipeAndPassRemote();
+    std::move(response).Run(blink::mojom::PointerLockResult::kSuccess, std::move(context));
+    d_mouse_lock_context.set_disconnect_handler(base::BindOnce(
+        &RenderWebView::OnUnlockMouse, d_weak_factory.GetWeakPtr()));
 }
 
 gfx::Size RenderWebView::GetRootWidgetViewportSize()
@@ -1971,10 +1970,7 @@ bool RenderWebView::ChangeTextDirectionAndLayoutAlignment(
     base::i18n::TextDirection direction)
 {
     dispatchToRenderWidget(
-        WidgetMsg_SetTextDirection(d_renderWidgetRoutingId,
-            direction == base::i18n::RIGHT_TO_LEFT?
-                blink::kWebTextDirectionRightToLeft :
-                blink::kWebTextDirectionLeftToRight));
+        WidgetMsg_SetTextDirection(d_renderWidgetRoutingId, direction));
 
     return true;
 }
@@ -2092,15 +2088,23 @@ void RenderWebView::DragSourceEnded(
 
 void RenderWebView::DragSourceSystemEnded()
 {
-    if (!d_gotRenderViewInfo) {
+    if (!d_gotRenderViewInfo || !d_frame_widget) {
         return;
     }
-
-    dispatchToRenderWidget(
-        DragMsg_SourceSystemDragEnded(d_renderWidgetRoutingId));
+    d_frame_widget->DragSourceSystemDragEnded();
 }
 
-// IPC message handlers:
+void RenderWebView::SetCursor(const ui::Cursor& cursor)
+{
+    OnSetCursor(content::WebCursor(cursor));
+}
+
+void RenderWebView::RequestMouseLockChange(
+    bool unadjusted_movement,
+    PointerLockContext::RequestMouseLockChangeCallback response) {
+  std::move(response).Run(blink::mojom::PointerLockResult::kSuccess);
+}
+
 void RenderWebView::OnLockMouse(
     bool user_gesture,
     bool privileged,
@@ -2110,10 +2114,6 @@ void RenderWebView::OnLockMouse(
         SetCapture(d_hwnd.get());
         d_mouseLocked = true;
     }
-
-    dispatchToRenderWidget(
-        WidgetMsg_LockMouse_ACK(d_renderViewRoutingId,
-            GetCapture() == d_hwnd.get()));
 }
 
 void RenderWebView::OnUnlockMouse()
@@ -2131,14 +2131,14 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
 
         HCURSOR platformCursor = NULL;
 
-        if (d_currentCursor.info().type != ui::CursorType::kCustom) {
+        if (d_currentCursor.cursor().type() != ui::mojom::CursorType::kCustom) {
             auto native_cursor = d_currentCursor.GetNativeCursor();
             d_cursorLoader->SetPlatformCursor(&native_cursor);
 
             platformCursor = native_cursor.platform();
         }
         else {
-            ui::Cursor uiCursor(ui::CursorType::kCustom);
+            ui::Cursor uiCursor(ui::mojom::CursorType::kCustom);
             SkBitmap bitmap;
             gfx::Point hotspot;
             float scale_factor;
@@ -2146,7 +2146,7 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
                 &bitmap, &hotspot, &scale_factor);
             uiCursor.set_custom_bitmap(bitmap);
             uiCursor.set_custom_hotspot(hotspot);
-            uiCursor.set_device_scale_factor(scale_factor);
+            uiCursor.set_image_scale_factor(scale_factor);
 
             platformCursor = d_currentCursor.GetPlatformCursor(uiCursor);
         }
@@ -2171,9 +2171,9 @@ void RenderWebView::OnSelectionBoundsChanged(
         focus_bound.set_type(gfx::SelectionBound::CENTER);
     } else {
         // Whether text is LTR at the anchor handle.
-        bool anchor_LTR = params.anchor_dir == blink::kWebTextDirectionLeftToRight;
+        bool anchor_LTR = params.anchor_dir == base::i18n::TextDirection::LEFT_TO_RIGHT;
         // Whether text is LTR at the focus handle.
-        bool focus_LTR = params.focus_dir == blink::kWebTextDirectionLeftToRight;
+        bool focus_LTR = params.focus_dir == base::i18n::TextDirection::LEFT_TO_RIGHT;
 
         if ((params.is_anchor_first && anchor_LTR) ||
             (!params.is_anchor_first && !anchor_LTR)) {
@@ -2274,10 +2274,34 @@ void RenderWebView::OnClose()
 // Native tooltips:
 void RenderWebView::OnSetTooltipText(
     const base::string16& tooltip_text,
-    blink::WebTextDirection text_direction_hint)
+    base::i18n::TextDirection text_direction_hint)
 {
     d_tooltipText = tooltip_text;
     updateTooltip();
+}
+
+void RenderWebView::setWidgetMojo() {
+    d_frame_widget.reset();
+    d_blink_widget_host_receiver.reset();
+    d_inputRouterImpl = nullptr;
+    content::RenderWidget* renderWidget =
+        content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId);
+    if (!renderWidget) {
+        return;
+    }
+    blink::WebWidget* webWidget = renderWidget->GetWebWidget();
+
+    // Set input event routing:
+    d_inputRouterImpl.reset(
+        new content::InputRouterImpl(
+            this, this, this, content::InputRouter::Config()));
+    renderWidget->SetupWidgetInputHandler(
+        d_widgetInputHandler.BindNewPipeAndPassReceiver(),
+        d_inputRouterImpl->BindNewHost());
+
+    webWidget->setNewWidgetHostInterface(
+        d_blink_widget_host_receiver.BindNewEndpointAndPassDedicatedRemoteForTesting());
+    d_frame_widget.Bind(webWidget->BindNewFrameWidgetInterfaces());
 }
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
