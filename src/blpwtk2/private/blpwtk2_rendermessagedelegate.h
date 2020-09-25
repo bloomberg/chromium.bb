@@ -24,7 +24,15 @@
 #define INCLUDED_BLPWTK2_RENDERMESSAGEDELEGATE_H
 
 #include <base/lazy_instance.h>
+#include <base/memory/ref_counted.h>
 #include <ipc/message_router.h>
+#include <mojo/public/cpp/bindings/associated_receiver.h>
+
+namespace mojo {
+namespace internal {
+class MultiplexRouter;
+}
+}
 
 namespace blpwtk2 {
 
@@ -38,6 +46,14 @@ class RenderMessageDelegate : public IPC::MessageRouter {
     // IPC::MessageRouter overrides:
     bool OnControlMessageReceived(const IPC::Message& msg) override;
 
+    template<typename Interface>
+    mojo::PendingAssociatedReceiver<Interface>
+    InitWithNewAssociatedEndpointAndPassReceiver(mojo::PendingAssociatedRemote<Interface>& pending_remote);
+
+    template<typename Interface>
+    mojo::PendingAssociatedRemote<Interface>
+    BindNewAssociatedEndpointAndPassRemote(mojo::AssociatedReceiver<Interface>& receiver);
+
   private:
 
     friend struct base::LazyInstanceTraitsBase<RenderMessageDelegate>;
@@ -46,7 +62,29 @@ class RenderMessageDelegate : public IPC::MessageRouter {
     ~RenderMessageDelegate() final;
 
     IPC::MessageRouter d_router;
+
+    scoped_refptr<mojo::internal::MultiplexRouter> d_router0, d_router1;
 };
+
+template<typename Interface>
+mojo::PendingAssociatedReceiver<Interface>
+RenderMessageDelegate::InitWithNewAssociatedEndpointAndPassReceiver(mojo::PendingAssociatedRemote<Interface>& pending_remote) {
+    mojo::PendingAssociatedReceiver<Interface> receiver = pending_remote.InitWithNewEndpointAndPassReceiver();
+    mojo::ScopedInterfaceEndpointHandle receiver_handle = receiver.PassHandle();
+    mojo::InterfaceId id = d_router1->AssociateInterface(std::move(receiver_handle));
+    receiver_handle = d_router0->CreateLocalEndpointHandle(id);
+    receiver.set_handle(std::move(receiver_handle));
+
+    return receiver;
+}
+
+template<typename Interface>
+mojo::PendingAssociatedRemote<Interface>
+RenderMessageDelegate::BindNewAssociatedEndpointAndPassRemote(mojo::AssociatedReceiver<Interface>& receiver) {
+    mojo::PendingAssociatedRemote<Interface> remote;
+    receiver.Bind(InitWithNewAssociatedEndpointAndPassReceiver(remote));
+    return remote;
+}
 
 } // close namespace blpwtk2
 
