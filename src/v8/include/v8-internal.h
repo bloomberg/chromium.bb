@@ -118,11 +118,11 @@ const int kApiTaggedSize = kApiInt32Size;
 const int kApiTaggedSize = kApiSystemPointerSize;
 #endif
 
-constexpr bool PointerCompressionIsEnabled() {
+constexpr_func bool PointerCompressionIsEnabled() {
   return kApiTaggedSize != kApiSystemPointerSize;
 }
 
-constexpr bool HeapSandboxIsEnabled() {
+constexpr_func bool HeapSandboxIsEnabled() {
 #ifdef V8_HEAP_SANDBOX
   return true;
 #else
