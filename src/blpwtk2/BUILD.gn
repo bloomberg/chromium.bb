@@ -335,6 +335,7 @@ shared_library("blpwtk2") {
     "//skia",
     "//storage/common",
     "//services/service_manager",
+    "//services/viz/privileged/mojom:mojom",
     "//services/viz/public/mojom:mojom",
     "//services/viz/public/cpp/gpu",
     "//third_party/blink/public:blink",
