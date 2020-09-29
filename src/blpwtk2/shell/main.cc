@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <objbase.h>
 #include <fstream>
 #include <string>
 #include <set>
@@ -1380,6 +1381,8 @@ int main(int, const char**)
     if (!noRendererIOThread) {
         toolkitParams.enableRendererIOThread();
     }
+
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
     g_toolkit = blpwtk2::ToolkitFactory::create(toolkitParams);
     ProcessHostDelegateImpl hostIPCDelegate;
