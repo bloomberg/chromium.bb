@@ -26,6 +26,7 @@
 #include <blpwtk2_devtoolsmanagerdelegateimpl.h>
 #include <blpwtk2_fontcollectionimpl.h>
 #include <blpwtk2_processhostimpl.h>
+#include <blpwtk2_requestinterceptorimpl.h>
 #include <blpwtk2_resourcecontextimpl.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
@@ -66,6 +67,7 @@
 #include <components/printing/renderer/print_render_frame_helper.h>
 #include <components/user_prefs/user_prefs.h>
 #include <net/proxy_resolution/proxy_config.h>
+#include <net/url_request/url_request_job_factory_impl.h>
 #include <printing/backend/print_backend.h>
 
 namespace blpwtk2 {
@@ -171,6 +173,7 @@ BrowserContextImpl::~BrowserContextImpl()
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     DCHECK(0 == d_numWebViews);
     DCHECK(!d_isDestroyed);
+    net::URLRequestJobFactoryImpl::SetInterceptorForTesting(nullptr);
 
     if (d_devToolsServerLaunched) {
         DevToolsManagerDelegateImpl::StopHttpHandler();
@@ -212,6 +215,8 @@ void BrowserContextImpl::ConfigureNetworkContextParams(
     std::string user_agent,
     network::mojom::NetworkContextParams* network_context_params)
 {
+    d_interceptor = std::make_unique<RequestInterceptorImpl>();
+    net::URLRequestJobFactoryImpl::SetInterceptorForTesting(d_interceptor.get());
     return d_requestContextManager->ConfigureNetworkContextParams(
         false, user_agent, network_context_params);
 }

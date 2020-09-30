@@ -47,6 +47,7 @@ namespace blpwtk2 {
 class ResourceContextImpl;
 class SpellCheckConfig;
 class URLRequestContextGetterImpl;
+class RequestInterceptorImpl;
 
                         // ========================
                         // class BrowserContextImpl
@@ -72,6 +73,8 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     scoped_refptr<PrefStore> d_userPrefs;
     std::unique_ptr<net::ProxyConfig> d_proxyConfig;
     std::unique_ptr<RequestContextManager> d_requestContextManager;
+    std::unique_ptr<RequestInterceptorImpl> d_interceptor;
+
     int d_numWebViews;
     bool d_isDestroyed;
     bool d_devToolsServerLaunched;

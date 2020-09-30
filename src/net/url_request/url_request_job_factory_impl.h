@@ -37,13 +37,6 @@ class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
   bool IsHandledProtocol(const std::string& scheme) const override;
   bool IsSafeRedirectTarget(const GURL& location) const override;
 
- private:
-  // For testing only.
-  friend class URLRequestFilter;
-
-  typedef std::map<std::string, std::unique_ptr<ProtocolHandler>>
-      ProtocolHandlerMap;
-
   // Sets a global URLRequestInterceptor for testing purposes.  The interceptor
   // is given the chance to intercept any request before the corresponding
   // ProtocolHandler, but after any other URLRequestJobFactories layered on top
@@ -51,6 +44,13 @@ class NET_EXPORT URLRequestJobFactoryImpl : public URLRequestJobFactory {
   // If an interceptor is set, the old interceptor must be cleared before
   // setting a new one.
   static void SetInterceptorForTesting(URLRequestInterceptor* interceptor);
+
+ private:
+  // For testing only.
+  friend class URLRequestFilter;
+
+  typedef std::map<std::string, std::unique_ptr<ProtocolHandler>>
+      ProtocolHandlerMap;
 
   ProtocolHandlerMap protocol_handler_map_;
 
