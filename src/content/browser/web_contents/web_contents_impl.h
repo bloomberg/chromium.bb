@@ -523,6 +523,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* source,
       std::vector<blink::mojom::FaviconURLPtr> candidates) override;
   const std::vector<blink::mojom::FaviconURLPtr>& GetFaviconURLs() override;
+  void DevToolsAgentHostAttached() override;
+  void DevToolsAgentHostDetached() override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
