@@ -574,7 +574,7 @@ void V8EmbedderGraphBuilder::VisitTracedReference(
 
 void V8EmbedderGraphBuilder::VisitTracedGlobalHandle(
     const v8::TracedGlobal<v8::Value>&) {
-  CHECK(false) << "Blink does not use v8::TracedGlobal.";
+  //CHECK(false) << "Blink does not use v8::TracedGlobal.";
 }
 
 void V8EmbedderGraphBuilder::VisitPersistentHandle(
