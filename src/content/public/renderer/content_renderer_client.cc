@@ -257,6 +257,14 @@ bool ContentRendererClient::IsSafeRedirectTarget(const GURL& url) {
 
 void ContentRendererClient::DidSetUserAgent(const std::string& user_agent) {}
 
+bool ContentRendererClient::Dispatch(IPC::Message* msg) {
+  return false;
+}
+
+bool ContentRendererClient::ShouldBindFrameSinkProvider() {
+  return false;
+}
+
 bool ContentRendererClient::RequiresWebComponentsV0(const GURL& url) {
   return false;
 }
