@@ -1673,12 +1673,12 @@ void LayoutBlock::ComputeChildPreferredLogicalWidths(
 }
 
 bool LayoutBlock::HasLineIfEmpty() const {
-  if (GetNode()) {
-    if (IsRootEditableElement(*GetNode()))
+  if (Node* node = GetNode()) {
+    if (IsRootEditableElement(*node))
+      return true;
+    if (HasEditableStyle(*node) && IsTableCell())
       return true;
   }
-  if (HasEditableStyle(*GetNode()) && IsTableCell())
-    return true;
 
   return FirstLineStyleRef().HasLineIfEmpty();
 }
