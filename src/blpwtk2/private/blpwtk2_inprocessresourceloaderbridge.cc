@@ -309,15 +309,13 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::addResponseHeader(
 
   if (d_responseHeaders) {
     std::string str(header.data(), header.length());
-    DCHECK_EQ('\0', str[str.size() - 2]);
-    DCHECK_EQ('\0', str[str.size() - 1]);
 
-    const std::string::size_type value_end_index = str.size()-2;
     const std::string::size_type name_end_index = str.find(": ");
     DCHECK(name_end_index != std::string::npos);
     const base::StringPiece name(header.data(), name_end_index);
-    const base::StringPiece value(header.data() + name_end_index + 2,
-        value_end_index - name_end_index - 2);
+    const std::string::size_type value_pos = name_end_index + 2;
+    const base::StringPiece value(header.data() + value_pos,
+        header.length() - value_pos);
 
     d_responseHeaders->AddHeader(name, value);
   }
