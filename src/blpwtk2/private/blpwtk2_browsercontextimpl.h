@@ -135,6 +135,7 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
 
 
     // patch section: printing
+    void setDefaultPrinter(const StringRef& name) override;
 
 
     // patch section: diagnostics
