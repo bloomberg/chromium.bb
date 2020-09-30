@@ -6,6 +6,8 @@
 
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/bindings/binding_security_for_platform.h"
 
 namespace blink {
 
@@ -21,6 +23,22 @@ v8::Local<v8::Value> ScriptWrappable::Wrap(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context) {
   const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
+
+  if (// This throws if the current context does not have a 'ScriptState'
+      // associated with it:
+      !ScriptState::AccessCheck(isolate->GetCurrentContext()) ||
+       // If the current context is the same as the creation context, assume
+       // it's valid, otherwise call out to verify:
+      (isolate->GetCurrentContext() != creation_context->CreationContext() &&
+       // This basically fulfills the TODO in 'V8DOMWrapper::CreateWrapper()'
+       !BindingSecurityForPlatform::ShouldAllowWrapperCreationOrThrowException(
+           isolate->GetCurrentContext(), creation_context->CreationContext(), wrapper_type_info))) {
+      const String& message =
+        "DOM access from invalid context";
+      V8ThrowException::ThrowAccessError(
+        isolate, message);
+      return v8::Local<v8::Object>();
+  }
 
   DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
 
