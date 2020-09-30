@@ -107,6 +107,12 @@ class WebDocument : public WebNode {
   BLINK_EXPORT network::mojom::ReferrerPolicy GetReferrerPolicy() const;
   BLINK_EXPORT WebString OutgoingReferrer();
 
+  // Bloomberg-specific extensions
+#define BB_HAS_WEB_DOCUMENT_EXTENSIONS
+  BLINK_EXPORT WebString bbHeaderText() const;
+  BLINK_EXPORT WebString bbFooterText() const;
+  BLINK_EXPORT bool bbPrintPageNumbers() const;
+
   // Inserts the given CSS source code as a style sheet in the document.
   BLINK_EXPORT WebStyleSheetKey InsertStyleSheet(
       const WebString& source_code,
