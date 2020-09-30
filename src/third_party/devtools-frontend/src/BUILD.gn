@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/blink/public/public_features.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 all_devtools_files = [
   "front_end/shell.js",
@@ -1676,6 +1677,11 @@ action("generate_devtools_grd") {
         "$resources_out_dir/devtools_extension_api.js",
         "$resources_out_dir/sdk/wasm_source_map/pkg/wasm_source_map_bg.wasm",
       ]
+
+  if (is_blpwtk2) {
+    # Bundle remote modules in blpwtk2
+    grd_files += generated_remote_modules
+  }
 
   inputs = grd_files + devtools_image_files
   response_file_contents = rebase_path(grd_files, root_build_dir)
