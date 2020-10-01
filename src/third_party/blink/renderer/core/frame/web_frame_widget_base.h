@@ -281,8 +281,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void SynchronouslyCompositeForTesting(base::TimeTicks frame_time);
 
   // blpwtk2: for RenderWebView
-  mojo::PendingAssociatedRemote<mojom::blink::FrameWidget> BindNewFrameWidgetInterfaces() override;
-  void setNewWidgetHostInterface(
+  void ResetWidgetHostInterface(
       CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) override;
 
  protected:

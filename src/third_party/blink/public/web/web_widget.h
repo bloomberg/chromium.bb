@@ -191,11 +191,7 @@ class WebWidget {
 
   virtual void SetCursor(const ui::Cursor& cursor) = 0;
 
-  virtual mojo::PendingAssociatedRemote<mojom::blink::FrameWidget> BindNewFrameWidgetInterfaces() {
-    return mojo::NullAssociatedRemote();
-  }
-
-  virtual void setNewWidgetHostInterface(
+  virtual void ResetWidgetHostInterface(
     CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {}
 
  protected:

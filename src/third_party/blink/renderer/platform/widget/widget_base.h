@@ -112,7 +112,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   static bool ShouldRecordBeginMainFrameMetrics();
 
   void SetCursor(const ui::Cursor& cursor);
-  void setNewWidgetHostInterface(
+  void ResetWidgetHostInterface(
       CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost);
 
  private:
