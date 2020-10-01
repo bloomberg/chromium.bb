@@ -804,13 +804,13 @@ if (bb_version != "") {
 config("library_name_config") {
   if (is_component_build && is_android) {
     defines = [
-      "ANGLE_EGL_LIBRARY_NAME=\"libEGL${optional_bb_suffix}.cr\"",
-      "ANGLE_GLESV2_LIBRARY_NAME=\"libGLESv2${optional_bb_suffix}.cr\"",
+      "ANGLE_EGL_LIBRARY_NAME=\"blpcr_egl${optional_bb_suffix}.cr\"",
+      "ANGLE_GLESV2_LIBRARY_NAME=\"blpcr_glesv2${optional_bb_suffix}.cr\"",
     ]
   } else {
     defines = [
-      "ANGLE_EGL_LIBRARY_NAME=\"libEGL${optional_bb_suffix}\"",
-      "ANGLE_GLESV2_LIBRARY_NAME=\"libGLESv2${optional_bb_suffix}\"",
+      "ANGLE_EGL_LIBRARY_NAME=\"blpcr_glesv2${optional_bb_suffix}\"",
+      "ANGLE_GLESV2_LIBRARY_NAME=\"blpcr_glesv2${optional_bb_suffix}\"",
     ]
   }
 }
