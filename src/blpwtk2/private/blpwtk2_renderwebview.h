@@ -324,7 +324,7 @@ class RenderWebView final : public WebView
     bool IsWheelScrollInProgress() override;
     bool IsAutoscrollInProgress() override;
 
-    void SetMouseCapture(bool capture) override;
+    void SetMouseCapture(bool capture) override {}
     void RequestMouseLock(
       bool from_user_gesture,
       bool privileged,
