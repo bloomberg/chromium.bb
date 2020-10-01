@@ -35,6 +35,7 @@
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_dom_event.h"
 
 namespace blink {
 
@@ -84,6 +85,7 @@ class BLINK_EXPORT WebNode {
   bool IsFocusable() const;
   bool IsContentEditable() const;
   bool IsElementNode() const;
+  void DispatchEvent(WebDOMEvent event);
   void SimulateClick();
 
   // See cc/paint/element_id.h for the definition of these ids.
