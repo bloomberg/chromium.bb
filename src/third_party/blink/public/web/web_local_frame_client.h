@@ -250,6 +250,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidChangeFramePolicy(WebFrame* child_frame, const FramePolicy&) {
   }
 
+  virtual void DidAddMessageToConsoleWithCol(const WebConsoleMessage& message,
+                                             const WebString& source_name,
+                                             unsigned source_line,
+                                             unsigned source_column,
+                                             const WebString& stack_trace);
+
   // Called when a Feature-Policy or Document-Policy or Content-Security-Policy
   // HTTP header (for sandbox flags) is encountered while loading the frame's
   // document.
@@ -677,6 +683,16 @@ class BLINK_EXPORT WebLocalFrameClient {
     return false;
   }
 };
+
+inline
+void WebLocalFrameClient::DidAddMessageToConsoleWithCol(
+    const WebConsoleMessage& message,
+    const WebString& source_name,
+    unsigned source_line,
+    unsigned source_column,
+    const WebString& stack_trace) {
+  DidAddMessageToConsole(message, source_name, source_line, stack_trace);
+}
 
 }  // namespace blink
 
