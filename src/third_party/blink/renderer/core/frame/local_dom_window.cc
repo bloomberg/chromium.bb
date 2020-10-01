@@ -122,6 +122,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -238,6 +239,18 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
       should_print_when_finished_loading_(false),
       input_method_controller_(
           MakeGarbageCollected<InputMethodController>(*this, frame)),
+      spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
+      text_suggestion_controller_(
+          MakeGarbageCollected<TextSuggestionController>(*this)) {}
+
+LocalDOMWindow::LocalDOMWindow()
+    : DOMWindow(),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
+      visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
+      unused_preloads_timer_(Thread::MainThread()->GetTaskRunner(),
+                             this,
+                             &LocalDOMWindow::WarnUnusedPreloads),
+      should_print_when_finished_loading_(false),
       spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
       text_suggestion_controller_(
           MakeGarbageCollected<TextSuggestionController>(*this)) {}
@@ -585,6 +598,14 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
   }
 
+  return document_;
+}
+
+Document* LocalDOMWindow::InstallNewUnintializedDocument(const DocumentInit& init) {
+  DCHECK_EQ(init.GetFrame(), GetFrame());
+
+  ClearDocument();
+  document_ = DOMImplementation::createDocument(init);
   return document_;
 }
 
