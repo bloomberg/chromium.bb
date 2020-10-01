@@ -56,7 +56,8 @@ WidgetBase::~WidgetBase() {
 void WidgetBase::InitializeCompositing(
     cc::TaskGraphRunner* task_graph_runner,
     const cc::LayerTreeSettings& settings,
-    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) {
+    std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    int view_id) {
   auto* main_thread_scheduler =
       scheduler::WebThreadScheduler::MainThreadScheduler();
   auto* compositing_thread_scheduler =
@@ -69,7 +70,7 @@ void WidgetBase::InitializeCompositing(
           ? compositing_thread_scheduler->DefaultTaskRunner()
           : nullptr,
       task_graph_runner, main_thread_scheduler);
-  layer_tree_view_->Initialize(settings, std::move(ukm_recorder_factory));
+  layer_tree_view_->Initialize(settings, std::move(ukm_recorder_factory), view_id);
 }
 
 void WidgetBase::Shutdown(
