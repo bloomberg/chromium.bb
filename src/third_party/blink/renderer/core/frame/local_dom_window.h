@@ -98,9 +98,14 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     virtual void DidRemoveAllEventListeners(LocalDOMWindow*) = 0;
   };
 
+  static LocalDOMWindow* Create() {
+    return MakeGarbageCollected<LocalDOMWindow>();
+  }
+
   static LocalDOMWindow* From(const ScriptState*);
 
   explicit LocalDOMWindow(LocalFrame&);
+  explicit LocalDOMWindow();
   ~LocalDOMWindow() override;
 
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
@@ -157,6 +162,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void CountDeprecation(mojom::WebFeature feature) final;
 
   Document* InstallNewDocument(const DocumentInit&);
+
+  Document* InstallNewUnintializedDocument(const DocumentInit&);
 
   // EventTarget overrides:
   ExecutionContext* GetExecutionContext() const override;
