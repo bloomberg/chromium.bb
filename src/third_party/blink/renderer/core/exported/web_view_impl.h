@@ -390,6 +390,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebSize GetPreferredSizeForTest() override;
 
   WebSize Size();
+
+  HWND GetHwnd() override;
+  void SetHwnd(HWND hwnd) override;
+
   IntSize MainFrameSize();
 
   PageScaleConstraintsSet& GetPageScaleConstraintsSet() const;
@@ -666,6 +670,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   const bool does_composite_;
 
   bool matches_heuristics_for_gpu_rasterization_ = false;
+
+  // hwnd of WebView if available. e.g. blpwtk2::RenderWebview
+  HWND hwnd_;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;
 
