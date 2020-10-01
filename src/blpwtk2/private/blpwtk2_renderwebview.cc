@@ -1691,10 +1691,6 @@ bool RenderWebView::IsAutoscrollInProgress()
     return false;
 }
 
-void RenderWebView::SetMouseCapture(bool capture)
-{
-}
-
 void RenderWebView::RequestMouseLock(
       bool from_user_gesture,
       bool privileged,
