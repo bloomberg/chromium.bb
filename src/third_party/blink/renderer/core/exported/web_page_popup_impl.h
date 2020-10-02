@@ -140,7 +140,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   cc::LayerTreeHost* InitializeCompositing(
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+      int view_id) override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;
   void SetCursor(const ui::Cursor& cursor) override;
