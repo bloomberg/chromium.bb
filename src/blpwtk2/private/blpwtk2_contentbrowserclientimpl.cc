@@ -30,6 +30,7 @@
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_processhostimpl.h>
 #include <blpwtk2_browsermainparts.h>
+#include <blpwtk2_requestinterceptorimpl.h>
 
 #include <base/json/json_reader.h>
 #include <base/message_loop/message_loop.h>
@@ -46,6 +47,7 @@
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include <chrome/grit/browser_resources.h>
 #include "mojo/public/cpp/bindings/remote.h"
+#include <net/url_request/url_request_job_factory_impl.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <ui/base/resource/resource_bundle.h>
 
@@ -59,12 +61,15 @@ namespace blpwtk2 {
                         // class ContentBrowserClientImpl
                         // ------------------------------
 
-ContentBrowserClientImpl::ContentBrowserClientImpl()
+ContentBrowserClientImpl::ContentBrowserClientImpl() :
+    d_interceptor(std::make_unique<RequestInterceptorImpl>())
 {
+    net::URLRequestJobFactoryImpl::SetInterceptorForTesting(d_interceptor.get());
 }
 
 ContentBrowserClientImpl::~ContentBrowserClientImpl()
 {
+    net::URLRequestJobFactoryImpl::SetInterceptorForTesting(nullptr);
 }
 
 std::unique_ptr<content::BrowserMainParts>
