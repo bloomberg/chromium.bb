@@ -15,6 +15,11 @@
 
 namespace ui {
 
+bool OSExchangeData::Provider::GetCustomData(const FORMATETC& format,
+                                             base::string16* data) const {
+  return false;
+}
+
 OSExchangeData::OSExchangeData()
     : provider_(OSExchangeDataProviderFactory::CreateProvider()) {
 }
