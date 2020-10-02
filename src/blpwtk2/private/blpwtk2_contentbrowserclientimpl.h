@@ -39,6 +39,7 @@ namespace content {
 }
 
 namespace blpwtk2 {
+class RequestInterceptorImpl;
 
                         // ==============================
                         // class ContentBrowserClientImpl
@@ -53,7 +54,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
     
     // The following are the in-process render thread's info
     std::atomic<mojo::OutgoingInvitation*> d_broker_client_invitation{nullptr};
-    
+    std::unique_ptr<RequestInterceptorImpl> d_interceptor;
+
     int d_render_client_id;
 
   public:
