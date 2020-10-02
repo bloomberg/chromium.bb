@@ -275,6 +275,12 @@ void BrowserContextImpl::createWebView(
 
     WebViewProperties properties;
 
+    properties.takeKeyboardFocusOnMouseDown =
+        params.takeKeyboardFocusOnMouseDown();
+    properties.takeLogicalFocusOnMouseDown =
+        params.takeLogicalFocusOnMouseDown();
+    properties.activateWindowOnMouseDown =
+        params.activateWindowOnMouseDown();
     properties.domPasteEnabled =
         params.domPasteEnabled();
     properties.javascriptCanAccessClipboard =
