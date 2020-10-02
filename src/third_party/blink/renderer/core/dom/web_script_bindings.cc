@@ -61,7 +61,7 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
 
     v8::Local<v8::Context> context =
         V8ContextSnapshot::CreateContextFromSnapshot(
-            isolate, world, nullptr, v8::Local<v8::Object>(), document, window);
+            isolate, world, nullptr, v8::Local<v8::Object>(), document);
 
     MakeGarbageCollected<ScriptState>(context, std::move(&world));
 

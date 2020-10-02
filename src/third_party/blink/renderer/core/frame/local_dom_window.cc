@@ -606,6 +606,7 @@ Document* LocalDOMWindow::InstallNewUnintializedDocument(const DocumentInit& ini
 
   ClearDocument();
   document_ = DOMImplementation::createDocument(init);
+  document_->SetDOMWindow(this);
   return document_;
 }
 
