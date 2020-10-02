@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_CONTEXT_SNAPSHOT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "v8/include/v8.h"
 
@@ -43,8 +42,7 @@ class CORE_EXPORT V8ContextSnapshot {
       const DOMWrapperWorld&,
       v8::ExtensionConfiguration*,
       v8::Local<v8::Object> global_proxy,
-      Document*,
-      LocalDOMWindow* window = nullptr);
+      Document*);
 
   // If the context was created from the snapshot, installs conditionally
   // enabled features on some v8::Object's in the context and returns true.

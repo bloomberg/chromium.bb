@@ -963,6 +963,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ClearDOMWindow() { dom_window_ = nullptr; }
   LocalDOMWindow* domWindow() const { return dom_window_; }
+  void SetDOMWindow(LocalDOMWindow* dom_window) { dom_window_ = dom_window; }
 
   // Helper functions for forwarding LocalDOMWindow event related tasks to the
   // LocalDOMWindow if it exists.
