@@ -839,6 +839,7 @@ void RenderWebView::updateVisibility()
 
     if (d_visible) {
         if (rv) {
+            rv->GetWebView()->SetVisibilityState(blink::mojom::PageVisibilityState::kVisible, false);
             rv->OnPageVisibilityChanged(content::PageVisibilityState::kVisible);
         }
 
@@ -851,6 +852,7 @@ void RenderWebView::updateVisibility()
             WidgetMsg_WasHidden(*d_renderWidgetRoutingId));
 
         if (rv) {
+            rv->GetWebView()->SetVisibilityState(blink::mojom::PageVisibilityState::kHidden, false);
             rv->OnPageVisibilityChanged(content::PageVisibilityState::kHidden);
         }
 
