@@ -46,6 +46,7 @@
 #include <components/viz/service/display_embedder/software_output_device_win.h>
 #include <components/viz/service/display_embedder/software_output_surface.h>
 #include <components/viz/service/frame_sinks/frame_sink_manager_impl.h>
+#include <components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h>
 #include <content/common/render_frame_metadata.mojom.h>
 #include <content/public/common/gpu_stream_constants.h>
 #include <content/renderer/render_thread_impl.h>
@@ -640,8 +641,23 @@ std::unique_ptr<viz::OutputSurface> RenderFrameSinkProviderImpl::CreateOutputSur
                 attributes,
                 viz::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
 
-        if (context_provider->BindToCurrentThread() == gpu::ContextResult::kSuccess) {
+        gpu::ContextResult result = context_provider->BindToCurrentThread();
+
+        if (result == gpu::ContextResult::kSuccess) {
             output_surface = std::make_unique<GpuOutputSurface>(context_provider, surface_handle);
+        }
+        else {
+            LOG(ERROR) << "failed to bind GL context, falling back to software compositing";
+
+            content::RenderThreadImpl *render_thread =
+                content::RenderThreadImpl::current();
+
+            d_main_task_runner->
+                PostTask(
+                    FROM_HERE,
+                    base::BindOnce(
+                        &content::RenderThreadImpl::CompositingModeFallbackToSoftware,
+                        base::Unretained(render_thread)));
         }
     }
 
