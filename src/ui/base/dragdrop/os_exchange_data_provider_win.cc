@@ -638,7 +638,7 @@ bool OSExchangeDataProviderWin::GetPickledData(
   }
   return success;
 }
-
+   
 void OSExchangeDataProviderWin::EnumerateCustomData(
     std::vector<FORMATETC>* formats) const {
   DCHECK(formats);

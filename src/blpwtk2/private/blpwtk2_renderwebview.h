@@ -33,19 +33,32 @@
 #include <blpwtk2_webviewproperties.h>
 #include <blpwtk2_webviewproxydelegate.h>
 
+#include <base/i18n/rtl.h>
+#include <base/optional.h>
 #include <content/browser/renderer_host/input/fling_controller.h>
 #include <content/browser/renderer_host/input/input_disposition_handler.h>
 #include <content/browser/renderer_host/input/input_router_impl.h>
+#include <content/browser/renderer_host/input/input_router_client.h>
+
 #include <content/common/cursors/webcursor.h>
 #include <content/common/text_input_state.h>
 #include <content/public/common/input_event_ack_state.h>
 #include <ipc/ipc_listener.h>
-#include <third_party/blink/public/web/web_text_direction.h>
+
+#include <third_party/blink/public/mojom/page/widget.mojom.h>
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+
 #include <ui/base/cursor/cursor_loader.h>
 #include <ui/base/ime/input_method_delegate.h>
 #include <ui/base/ime/text_input_client.h>
 #include <ui/gfx/geometry/rect.h>
 #include <ui/views/corewm/tooltip_win.h>
+
+namespace blink {
+class WebFrameWidget;
+}  // close namespace blink
 
 namespace content {
 class InputRouterImpl;
@@ -88,6 +101,8 @@ class RenderWebView final : public WebView
                           , private ui::internal::InputMethodDelegate
                           , private ui::TextInputClient
                           , private DragDropDelegate
+                          , private blink::mojom::WidgetHost
+                          , private blink::mojom::PointerLockContext
 {
     class RenderViewObserver;
 
@@ -109,7 +124,7 @@ class RenderWebView final : public WebView
 
     // Track the 'content::RenderWidget':
     bool d_gotRenderViewInfo = false;
-    int d_renderViewRoutingId, d_renderWidgetRoutingId, d_mainFrameRoutingId;
+    base::Optional<int> d_renderViewRoutingId, d_renderWidgetRoutingId, d_mainFrameRoutingId;
     RenderViewObserver *d_renderViewObserver = nullptr;
 
     // The compositor:
@@ -119,7 +134,7 @@ class RenderWebView final : public WebView
     //
     // The input event router:
     std::unique_ptr<content::InputRouterImpl> d_inputRouterImpl;
-    content::mojom::WidgetInputHandlerPtr d_widgetInputHandler;
+    mojo::Remote<content::mojom::WidgetInputHandler> d_widgetInputHandler;
 
     // State related to mouse events:
     gfx::Point d_mouseScreenPosition;
@@ -176,11 +191,19 @@ class RenderWebView final : public WebView
     // Observe Windows 'session changes':
     std::unique_ptr<ui::SessionChangeObserver> d_windowsSessionChangeObserver;
 
+    // One side of a pipe that is held open while the pointer is locked.
+    // The other side is held be the renderer.
+    mojo::Receiver<blink::mojom::PointerLockContext> d_mouse_lock_context{this};
+    mojo::AssociatedReceiver<blink::mojom::WidgetHost> d_blink_widget_host_receiver{this};
+    blink::WebFrameWidget *d_frame_widget = nullptr;
+
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     // State related to rubber band selection:
     bool d_enableAltDragRubberBanding = false;
     std::unique_ptr<ui::RubberbandOutline> d_rubberbandOutline;
 #endif
+
+    base::WeakPtrFactory<RenderWebView> d_weak_factory{this};
 
     // blpwtk2::WebView overrides
     void destroy() override;
@@ -289,11 +312,11 @@ class RenderWebView final : public WebView
     bool OnMessageReceived(const IPC::Message& message) override;
 
     // content::InputRouterClient overrides:
-    content::InputEventAckState FilterInputEvent(
+    blink::mojom::InputEventResultState FilterInputEvent(
         const blink::WebInputEvent& input_event,
         const ui::LatencyInfo& latency_info) override;
     void IncrementInFlightEventCount() override {}
-    void DecrementInFlightEventCount(content::InputEventAckSource ack_source) override {}
+    void DecrementInFlightEventCount(blink::mojom::InputEventResultSource ack_source) override {}
     void DidOverscroll(const ui::DidOverscrollParams& params) override {}
     void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {}
     void DidStartScrollingViewport() override {}
@@ -305,13 +328,16 @@ class RenderWebView final : public WebView
         const ui::LatencyInfo& latency_info) override {}
     bool IsWheelScrollInProgress() override;
     bool IsAutoscrollInProgress() override;
+
     void SetMouseCapture(bool capture) override {}
-    void FallbackCursorModeLockCursor(bool left,
-                                      bool right,
-                                      bool up,
-                                      bool down) override {}
-    void FallbackCursorModeSetCursorVisibility(bool visible) override {}
+    void RequestMouseLock(
+      bool from_user_gesture,
+      bool privileged,
+      bool unadjusted_movement,
+      content::mojom::WidgetInputHandlerHost::RequestMouseLockCallback response) override;
+
     gfx::Size GetRootWidgetViewportSize() override;
+    void OnInvalidInputEventSource() override {}
 
     // content::InputRouterImplClient overrides:
     content::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
@@ -323,16 +349,16 @@ class RenderWebView final : public WebView
     // content::InputDispositionHandler overrides:
     void OnWheelEventAck(
         const content::MouseWheelEventWithLatencyInfo& event,
-        content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) override {}
+        blink::mojom::InputEventResultSource ack_source,
+        blink::mojom::InputEventResultState ack_result) override {}
     void OnTouchEventAck(
         const content::TouchEventWithLatencyInfo& event,
-        content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) override {}
+        blink::mojom::InputEventResultSource ack_source,
+        blink::mojom::InputEventResultState ack_result) override {}
     void OnGestureEventAck(
         const content::GestureEventWithLatencyInfo& event,
-        content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) override {}
+        blink::mojom::InputEventResultSource ack_source,
+        blink::mojom::InputEventResultState ack_result) override {}
 
     // content::FlingControllerSchedulerClient overrides:
     void ScheduleFlingProgress(
@@ -380,6 +406,9 @@ class RenderWebView final : public WebView
     bool SetCompositionFromExistingText(
         const gfx::Range& range,
         const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+    void GetActiveTextInputControlLayoutBounds(
+      base::Optional<gfx::Rect>* control_bounds,
+      base::Optional<gfx::Rect>* selection_bounds) override {}
     void SetActiveCompositionForAccessibility(
         const gfx::Range& range,
         const base::string16& active_composition_text,
@@ -408,8 +437,14 @@ class RenderWebView final : public WebView
         blink::WebDragOperation drag_operation) override;
     void DragSourceSystemEnded() override;
 
-    // IPC message handlers:
-    //
+    // blink::mojom::WidgetHost override:
+    void SetCursor(const ui::Cursor& cursor) override;
+
+    // blink::mojom::PointerLockContext overrides
+    void RequestMouseLockChange(
+        bool unadjusted_movement,
+        PointerLockContext::RequestMouseLockChangeCallback response) override;
+
     // Mouse locking:
     void OnLockMouse(
         bool user_gesture,
@@ -447,7 +482,7 @@ class RenderWebView final : public WebView
     // Native tooltips:
     void OnSetTooltipText(
         const base::string16& tooltip_text,
-        blink::WebTextDirection text_direction_hint);
+        base::i18n::TextDirection text_direction_hint);
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     // Rubber band selection:
@@ -469,22 +504,24 @@ class RenderWebView final : public WebView
                             WPARAM wParam,
                             LPARAM lParam);
 
-    void initialize();
+    void initializeBrowserLike();
+    void initializeRendererForWebView();
+    void initializeRenderer();
     void updateVisibility();
     void updateGeometry();
     void updateFocus();
     void detachFromRoutingId();
-    bool dispatchToRenderWidget(const IPC::Message& message);
+    bool dispatchIPCMessage(const IPC::Message& message);
     void sendScreenRects();
     void setPlatformCursor(HCURSOR cursor);
     void onMouseEventAck(
         const content::MouseEventWithLatencyInfo& event,
-        content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) {}
+        blink::mojom::InputEventResultSource ack_source,
+        blink::mojom::InputEventResultState ack_result) {}
     void onKeyboardEventAck(
         const content::NativeWebKeyboardEventWithLatencyInfo& event,
-        content::InputEventAckSource ack_source,
-        content::InputEventAckState ack_result) {}
+        blink::mojom::InputEventResultSource ack_source,
+        blink::mojom::InputEventResultState ack_result) {}
     void onQueueWheelEventWithPhaseEnded();
     void onStartDraggingImpl(
         const content::DropData& drop_data,
