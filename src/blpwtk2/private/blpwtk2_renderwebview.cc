@@ -41,6 +41,7 @@
 #include <content/renderer/render_view_impl.h>
 #include <content/renderer/render_frame_impl.h>
 #include <third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h>
+#include <third_party/blink/public/web/web_frame_widget.h>
 #include <third_party/blink/public/web/web_local_frame.h>
 #include <third_party/blink/public/web/web_widget.h>
 #include <third_party/blink/public/web/web_view.h>
@@ -144,7 +145,7 @@ RenderWebView::RenderWebView(WebViewDelegate          *delegate,
 #endif
     , d_pendingDestroy(false)
 {
-    initialize();
+    initializeBrowserLike();
 }
 
 RenderWebView::RenderWebView(ProfileImpl              *profile,
@@ -157,38 +158,16 @@ RenderWebView::RenderWebView(ProfileImpl              *profile,
     , d_properties({ false, false, false, false, false, false })
 #endif
     , d_pendingDestroy(false)
-    , d_renderViewRoutingId(0)
-    , d_renderWidgetRoutingId(0)
-    , d_mainFrameRoutingId(0)
 {
-    initialize();
+    initializeBrowserLike();
 
     SetWindowLong(
         d_hwnd.get(), GWL_STYLE,
         GetWindowLong(d_hwnd.get(), GWL_STYLE) | WS_POPUP);
 
     //
-    d_gotRenderViewInfo = true;
-
     d_renderWidgetRoutingId = routingId;
-
-    RenderMessageDelegate::GetInstance()->AddRoute(
-        d_renderWidgetRoutingId, this);
-
-    // Create a RenderCompositor that is associated with this
-    // content::RenderWidget:
-    d_compositor = RenderCompositorFactory::GetInstance()->CreateCompositor(
-        d_renderWidgetRoutingId, d_hwnd.get(), d_profile);
-
-    updateVisibility();
-    updateGeometry();
-
-    setWidgetMojo();
-    updateFocus();
-
-#if defined(BLPWTK2_FEATURE_RUBBERBAND)
-    updateAltDragRubberBanding();
-#endif
+    initializeRenderer();
 
     //
     d_shown = true;
@@ -204,7 +183,7 @@ RenderWebView::RenderWebView(ProfileImpl              *profile,
 
 RenderWebView::~RenderWebView()
 {
-    LOG(INFO) << "Destroying RenderWebView, routingId=" << d_renderViewRoutingId;
+    LOG(INFO) << "Destroying RenderWebView, routingId=" << *d_renderWidgetRoutingId;
 
     if (d_renderViewObserver) {
         delete d_renderViewObserver;
@@ -283,7 +262,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
     switch (uMsg) {
     case WM_NCDESTROY: {
         if (d_gotRenderViewInfo) {
-            content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId)->
+            content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId)->
                 layer_tree_host()->SetVisible(false);
         }
 
@@ -306,7 +285,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
         if (d_compositor &&
             ((size != d_geometry.size() && !(windowpos->flags & SWP_NOSIZE)) ||
              windowpos->flags & SWP_FRAMECHANGED)) {
-            d_compositor->Resize(gfx::Size());
+            d_compositor->Resize(gfx::Size(1, 1));
         }
     } break;
     case WM_WINDOWPOSCHANGED: {
@@ -336,7 +315,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
         BeginPaint(d_hwnd.get(), &ps);
 
         if (d_gotRenderViewInfo) {
-            content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId)->
+            content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId)->
                 Redraw();
         }
 
@@ -722,7 +701,9 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
     return DefWindowProc(d_hwnd.get(), uMsg, wParam, lParam);
 }
 
-void RenderWebView::initialize()
+// Initialize the `RenderWebView`'s replacements for things that are ordinarily provided by
+// the browser side, such as the HWND:
+void RenderWebView::initializeBrowserLike()
 {
     d_hwnd.reset(CreateWindowEx(
 #if defined(BLPWTK2_FEATURE_FOCUS)
@@ -769,6 +750,82 @@ void RenderWebView::initialize()
             base::Bind(&RenderWebView::onSessionChange, base::Unretained(this)));
 }
 
+// Perform initialization tasks after the renderer side of a regular WebView has been
+// established. `d_renderViewRoutingId` must be set before this function is called.
+void RenderWebView::initializeRendererForWebView()
+{
+    DCHECK(d_renderViewRoutingId);
+
+    // RenderView:
+    content::RenderViewImpl *rv = content::RenderViewImpl::FromRoutingID(*d_renderViewRoutingId);
+    RenderMessageDelegate::GetInstance()->AddRoute(*d_renderViewRoutingId, this);
+
+    // Obtain a reference to the `blink::WebFrameWidget` created by the `RenderView`:
+    d_frame_widget = rv->GetWebView()->MainFrameWidget();
+
+    // Observe the lifecycle of the RenderView:
+    d_renderViewObserver = new RenderViewObserver(rv, this);
+
+    // The blink::WebView needs the HWND in order for the print dialog to work:
+    rv->GetWebView()->SetHwnd(d_hwnd.get());
+
+    d_mainFrameRoutingId = rv->GetMainRenderFrame()->GetRoutingID();
+
+    // RenderFrame:
+    content::RenderFrameImpl *rf = content::RenderFrameImpl::FromRoutingID(*d_mainFrameRoutingId);
+    RenderMessageDelegate::GetInstance()->AddRoute(*d_mainFrameRoutingId, this);
+
+    d_renderWidgetRoutingId = rf->GetLocalRootRenderWidget()->routing_id();
+
+    // Force the `RenderWidget` to ignore browser-originated resize events:
+    content::RenderWidget *rw = content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId);
+    rw->LockSize(true);
+
+    initializeRenderer();
+}
+
+// Perform initialization tasks after the renderer side of either a regular WebView or a
+// WebPagePopup have been established. `d_renderWidgetRoutingId` should be set before this
+// function is called.
+void RenderWebView::initializeRenderer()
+{
+    DCHECK(!d_gotRenderViewInfo);
+    DCHECK(d_renderWidgetRoutingId);
+
+    d_gotRenderViewInfo = true;
+
+    content::RenderWidget *rw = content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId);
+    RenderMessageDelegate::GetInstance()->AddRoute(*d_renderWidgetRoutingId, this);
+
+    // Override override the `blink::WebWidget`'s interface to a `WidgetHost`:
+    mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host =
+        RenderMessageDelegate::GetInstance()->BindNewAssociatedEndpointAndPassRemote(
+            d_blink_widget_host_receiver);
+
+    rw->GetWebWidget()->ResetWidgetHostInterface(std::move(blink_widget_host));
+
+    // Override input event routing:
+    d_inputRouterImpl.reset(
+        new content::InputRouterImpl(
+            this, this, this, content::InputRouter::Config()));
+    rw->SetupWidgetInputHandler(
+        d_widgetInputHandler.BindNewPipeAndPassReceiver(),
+        d_inputRouterImpl->BindNewHost());
+
+    // Create a RenderCompositor that is associated with this
+    // content::RenderWidget:
+    d_compositor = RenderCompositorFactory::GetInstance()->CreateCompositor(
+        *d_renderWidgetRoutingId, d_hwnd.get(), d_profile);
+
+    updateVisibility();
+    updateGeometry();
+    updateFocus();
+
+#if defined(BLPWTK2_FEATURE_RUBBERBAND)
+    updateAltDragRubberBanding();
+#endif
+}
+
 void RenderWebView::updateVisibility()
 {
     if (!d_gotRenderViewInfo) {
@@ -776,22 +833,26 @@ void RenderWebView::updateVisibility()
     }
 
     d_compositor->SetVisible(d_visible);
-    content::RenderViewImpl *rv = content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
+
+    content::RenderViewImpl *rv = d_renderViewRoutingId ?
+        content::RenderViewImpl::FromRoutingID(*d_renderViewRoutingId) : nullptr;
 
     if (d_visible) {
         if (rv) {
+            rv->GetWebView()->SetVisibilityState(blink::mojom::PageVisibilityState::kVisible, false);
             rv->OnPageVisibilityChanged(content::PageVisibilityState::kVisible);
         }
 
-        dispatchToRenderWidget(
-            WidgetMsg_WasShown(d_renderWidgetRoutingId,
+        dispatchIPCMessage(
+            WidgetMsg_WasShown(*d_renderWidgetRoutingId,
                 base::TimeTicks::Now(), false, base::nullopt));
     }
     else {
-        dispatchToRenderWidget(
-            WidgetMsg_WasHidden(d_renderWidgetRoutingId));
+        dispatchIPCMessage(
+            WidgetMsg_WasHidden(*d_renderWidgetRoutingId));
 
         if (rv) {
+            rv->GetWebView()->SetVisibilityState(blink::mojom::PageVisibilityState::kHidden, false);
             rv->OnPageVisibilityChanged(content::PageVisibilityState::kHidden);
         }
 
@@ -817,9 +878,8 @@ void RenderWebView::updateGeometry()
     params.local_surface_id_allocation = d_compositor->GetLocalSurfaceIdAllocation();
     GetNativeViewScreenInfo(&params.screen_info, d_hwnd.get());
 
-    dispatchToRenderWidget(
-            WidgetMsg_UpdateVisualProperties(d_renderWidgetRoutingId,
-                params));
+    dispatchIPCMessage(
+        WidgetMsg_UpdateVisualProperties(*d_renderWidgetRoutingId, params));
 }
 
 void RenderWebView::updateFocus()
@@ -831,14 +891,12 @@ void RenderWebView::updateFocus()
     if (d_focused) {
         d_widgetInputHandler->SetFocus(d_focused);
 
-        dispatchToRenderWidget(
-            WidgetMsg_SetActive(d_renderWidgetRoutingId,
-                d_focused));
+        dispatchIPCMessage(
+            WidgetMsg_SetActive(*d_renderWidgetRoutingId, d_focused));
     }
     else {
-        dispatchToRenderWidget(
-            WidgetMsg_SetActive(d_renderWidgetRoutingId,
-                d_focused));
+        dispatchIPCMessage(
+            WidgetMsg_SetActive(*d_renderWidgetRoutingId, d_focused));
 
         d_widgetInputHandler->SetFocus(d_focused);
     }
@@ -848,27 +906,27 @@ void RenderWebView::detachFromRoutingId()
 {
     d_compositor.reset();
 
-    RenderMessageDelegate::GetInstance()->RemoveRoute(
-        d_mainFrameRoutingId);
-    d_mainFrameRoutingId = 0;
+    if (d_renderWidgetRoutingId) {
+        RenderMessageDelegate::GetInstance()->RemoveRoute(*d_renderWidgetRoutingId);
+        d_renderWidgetRoutingId.reset();
+    }
 
-    RenderMessageDelegate::GetInstance()->RemoveRoute(
-        d_renderWidgetRoutingId);
-    d_renderWidgetRoutingId = 0;
+    if (d_mainFrameRoutingId) {
+        RenderMessageDelegate::GetInstance()->RemoveRoute(*d_mainFrameRoutingId);
+        d_mainFrameRoutingId.reset();
+    }
 
-    RenderMessageDelegate::GetInstance()->RemoveRoute(
-        d_renderViewRoutingId);
-    d_renderViewRoutingId = 0;
-
-    d_gotRenderViewInfo = false;
+    if (d_renderViewRoutingId) {
+        RenderMessageDelegate::GetInstance()->RemoveRoute(*d_renderViewRoutingId);
+        d_renderViewRoutingId.reset();
+    }
 }
 
-bool RenderWebView::dispatchToRenderWidget(const IPC::Message& message)
+bool RenderWebView::dispatchIPCMessage(const IPC::Message& message)
 {
-    content::RenderViewImpl *rv =
-        content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
+    if (d_renderViewRoutingId) {
+        content::RenderView *rv = content::RenderView::FromRoutingID(*d_renderViewRoutingId);
 
-    if (rv) {
         blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
 
         v8::Isolate* isolate = webFrame->ScriptIsolate();
@@ -879,20 +937,19 @@ bool RenderWebView::dispatchToRenderWidget(const IPC::Message& message)
         v8::Context::Scope contextScope(
             webFrame->ToWebLocalFrame()->MainWorldScriptContext());
 
-        content::RenderWidget* renderWidget = content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId);
-        renderWidget->LockSize(false);
+        content::RenderWidget* rw = content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId);
+        rw->LockSize(false);
         bool rc = static_cast<IPC::Listener *>(
             content::RenderThreadImpl::current())
                 ->OnMessageReceived(message);
-        renderWidget->LockSize(true);
+        rw->LockSize(true);
 
         return rc;
     }
-    else {
-        return static_cast<IPC::Listener *>(
+
+    return static_cast<IPC::Listener *>(
             content::RenderThreadImpl::current())
                 ->OnMessageReceived(message);
-    }
 }
 
 void RenderWebView::sendScreenRects()
@@ -904,8 +961,8 @@ void RenderWebView::sendScreenRects()
     RECT view_screen_rect;
     GetWindowRect(d_hwnd.get(), &view_screen_rect);
 
-    dispatchToRenderWidget(
-        WidgetMsg_UpdateScreenRects(d_renderWidgetRoutingId,
+    dispatchIPCMessage(
+        WidgetMsg_UpdateScreenRects(*d_renderWidgetRoutingId,
             gfx::Rect(view_screen_rect),
             gfx::Rect(view_screen_rect)));
 }
@@ -1032,8 +1089,8 @@ void RenderWebView::updateAltDragRubberBanding()
         return;
     }
 
-    dispatchToRenderWidget(
-        ViewMsg_EnableAltDragRubberbanding(d_renderViewRoutingId,
+    dispatchIPCMessage(
+        ViewMsg_EnableAltDragRubberbanding(*d_renderViewRoutingId,
             d_enableAltDragRubberBanding));
 }
 #endif
@@ -1135,33 +1192,41 @@ void RenderWebView::takeKeyboardFocus()
 {
     DCHECK(Statics::isInApplicationMainThread());
     DCHECK(d_hwnd.is_valid());
-    LOG(INFO) << "routingId=" << d_renderViewRoutingId << ", takeKeyboardFocus";
+    if (d_renderViewRoutingId) {
+        LOG(INFO) << "routingId=" << *d_renderViewRoutingId << ", takeKeyboardFocus";
+    }
+    else {
+        LOG(INFO) << "routingId=?" << ", takeKeyboardFocus";
+    }
+
 
     SetFocus(d_hwnd.get());
 }
 
 void RenderWebView::setLogicalFocus(bool focused)
 {
-    if (d_gotRenderViewInfo) {
-        // If we have the renderer in-process, then set the logical focus
-        // immediately so that handleInputEvents will work as expected.
-        content::RenderViewImpl *rv =
-            content::RenderViewImpl::FromRoutingID(d_renderViewRoutingId);
-        DCHECK(rv);
-
-        blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
-
-        v8::Isolate* isolate = webFrame->ScriptIsolate();
-        v8::Isolate::Scope isolateScope(isolate);
-
-        v8::HandleScope handleScope(isolate);
-
-        v8::Context::Scope contextScope(
-            webFrame->ToWebLocalFrame()->MainWorldScriptContext());
-
-        blink::WebView* webView = rv->GetWebView();
-        webView->SetFocus(focused);
+    if (!d_gotRenderViewInfo) {
+        return;
     }
+
+    // If we have the renderer in-process, then set the logical focus
+    // immediately so that handleInputEvents will work as expected.
+    content::RenderViewImpl *rv =
+        content::RenderViewImpl::FromRoutingID(*d_renderViewRoutingId);
+    DCHECK(rv);
+
+    blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
+
+    v8::Isolate* isolate = webFrame->ScriptIsolate();
+    v8::Isolate::Scope isolateScope(isolate);
+
+    v8::HandleScope handleScope(isolate);
+
+    v8::Context::Scope contextScope(
+        webFrame->ToWebLocalFrame()->MainWorldScriptContext());
+
+    blink::WebView* webView = rv->GetWebView();
+    webView->SetFocus(focused);
 }
 #endif
 
@@ -1576,53 +1641,10 @@ void RenderWebView::notifyRoutingId(int id)
         return;
     }
 
-    content::RenderViewImpl *rv =
-        content::RenderViewImpl::FromRoutingID(id);
-    DCHECK(rv);
-
-    //
-    d_gotRenderViewInfo = true;
-
     d_renderViewRoutingId = id;
     LOG(INFO) << "routingId=" << id;
 
-    RenderMessageDelegate::GetInstance()->AddRoute(
-        d_renderViewRoutingId, this);
-
-    content::RenderFrameImpl* renderFrame = rv->GetMainRenderFrame();
-    DCHECK(renderFrame);
-    content::RenderWidget* renderWidget = renderFrame->GetLocalRootRenderWidget();
-    d_renderWidgetRoutingId = renderWidget->routing_id();
-
-    RenderMessageDelegate::GetInstance()->AddRoute(
-        d_renderWidgetRoutingId, this);
-
-    d_mainFrameRoutingId = rv->GetMainRenderFrame()->GetRoutingID();
-
-    RenderMessageDelegate::GetInstance()->AddRoute(
-        d_mainFrameRoutingId, this);
-
-    d_renderViewObserver = new RenderViewObserver(rv, this);
-
-    // Create a RenderCompositor that is associated with this
-    // content::RenderWidget:
-    d_compositor = RenderCompositorFactory::GetInstance()->CreateCompositor(
-        d_renderWidgetRoutingId, d_hwnd.get(), d_profile);
-
-    updateVisibility();
-    updateGeometry();
-
-    rv->GetWebView()->SetHwnd(d_hwnd.get());
-
-    setWidgetMojo();
-
-    updateFocus();
-
-    renderWidget->LockSize(true);
-
-#if defined(BLPWTK2_FEATURE_RUBBERBAND)
-    updateAltDragRubberBanding();
-#endif
+    initializeRendererForWebView();
 }
 
 // IPC::Listener overrideds:
@@ -1965,8 +1987,8 @@ void RenderWebView::OnInputMethodChanged()
 bool RenderWebView::ChangeTextDirectionAndLayoutAlignment(
     base::i18n::TextDirection direction)
 {
-    dispatchToRenderWidget(
-        WidgetMsg_SetTextDirection(d_renderWidgetRoutingId, direction));
+    dispatchIPCMessage(
+        WidgetMsg_SetTextDirection(*d_renderWidgetRoutingId, direction));
 
     return true;
 }
@@ -2014,8 +2036,8 @@ void RenderWebView::DragTargetEnter(
     blink::WebDragOperationsMask ops_allowed,
     int key_modifiers)
 {
-    dispatchToRenderWidget(
-        DragMsg_TargetDragEnter(d_renderWidgetRoutingId,
+    dispatchIPCMessage(
+        DragMsg_TargetDragEnter(*d_renderWidgetRoutingId,
             drag_data_metadata,
             client_pt, screen_pt,
             ops_allowed,
@@ -2032,8 +2054,8 @@ void RenderWebView::DragTargetOver(
         return;
     }
 
-    dispatchToRenderWidget(
-        DragMsg_TargetDragOver(d_renderWidgetRoutingId,
+    dispatchIPCMessage(
+        DragMsg_TargetDragOver(*d_renderWidgetRoutingId,
             client_pt, screen_pt,
             ops_allowed,
             key_modifiers));
@@ -2045,8 +2067,8 @@ void RenderWebView::DragTargetLeave()
         return;
     }
 
-    dispatchToRenderWidget(
-        DragMsg_TargetDragLeave(d_renderWidgetRoutingId,
+    dispatchIPCMessage(
+        DragMsg_TargetDragLeave(*d_renderWidgetRoutingId,
             gfx::PointF(), gfx::PointF()));
 }
 
@@ -2060,8 +2082,8 @@ void RenderWebView::DragTargetDrop(
         return;
     }
 
-    dispatchToRenderWidget(
-        DragMsg_TargetDrop(d_renderWidgetRoutingId,
+    dispatchIPCMessage(
+        DragMsg_TargetDrop(*d_renderWidgetRoutingId,
             drop_data,
             client_pt, screen_pt,
             key_modifiers));
@@ -2076,8 +2098,8 @@ void RenderWebView::DragSourceEnded(
         return;
     }
 
-    dispatchToRenderWidget(
-        DragMsg_SourceEnded(d_renderWidgetRoutingId,
+    dispatchIPCMessage(
+        DragMsg_SourceEnded(*d_renderWidgetRoutingId,
             client_pt, screen_pt,
             drag_operation));
 }
@@ -2274,30 +2296,6 @@ void RenderWebView::OnSetTooltipText(
 {
     d_tooltipText = tooltip_text;
     updateTooltip();
-}
-
-void RenderWebView::setWidgetMojo() {
-    d_frame_widget.reset();
-    d_blink_widget_host_receiver.reset();
-    d_inputRouterImpl = nullptr;
-    content::RenderWidget* renderWidget =
-        content::RenderWidget::FromRoutingID(d_renderWidgetRoutingId);
-    if (!renderWidget) {
-        return;
-    }
-    blink::WebWidget* webWidget = renderWidget->GetWebWidget();
-
-    // Set input event routing:
-    d_inputRouterImpl.reset(
-        new content::InputRouterImpl(
-            this, this, this, content::InputRouter::Config()));
-    renderWidget->SetupWidgetInputHandler(
-        d_widgetInputHandler.BindNewPipeAndPassReceiver(),
-        d_inputRouterImpl->BindNewHost());
-
-    webWidget->setNewWidgetHostInterface(
-        d_blink_widget_host_receiver.BindNewEndpointAndPassDedicatedRemoteForTesting());
-    d_frame_widget.Bind(webWidget->BindNewFrameWidgetInterfaces());
 }
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)

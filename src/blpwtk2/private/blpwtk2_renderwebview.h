@@ -34,6 +34,7 @@
 #include <blpwtk2_webviewproxydelegate.h>
 
 #include <base/i18n/rtl.h>
+#include <base/optional.h>
 #include <content/browser/renderer_host/input/fling_controller.h>
 #include <content/browser/renderer_host/input/input_disposition_handler.h>
 #include <content/browser/renderer_host/input/input_router_impl.h>
@@ -54,6 +55,10 @@
 #include <ui/base/ime/text_input_client.h>
 #include <ui/gfx/geometry/rect.h>
 #include <ui/views/corewm/tooltip_win.h>
+
+namespace blink {
+class WebFrameWidget;
+}  // close namespace blink
 
 namespace content {
 class InputRouterImpl;
@@ -119,7 +124,7 @@ class RenderWebView final : public WebView
 
     // Track the 'content::RenderWidget':
     bool d_gotRenderViewInfo = false;
-    int d_renderViewRoutingId, d_renderWidgetRoutingId, d_mainFrameRoutingId;
+    base::Optional<int> d_renderViewRoutingId, d_renderWidgetRoutingId, d_mainFrameRoutingId;
     RenderViewObserver *d_renderViewObserver = nullptr;
 
     // The compositor:
@@ -190,7 +195,7 @@ class RenderWebView final : public WebView
     // The other side is held be the renderer.
     mojo::Receiver<blink::mojom::PointerLockContext> d_mouse_lock_context{this};
     mojo::AssociatedReceiver<blink::mojom::WidgetHost> d_blink_widget_host_receiver{this};
-    mojo::AssociatedRemote<blink::mojom::blink::FrameWidget> d_frame_widget;
+    blink::WebFrameWidget *d_frame_widget = nullptr;
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     // State related to rubber band selection:
@@ -499,12 +504,14 @@ class RenderWebView final : public WebView
                             WPARAM wParam,
                             LPARAM lParam);
 
-    void initialize();
+    void initializeBrowserLike();
+    void initializeRendererForWebView();
+    void initializeRenderer();
     void updateVisibility();
     void updateGeometry();
     void updateFocus();
     void detachFromRoutingId();
-    bool dispatchToRenderWidget(const IPC::Message& message);
+    bool dispatchIPCMessage(const IPC::Message& message);
     void sendScreenRects();
     void setPlatformCursor(HCURSOR cursor);
     void onMouseEventAck(
@@ -527,8 +534,6 @@ class RenderWebView final : public WebView
     void updateTooltip();
     void onSessionChange(WPARAM status_code, const bool* is_current_session);
     void forceRedrawWindow(int attempts);
-
-    void setWidgetMojo();
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     void updateAltDragRubberBanding();
