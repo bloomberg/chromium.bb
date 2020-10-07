@@ -23,6 +23,8 @@
 #include <blpwtk2_rendermessagedelegate.h>
 
 #include <base/lazy_instance.h>
+#include <mojo/public/cpp/bindings/lib/multiplex_router.h>
+#include <mojo/public/cpp/system/message_pipe.h>
 
 namespace blpwtk2 {
 
@@ -35,6 +37,17 @@ static base::LazyInstance<RenderMessageDelegate>::DestructorAtExit
 
 RenderMessageDelegate::RenderMessageDelegate()
 {
+    mojo::MessagePipe pipe;
+
+    d_router0 =
+        new mojo::internal::MultiplexRouter(
+            std::move(pipe.handle0), mojo::internal::MultiplexRouter::MULTI_INTERFACE,
+            false, base::SequencedTaskRunnerHandle::Get());
+
+    d_router1 =
+        new mojo::internal::MultiplexRouter(
+            std::move(pipe.handle1), mojo::internal::MultiplexRouter::MULTI_INTERFACE,
+            true, base::SequencedTaskRunnerHandle::Get());
 }
 
 RenderMessageDelegate::~RenderMessageDelegate()

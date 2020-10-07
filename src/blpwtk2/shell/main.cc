@@ -670,6 +670,12 @@ HANDLE spawnProcess()
         cmdline.append(" --custom-tooltip");
     }
 
+
+    // patch section: renderer ui
+    if (g_renderer_ui) {
+        cmdline.append(" --renderer-ui");
+    }
+
     // It seems like CreateProcess wants a char* instead of
     // a const char*.  So we need to make a copy to a modifiable
     // buffer.
@@ -879,7 +885,7 @@ int main(int, const char**)
             toolkitParams.disableInProcessRenderer();
         }
         // patch section: renderer ui
-	else {
+       else {
             toolkitParams.setRendererUIEnabled(g_renderer_ui);
         }
 
@@ -892,6 +898,13 @@ int main(int, const char**)
         toolkitParams.setThreadMode(blpwtk2::ThreadMode::ORIGINAL);
         toolkitParams.disableInProcessRenderer();
     }
+
+
+    // patch section: renderer ui
+    if (g_renderer_ui) {
+        toolkitParams.appendCommandLineSwitch("disable-direct-composition");
+    }
+
 
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();
