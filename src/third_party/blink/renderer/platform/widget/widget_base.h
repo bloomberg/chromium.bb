@@ -113,6 +113,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   static bool ShouldRecordBeginMainFrameMetrics();
 
   void SetCursor(const ui::Cursor& cursor);
+  void ResetWidgetHostInterface(
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost);
 
  private:
   std::unique_ptr<LayerTreeView> layer_tree_view_;

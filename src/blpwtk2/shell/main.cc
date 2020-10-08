@@ -1084,6 +1084,11 @@ HANDLE spawnProcess()
         cmdline.append(g_sideLoadedFonts[i]);
     }
 
+    // patch section: renderer ui
+    if (g_renderer_ui) {
+        cmdline.append(" --renderer-ui");
+    }
+
     // It seems like CreateProcess wants a char* instead of
     // a const char*.  So we need to make a copy to a modifiable
     // buffer.
@@ -1351,7 +1356,7 @@ int main(int, const char**)
             toolkitParams.disableInProcessRenderer();
         }
         // patch section: renderer ui
-	else {
+       else {
             toolkitParams.setRendererUIEnabled(g_renderer_ui);
         }
 
@@ -1371,6 +1376,13 @@ int main(int, const char**)
     for (size_t i = 0; i < g_sideLoadedFonts.size(); ++i) {
         toolkitParams.appendSideLoadedFontInProcess(g_sideLoadedFonts[i]);
     }
+
+
+    // patch section: renderer ui
+    if (g_renderer_ui) {
+        toolkitParams.appendCommandLineSwitch("disable-direct-composition");
+    }
+
 
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();

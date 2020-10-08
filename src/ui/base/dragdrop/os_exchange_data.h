@@ -139,12 +139,6 @@ class UI_BASE_EXPORT OSExchangeData {
   bool GetFileContents(base::FilePath* filename,
                        std::string* file_contents) const;
 
-  virtual void SetCustomData(const FORMATETC& format,
-                             const base::string16& data) {}
-  virtual void EnumerateCustomData(std::vector<FORMATETC>* formats) const {}
-  virtual bool GetCustomData(const FORMATETC& format,
-                             base::string16* data) const;
-
   // Methods used to query and retrieve file data from a drag source
   // IDataObject implementation packaging the data with the
   // CFSTR_FILEDESCRIPTOR/CFSTR_FILECONTENTS clipboard formats instead of the

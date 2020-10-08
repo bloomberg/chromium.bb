@@ -26,7 +26,7 @@
 #include <content/common/drag_messages.h>
 #include <content/public/common/drop_data.h>
 #include <net/base/filename_util.h>
-#include <third_party/blink/public/platform/web_input_event.h>
+#include <third_party/blink/public/common/input/web_input_event.h>
 #include <ui/base/clipboard/clipboard.h>
 #include <ui/base/clipboard/clipboard_format_type.h>
 #include <ui/base/clipboard/clipboard_constants.h>
@@ -132,7 +132,7 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
     GURL url;
     base::string16 url_title;
     data.GetURLAndTitle(
-        ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
+        ui::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
     if (url.is_valid()) {
         drop_data->url = url;
         drop_data->url_title = url_title;
@@ -225,7 +225,7 @@ std::vector<content::DropData::Metadata> MakeDropDataMetadata(const content::Dro
 }
 
 void PrepareDragForFileContents(const content::DropData& drop_data,
-                                ui::OSExchangeData::Provider* provider) {
+                                ui::OSExchangeDataProvider* provider) {
     auto file_name = drop_data.GetSafeFilenameForImageFileContents();
 
     if (file_name) {
@@ -235,7 +235,7 @@ void PrepareDragForFileContents(const content::DropData& drop_data,
 
 std::unique_ptr<ui::OSExchangeData> MakeOSExchangeData(const content::DropData& drop_data)
 {
-    std::unique_ptr<ui::OSExchangeData::Provider> provider =
+    std::unique_ptr<ui::OSExchangeDataProvider> provider =
         ui::OSExchangeDataProviderFactory::CreateProvider();
 
 #if defined(OS_WIN)

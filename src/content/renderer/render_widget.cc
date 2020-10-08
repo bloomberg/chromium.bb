@@ -1445,8 +1445,8 @@ bool RenderWidget::SupportsBufferedTouchEvents() {
 }
 
 void RenderWidget::Redraw() {
-  if (layer_tree_view_)
-    layer_tree_view_->layer_tree_host()->SetNeedsRedrawRect(gfx::Rect(size_));
+  if (layer_tree_host_)
+    layer_tree_host_->SetNeedsRedrawRect(gfx::Rect(size_));
 }
 
 void RenderWidget::ResizeWebWidget() {
