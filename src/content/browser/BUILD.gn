@@ -2794,6 +2794,7 @@ source_set("builtin_service_manifests") {
   ]
   deps = [
     "//ui/gfx:color_space",
-    "//content/public/app:content_browser_manifest"
+    "//content/public/app:content_browser_manifest",
+    "//third_party/blink/public/mojom:mojom_platform"
   ]
 }
