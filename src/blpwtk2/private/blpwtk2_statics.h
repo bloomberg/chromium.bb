@@ -95,6 +95,13 @@ struct Statics {
     // sync IPC calls.
     static bool isRendererIOThreadEnabled;
 
+    // The maximum number of bytes of memory that may be allocated. This will
+    // cause memory usage to be reduced if currently above |limit|.
+    // If set to 0 then it will use the standard default value.
+    // do not set this too high! Chromium's default limit is 25% of physical RAM
+    // or 512MB, whichever is less.
+    static size_t discardableSharedMemorySizeLimit;
+
     static ToolkitDelegate *toolkitDelegate;
 
     // ====== some utility functions =============
