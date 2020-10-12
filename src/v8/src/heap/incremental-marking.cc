@@ -728,8 +728,11 @@ StepResult IncrementalMarking::EmbedderStep(double expected_duration_ms,
       }
     }
   }
+
+  // LocalEmbedderHeapTracer::Trace and EmbedderHeapTracer::AdvanceTracing expect the Trace
+  // parameter is deadline instead of duration.
   bool remote_tracing_done =
-      local_tracer->Trace(deadline - heap_->MonotonicallyIncreasingTimeInMs());
+      local_tracer->Trace(deadline);
   double current = heap_->MonotonicallyIncreasingTimeInMs();
   local_tracer->SetEmbedderWorklistEmpty(true);
   *duration_ms = current - start;
