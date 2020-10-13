@@ -266,6 +266,7 @@ class ToolkitCreateParams
     StringRef profileDirectory() const;
     bool isIsolatedProfile() const;
     bool isRendererIOThreadEnabled() const;
+    size_t getDiscardableSharedMemorySizeLimit() const;
 
 
 
