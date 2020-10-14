@@ -281,8 +281,6 @@ class ToolkitCreateParams
         // do not set this too high! Chromium's default limit is 25% of physical RAM
         // or 512MB, whichever is less.
 
-    BLPWTK2_EXPORT size_t getDiscardableSharedMemorySizeLimit() const;
-
     // patch section: embedder ipc
     BLPWTK2_EXPORT void setBrowserV8Enabled(bool browserV8Enabled);
 
@@ -317,6 +315,7 @@ class ToolkitCreateParams
     NativeColor inactiveTextSearchHighlightColor() const;
     NativeColor activeTextSearchColor() const;
     StringRef headerFooterHTMLContent() const;
+    size_t getDiscardableSharedMemorySizeLimit() const;
     bool isPrintBackgroundGraphicsEnabled() const;
     StringRef subProcessModule() const;
     bool isInProcessResizeOptimizationDisabled() const;
