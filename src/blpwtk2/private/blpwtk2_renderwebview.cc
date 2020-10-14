@@ -1085,7 +1085,7 @@ void RenderWebView::onSessionChange(WPARAM status_code, const bool* is_current_s
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
 void RenderWebView::updateAltDragRubberBanding()
 {
-    if (!d_gotRenderViewInfo) {
+    if (!d_gotRenderViewInfo || !d_renderViewRoutingId) {
         return;
     }
 
