@@ -486,11 +486,6 @@ def main():
     target_dir = 'vs2013_files'
   else:
     target_dir = 'vs_files'
-
-  # Prefix the 'target_dir' to make it an absolute path. This allows
-  # the fully qualified path to exceed the 260 character limit.
-  target_dir = "\\\\?\\%s\\%s" % (os.path.abspath('.'), target_dir)
-
   if not os.path.isdir(target_dir):
     os.mkdir(target_dir)
   toolchain_target_dir = os.path.join(target_dir, desired_hash)
