@@ -329,8 +329,10 @@ void WebViewImpl::setRegion(NativeRegion region)
 
 void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
 {
-    HKL currentKL = ::GetKeyboardLayout(0);
-    if (is_english_langid(LANGID(hkl)) && !is_asian_langid(LANGID((unsigned int)currentKL))) {
+    auto currentKL =
+        static_cast<unsigned int>(reinterpret_cast<intptr_t>((::GetKeyboardLayout(0))));
+
+    if (is_english_langid(LANGID(hkl)) && !is_asian_langid(LANGID(currentKL))) {
         // user might expecting any of the eropean keyboard layout,
         // so keep current layout unchanged if it is not an asian IME.
         return;
@@ -338,7 +340,7 @@ void WebViewImpl::activateKeyboardLayout(unsigned int hkl)
 
     blpwtk2::NativeView hwnd = d_widget->getNativeWidgetView();
     HIMC hImeContext = ImmGetContext(hwnd);
-    LANGID currentLangId = (WORD)((DWORD)currentKL & 0xffff);
+    LANGID currentLangId = LOWORD(currentKL);
     LANGID newLangId = (WORD)(hkl & 0xffff);
 
     DWORD dwConversion=0, dwSentence=0;
