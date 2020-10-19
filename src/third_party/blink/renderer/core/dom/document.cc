@@ -4096,7 +4096,12 @@ bool Document::CheckCompletedInternal() {
 bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
                                          bool is_reload,
                                          bool& did_allow_navigation) {
-  if (!dom_window_)
+  // Normally dom_window_ is nullptr if frame_ is nullptr, but
+  // for document created using LocalDOMWindow::InstallNewUnintializedDocument
+  // frame_ is nullptr. We set dom_window_ to the caller of
+  // InstallNewUnintializedDocument, so that document->GetExecutionContext()
+  // could return a valid dom_window.
+  if (!dom_window_ || !frame_)
     return true;
 
   if (!body())
@@ -7161,8 +7166,11 @@ void Document::BindContentSecurityPolicy() {
 }
 
 bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
-  DCHECK(GetFrame())
-      << "you are querying canExecuteScripts on a non contextDocument.";
+  // Allow script execution for a document without a frame, since it may
+  // have been created for a 'web script context':
+  if (!GetFrame()) {
+    return true;
+  }
 
   // Normally, scripts are not allowed in sandboxed contexts that disallow them.
   // However, there is an exception for cases when the script should bypass the
