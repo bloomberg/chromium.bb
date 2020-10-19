@@ -98,8 +98,8 @@ WebViewHostImpl::~WebViewHostImpl()
 void WebViewHostImpl::updateNativeViews(blpwtk2::NativeView webview,
                                         blpwtk2::NativeView hiddenView)
 {
-    d_clientPtr->notifyNativeViews(reinterpret_cast<int>(webview),
-                                   reinterpret_cast<int>(hiddenView));
+    d_clientPtr->notifyNativeViews(static_cast<unsigned int>(reinterpret_cast<intptr_t>(webview)),
+                                   static_cast<unsigned int>(reinterpret_cast<intptr_t>(hiddenView)));
 }
 
 void WebViewHostImpl::gotNewRenderViewRoutingId(int renderViewRoutingId)

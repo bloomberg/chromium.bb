@@ -151,7 +151,7 @@ class WebViewClientImpl final : public WebViewClient
         // Notify the client when the user attempts to open a context menu
         // (ie. by right-clicking an element).
 
-    void notifyNativeViews(int nativeView, int originalParent) override;
+    void notifyNativeViews(unsigned int nativeView, unsigned int originalParent) override;
         // Notify the client about the native views (platform-dependent views).
         // The client can reparent the 'view' under a different
         // platform-dependent view but it must reparent it under 'hiddenview'

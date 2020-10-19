@@ -190,11 +190,11 @@ void WebViewClientImpl::setParent(NativeView parent)
             status = ::GetLastError();
             LOG(ERROR) << "WebViewClientImpl::setParent failed: hwnd =" << d_nativeView << ", parent = " << (void*)parentView << ", status = " << status;
         }
-        setParentStatusUpdate(status, reinterpret_cast<unsigned int>(parentView));
+        setParentStatusUpdate(status, static_cast<unsigned int>(reinterpret_cast<intptr_t>(parentView)));
     }
     else {
         DCHECK(d_hostPtr);
-        d_hostPtr->setParent(reinterpret_cast<unsigned int>(parent), base::Bind(&WebViewClientImpl::setParentStatusUpdate, base::Unretained(this)));
+        d_hostPtr->setParent(static_cast<unsigned int>(reinterpret_cast<intptr_t>(parent)), base::Bind(&WebViewClientImpl::setParentStatusUpdate, base::Unretained(this)));
     }
 }
 
@@ -316,7 +316,7 @@ void WebViewClientImpl::showContextMenu(mojom::ContextMenuParamsPtr params)
     }
 }
 
-void WebViewClientImpl::notifyNativeViews(int nativeView, int originalParent)
+void WebViewClientImpl::notifyNativeViews(unsigned int nativeView, unsigned int originalParent)
 {
     d_nativeView = reinterpret_cast<NativeView>(nativeView);
     d_originalParentView = reinterpret_cast<NativeView>(originalParent);

@@ -200,7 +200,7 @@ interface WebViewClient {
         // Notify the client when the user attempts to open a context menu
         // (ie. by right-clicking an element).
 
-    notifyNativeViews(int32 nativeView, int32 originalParentView);
+    notifyNativeViews(uint32 nativeView, uint32 originalParentView);
         // Notify the client about the native views (platform-dependent views).
         // The client can reparent the 'view' under a different
         // platform-dependent view but it must reparent it under 'hiddenview'
