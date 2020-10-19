@@ -66,7 +66,10 @@ class CORE_EXPORT CustomEvent final : public Event {
   void Trace(Visitor*) override;
 
  private:
-  WorldSafeV8Reference<v8::Value> detail_;
+  // blpwtk2: WorldSafeV8Reference was changed to v8::Persistent to make
+  // sure CustomEvent holds a reference to the 'detail' object.  This is
+  // especially important if the 'detail' object was created in native.
+  v8::Persistent<v8::Value> detail_;
 };
 
 }  // namespace blink
