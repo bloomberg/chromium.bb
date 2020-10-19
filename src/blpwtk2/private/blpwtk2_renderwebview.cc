@@ -248,7 +248,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
     LRESULT result;
 
     if (toolkitDelegate) {
-        if (toolkitDelegate->onPreHandleMessage(reinterpret_cast<unsigned>(d_hwnd.get()),
+        if (toolkitDelegate->onPreHandleMessage(static_cast<unsigned>(reinterpret_cast<uintptr_t>(d_hwnd.get())),
                                                 uMsg,
                                                 wParam,
                                                 lParam,
@@ -725,7 +725,7 @@ void RenderWebView::initializeBrowserLike()
         NULL));
     DCHECK(d_hwnd.is_valid());
 
-    SetWindowLongPtr(d_hwnd.get(), GWLP_USERDATA, reinterpret_cast<LONG>(this));
+    SetWindowLongPtr(d_hwnd.get(), GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
     SetWindowLong(
         d_hwnd.get(),
