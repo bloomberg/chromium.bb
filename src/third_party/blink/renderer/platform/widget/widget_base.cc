@@ -236,4 +236,10 @@ void WidgetBase::SetCursor(const ui::Cursor& cursor) {
   widget_host_->SetCursor(cursor);
 }
 
+void WidgetBase::ResetWidgetHostInterface(
+  CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {
+  widget_host_.reset();
+  widget_host_.Bind(std::move(widgetHost));
+}
+
 }  // namespace blink
