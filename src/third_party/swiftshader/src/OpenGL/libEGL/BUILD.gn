@@ -107,4 +107,8 @@ swiftshader_shared_library("swiftshader_libEGL") {
     "../..",
     "..",
   ]
+
+  public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
+  ]
 }
