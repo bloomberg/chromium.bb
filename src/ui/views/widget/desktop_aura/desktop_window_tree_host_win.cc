@@ -1075,7 +1075,7 @@ bool DesktopWindowTreeHostWin::PreHandleMSG(HWND window,
                                             LPARAM l_param,
                                             LRESULT* result) {
   return native_widget_delegate_->OnPreHandleMessage(
-          reinterpret_cast<unsigned>(window),
+          static_cast<unsigned>(reinterpret_cast<intptr_t>(window)),
           message,
           w_param,
           l_param,
