@@ -55,6 +55,7 @@
 // feature 11
 // feature 12
 // feature 13
+#define BLPWTK2_FEATURE_MSGINTERCEPT
 // feature 14
 // feature 15
 // feature 16

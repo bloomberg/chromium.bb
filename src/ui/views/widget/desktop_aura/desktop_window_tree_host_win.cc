@@ -903,6 +903,29 @@ void DesktopWindowTreeHostWin::HandleClientSizeChanged(
     OnHostResizedInPixels(new_size);
 }
 
+bool DesktopWindowTreeHostWin::HandleNCHitTest(LRESULT* result, const gfx::Point& point) {
+  int intResult;
+  bool handled = native_widget_delegate_->OnNCHitTest(&intResult, point);
+  *result = intResult;
+  return handled;
+}
+
+bool DesktopWindowTreeHostWin::HandleNCDragBegin(int hit_test_code) {
+  return native_widget_delegate_->OnNCDragBegin(hit_test_code);
+}
+
+void DesktopWindowTreeHostWin::HandleNCDragMove() {
+  return native_widget_delegate_->OnNCDragMove();
+}
+
+void DesktopWindowTreeHostWin::HandleNCDragEnd() {
+  return native_widget_delegate_->OnNCDragEnd();
+}
+
+void DesktopWindowTreeHostWin::HandleNCDoubleClick() {
+  return native_widget_delegate_->OnNCDoubleClick();
+}
+
 void DesktopWindowTreeHostWin::HandleFrameChanged() {
   CheckForMonitorChange();
   desktop_native_widget_aura_->UpdateWindowTransparency();
@@ -1035,11 +1058,17 @@ void DesktopWindowTreeHostWin::HandleMenuLoop(bool in_menu_loop) {
   }
 }
 
-bool DesktopWindowTreeHostWin::PreHandleMSG(UINT message,
+bool DesktopWindowTreeHostWin::PreHandleMSG(HWND window,
+                                            UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param,
                                             LRESULT* result) {
-  return false;
+  return native_widget_delegate_->OnPreHandleMessage(
+          static_cast<unsigned>(reinterpret_cast<intptr_t>(window)),
+          message,
+          w_param,
+          l_param,
+          result);
 }
 
 void DesktopWindowTreeHostWin::PostHandleMSG(UINT message,
