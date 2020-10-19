@@ -137,13 +137,13 @@ unsigned int ProfileImpl::getProcessId() const
 void ProfileImpl::registerNativeViewForComposition(NativeView view)
 {
     d_hostPtr->registerNativeViewForComposition(
-        reinterpret_cast<unsigned int>(view));
+        static_cast<unsigned int>(reinterpret_cast<uintptr_t>(view)));
 }
 
 void ProfileImpl::unregisterNativeViewForComposition(NativeView view)
 {
     d_hostPtr->unregisterNativeViewForComposition(
-        reinterpret_cast<unsigned int>(view));
+        static_cast<unsigned int>(reinterpret_cast<uintptr_t>(view)));
 }
 
 // blpwtk2::Profile overrides
