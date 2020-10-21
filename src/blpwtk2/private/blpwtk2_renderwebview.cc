@@ -183,7 +183,11 @@ RenderWebView::RenderWebView(ProfileImpl              *profile,
 
 RenderWebView::~RenderWebView()
 {
-    LOG(INFO) << "Destroying RenderWebView, routingId=" << *d_renderWidgetRoutingId;
+    if (d_renderWidgetRoutingId) {
+        LOG(INFO) << "Destroying RenderWebView, routingId=" << *d_renderWidgetRoutingId;
+    } else {
+        LOG(INFO) << "Destroying RenderWebView (no routingId).";
+    }
 
     if (d_renderViewObserver) {
         delete d_renderViewObserver;
@@ -907,6 +911,7 @@ void RenderWebView::detachFromRoutingId()
     d_compositor.reset();
 
     if (d_renderWidgetRoutingId) {
+        LOG(INFO) << "Detaching routingId " << *d_renderWidgetRoutingId;
         RenderMessageDelegate::GetInstance()->RemoveRoute(*d_renderWidgetRoutingId);
         d_renderWidgetRoutingId.reset();
     }
