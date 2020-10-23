@@ -10,6 +10,7 @@
 
 #include <assert.h>
 
+#include <cmath>
 #include <memory>
 
 #include "modules/desktop_capture/cropped_desktop_frame.h"
@@ -338,6 +339,15 @@ WindowCapturerWin::CaptureResults WindowCapturerWin::CaptureFrame(
         static_cast<double>(window_dc_size.height()) / original_rect.height();
     original_rect.Scale(horizontal_scale, vertical_scale);
     cropped_rect.Scale(horizontal_scale, vertical_scale);
+
+    // Translate |cropped_rect| to the left so that its position within
+    // |original_rect| remains accurate after scaling.
+    // See crbug.com/1083527 for more info.
+    int translate_left = static_cast<int>(std::round(
+        (cropped_rect.left() - original_rect.left()) * (horizontal_scale - 1)));
+    int translate_top = static_cast<int>(std::round(
+        (cropped_rect.top() - original_rect.top()) * (vertical_scale - 1)));
+    cropped_rect.Translate(translate_left, translate_top);
   }
 
   std::unique_ptr<DesktopFrameWin> frame(
