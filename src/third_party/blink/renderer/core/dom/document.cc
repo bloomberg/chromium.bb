@@ -3371,6 +3371,10 @@ void Document::Shutdown() {
   // explicit in each of the callers of Document::detachLayoutTree().
   frame_ = nullptr;
 
+  // blpwtk2: Clear the DOM window to prevent dangling ExecutionContext when
+  // invoking Node::GetExecutionContext()
+  ClearDOMWindow();
+
   document_outlive_time_reporter_ =
       std::make_unique<DocumentOutliveTimeReporter>(this);
 }
