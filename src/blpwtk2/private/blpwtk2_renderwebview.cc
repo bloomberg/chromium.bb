@@ -183,6 +183,10 @@ RenderWebView::RenderWebView(ProfileImpl              *profile,
 
 RenderWebView::~RenderWebView()
 {
+    if (d_ncHitTestRegion) {
+        ::DeleteObject(d_ncHitTestRegion);
+    }
+
     if (d_renderWidgetRoutingId) {
         LOG(INFO) << "Destroying RenderWebView, routingId=" << *d_renderWidgetRoutingId;
     } else {
@@ -1382,6 +1386,11 @@ void RenderWebView::onNCHitTestResult(int x, int y, int result)
 void RenderWebView::setNCHitTestRegion(NativeRegion region)
 {
     DCHECK(Statics::isInApplicationMainThread());
+
+    if (d_ncHitTestRegion) {
+        ::DeleteObject(d_ncHitTestRegion);
+    }
+
     d_ncHitTestRegion = region;
 }
 
