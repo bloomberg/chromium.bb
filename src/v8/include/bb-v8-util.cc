@@ -15,6 +15,10 @@ void SetContextId(v8::Local<v8::Context> context, int id) {
     v8::debug::SetContextId(context, id);
 }
 
+int GetContextId(v8::Local<v8::Context> context) {
+    return v8::debug::GetContextId(context);
+}
+
 
 } // namespace v8util
 } // namespace blpwtk2
