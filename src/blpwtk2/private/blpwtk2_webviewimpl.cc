@@ -164,6 +164,10 @@ WebViewImpl::~WebViewImpl()
 
     g_instances.erase(this);
 
+    if (d_ncHitTestRegion) {
+        ::DeleteObject(d_ncHitTestRegion);
+    }
+
     if (d_widget) {
         d_widget->setDelegate(0);
         d_widget->destroy();
@@ -644,6 +648,11 @@ void WebViewImpl::onNCHitTestResult(int x, int y, int result)
 void WebViewImpl::setNCHitTestRegion(NativeRegion region)
 {
     DCHECK(Statics::isInBrowserMainThread());
+
+    if (d_ncHitTestRegion) {
+        ::DeleteObject(d_ncHitTestRegion);
+    }
+
     d_ncHitTestRegion = region;
 }
 

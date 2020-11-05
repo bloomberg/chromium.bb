@@ -213,6 +213,11 @@ class WebView
         // Sets the region used for non-client hit testing; hit testing within
         // this region will be delegated to the embedding window.
         //
+        // The webview owns the specified `region` after it is passed to this
+        // call, as is the case with Win32's `SetWindowRgn()` function; the
+        // embedder should not make any further function calls with `region`,
+        // and the toolkit will delete the handle when it isn't needed.
+        //
         // This region will not be used in hit-testing if `enableNCHitTest()`
         // was previously called to enable hit-testing by the WebViewDelegate.
 
