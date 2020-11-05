@@ -356,6 +356,13 @@ v8::Isolate* WebRemoteFrameImpl::ScriptIsolate() const
   return nullptr;
 }
 
+void WebRemoteFrameImpl::DrawInCanvas(
+    const WebRect& rect,
+    const WebString& style_class,
+    cc::PaintCanvas* canvas) {
+  NOTREACHED();
+}
+
 WebRemoteFrameImpl::WebRemoteFrameImpl(
     mojom::blink::TreeScopeType scope,
     WebRemoteFrameClient* client,
