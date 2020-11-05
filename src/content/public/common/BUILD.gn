@@ -309,7 +309,6 @@ mojom("interfaces") {
     "transferrable_url_loader.mojom",
     "was_activated_option.mojom",
     "webplugininfo.mojom",
-    "window_container_type.mojom",
   ]
 
   if (is_win) {
@@ -319,6 +318,7 @@ mojom("interfaces") {
   public_deps = [ ":client_hints_mojom" ]
 
   deps = [
+    ":window_container_mojom",
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
     "//url/mojom:url_mojom_gurl",
@@ -366,4 +366,8 @@ mojom("client_hints_mojom") {
 
 mojom("service_names") {
   sources = [ "service_names.mojom" ]
+}
+
+mojom("window_container_mojom") {
+   sources = ["window_container_type.mojom"]
 }
