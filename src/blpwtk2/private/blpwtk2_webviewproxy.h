@@ -93,6 +93,8 @@ class WebViewProxy final : public WebView
     void setBackgroundColor(NativeColor color) override;
     void setRegion(NativeRegion region) override;
     void clearTooltip() override;
+    void rootWindowCompositionChanged() override;
+
     v8::MaybeLocal<v8::Value> callFunction(
             v8::Local<v8::Function>  func,
             v8::Local<v8::Value>     recv,
