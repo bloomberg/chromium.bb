@@ -60,6 +60,7 @@
 // feature 16
 // feature 17
 // feature 18
+#define BLPWTK2_FEATURE_WEB_CACHE_FLUSH
 // feature 19
 // feature 20
 // feature 21
