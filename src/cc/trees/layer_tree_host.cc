@@ -136,6 +136,7 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       task_graph_runner_(params.task_graph_runner),
       event_listener_properties_(),
+      routing_id_(params.routing_id),
       mutator_host_(params.mutator_host) {
   DCHECK(task_graph_runner_);
   DCHECK(!settings_.enable_checker_imaging || image_worker_task_runner_);
@@ -1066,6 +1067,10 @@ bool LayerTreeHost::IsThreaded() const {
 void LayerTreeHost::RequestPresentationTimeForNextFrame(
     PresentationTimeCallback callback) {
   pending_presentation_time_callbacks_.push_back(std::move(callback));
+}
+
+int LayerTreeHost::GetRoutingId() const {
+  return routing_id_;
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {

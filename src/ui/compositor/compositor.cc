@@ -234,6 +234,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   params.settings = &settings;
   params.main_task_runner = task_runner_;
   params.mutator_host = animation_host_.get();
+  params.routing_id = 0;
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
 
   if (base::FeatureList::IsEnabled(features::kUiCompositorScrollWithLayers) &&
