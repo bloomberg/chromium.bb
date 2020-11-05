@@ -103,6 +103,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   gfx::Point PositionRelativeToOwner() override;
   WebDocument GetDocument() override;
   WebPagePopupClient* GetClientForTesting() const override;
+  void ResetWidgetHostInterface(
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) override;
 
   // PagePopup implementation.
   void PostMessageToPopup(const String& message) override;
