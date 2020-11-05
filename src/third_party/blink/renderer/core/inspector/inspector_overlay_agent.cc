@@ -592,9 +592,9 @@ Response InspectorOverlayAgent::setShowViewportSizeOnResize(bool show) {
 
 Response InspectorOverlayAgent::setPausedInDebuggerMessage(
     Maybe<String> message) {
-  paused_in_debugger_message_.Set(message.fromMaybe(String()));
-  PickTheRightTool();
-  return Response::Success();
+  // We return a not supported error message because the context expected here
+  // might not be a web script context.
+  return Response::ServerError("Not supported.");
 }
 
 Response InspectorOverlayAgent::highlightRect(
