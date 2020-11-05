@@ -619,6 +619,10 @@ bool BrowserContext::ShouldEnableOutOfBlinkCors() {
   return base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
 }
 
+FontCollection* BrowserContext::GetFontCollection() {
+    return nullptr;
+}
+
 NativeFileSystemPermissionContext*
 BrowserContext::GetNativeFileSystemPermissionContext() {
   return nullptr;

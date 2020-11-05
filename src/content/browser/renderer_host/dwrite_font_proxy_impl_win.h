@@ -38,6 +38,10 @@ class CONTENT_EXPORT DWriteFontProxyImpl
   static void Create(
       mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver);
 
+#if defined(OS_WIN)
+  static void SetFontCollection(FontCollection* collection);
+#endif
+
   void SetWindowsFontsPathForTesting(base::string16 path);
 
  protected:

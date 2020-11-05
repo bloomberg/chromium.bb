@@ -161,6 +161,7 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     content::BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
     content::BackgroundSyncController *GetBackgroundSyncController() override;
     content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() override;
+	content::FontCollection* GetFontCollection() override;
 };
 
 }  // close namespace blpwtk2
