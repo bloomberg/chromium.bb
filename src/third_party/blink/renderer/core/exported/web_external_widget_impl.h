@@ -31,7 +31,8 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   cc::LayerTreeHost* InitializeCompositing(
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory) override;
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+      int view_id) override;
   void SetCompositorVisible(bool visible) override;
   void Close(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
              base::OnceCallback<void()> cleanup_task) override;
