@@ -510,7 +510,7 @@ bool MainMessagePump::preHandleMessage(const MSG& msg)
     int wasInsideMainLoop = ::InterlockedExchange(&d_isInsideMainLoop, 1);
     DCHECK_EQ(0, wasInsideMainLoop);
 
-    return (!!CallMsgFilter(const_cast<MSG*>(&msg), base::kMessageFilterCode));
+    return false;
 }
 
 void MainMessagePump::postHandleMessage(const MSG& msg)

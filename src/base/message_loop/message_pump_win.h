@@ -23,9 +23,6 @@
 
 namespace base {
 
-// The application-defined code passed to the hook procedure.
-static const int kMessageFilterCode = 0x5001;
-
 // MessagePumpWin serves as the base for specialized versions of the MessagePump
 // for Windows. It provides basic functionality like handling of observers and
 // controlling the lifetime of the message pump.
