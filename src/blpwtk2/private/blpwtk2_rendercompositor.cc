@@ -152,6 +152,8 @@ public:
     void SetCompositorVisible(int32_t widget_id, bool visible);
     void ResizeCompositor(int32_t widget_id, gfx::Size size, base::WaitableEvent *event);
 
+    void CompositingModeFallbackToSoftwareOnMain();
+
     // content::mojom::FrameSinkProvider overrides:
     void CreateForWidget(
         int32_t widget_id,
@@ -573,6 +575,11 @@ void RenderFrameSinkProviderImpl::ResizeCompositor(int32_t widget_id, gfx::Size 
     event->Signal();
 }
 
+void RenderFrameSinkProviderImpl::CompositingModeFallbackToSoftwareOnMain()
+{
+    content::RenderThreadImpl::current()->CompositingModeFallbackToSoftware();
+}
+
 void RenderFrameSinkProviderImpl::CreateForWidget(
     int32_t widget_id,
     mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
@@ -649,15 +656,12 @@ std::unique_ptr<viz::OutputSurface> RenderFrameSinkProviderImpl::CreateOutputSur
         else {
             LOG(ERROR) << "failed to bind GL context, falling back to software compositing";
 
-            content::RenderThreadImpl *render_thread =
-                content::RenderThreadImpl::current();
-
             d_main_task_runner->
                 PostTask(
                     FROM_HERE,
                     base::BindOnce(
-                        &content::RenderThreadImpl::CompositingModeFallbackToSoftware,
-                        base::Unretained(render_thread)));
+                        &RenderFrameSinkProviderImpl::CompositingModeFallbackToSoftwareOnMain,
+                        base::Unretained(this)));
         }
     }
 
