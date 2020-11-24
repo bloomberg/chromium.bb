@@ -1228,6 +1228,11 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
     return false;
   }
 
+  if (window_ && !::IsWindow(window_)) {
+    LOG(ERROR) << "Trying to create surface with invalid win32 window";
+    return false;
+  }
+
   // We need to make sure that window_ is correctly initialized with all
   // the platform-dependant quirks, if any, before creating the surface.
   if (!InitializeNativeWindow()) {
