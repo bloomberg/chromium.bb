@@ -102,6 +102,7 @@ class RenderCompositor {
 
     viz::LocalSurfaceIdAllocation GetLocalSurfaceIdAllocation();
 
+    void Invalidate();
     void SetVisible(bool visible);
     void Resize(const gfx::Size& size);
 };

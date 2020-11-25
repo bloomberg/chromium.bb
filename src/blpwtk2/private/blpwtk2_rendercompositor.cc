@@ -87,13 +87,17 @@ class RenderFrameSinkProviderImpl : public content::mojom::FrameSinkProvider
         CompositorData(gpu::SurfaceHandle gpu_surface_handle)
         : gpu_surface_handle(gpu_surface_handle) {}
 
+        bool invalidated = false;
         gpu::SurfaceHandle gpu_surface_handle;
         std::unique_ptr<RenderCompositorFrameSinkImpl> compositor_frame_sink_impl;
         bool visible = false;
         gfx::Size size;
     };
 
-    std::map<int32_t, CompositorData> d_compositor_data;
+    using CompositorDataMap = std::map<int32_t, CompositorData>;
+
+    CompositorDataMap d_compositor_data;
+    std::map<gpu::SurfaceHandle, CompositorDataMap::iterator> d_compositor_data_by_surface_handle;
 
     void EstablishGpuChannelSyncOnMain(gpu::GpuChannelEstablishedCallback callback);
 
@@ -149,6 +153,7 @@ public:
 
     void RegisterCompositor(int32_t widget_id, gpu::SurfaceHandle gpu_surface_handle);
     void UnregisterCompositor(int32_t widget_id);
+    void InvalidateCompositor(int32_t widget_id);
     void SetCompositorVisible(int32_t widget_id, bool visible);
     void ResizeCompositor(int32_t widget_id, gfx::Size size, base::WaitableEvent *event);
 
@@ -442,6 +447,11 @@ viz::LocalSurfaceIdAllocation RenderCompositor::GetLocalSurfaceIdAllocation()
     return d_local_surface_id_allocator->GetCurrentLocalSurfaceIdAllocation();
 }
 
+void RenderCompositor::Invalidate()
+{
+    d_visible = false;
+}
+
 void RenderCompositor::SetVisible(bool visible)
 {
     d_visible = visible;
@@ -535,9 +545,19 @@ void RenderFrameSinkProviderImpl::RegisterCompositor(
 
     CompositorData compositor_data(gpu_surface_handle);
 
-    d_compositor_data.insert(
-        std::make_pair(
-            widget_id, std::move(compositor_data)));
+    it = d_compositor_data.insert({ widget_id, std::move(compositor_data) }).first;
+    d_compositor_data_by_surface_handle.insert({ gpu_surface_handle, it });
+}
+
+void RenderFrameSinkProviderImpl::InvalidateCompositor(
+    int32_t widget_id)
+{
+    SetCompositorVisible(widget_id, false);
+
+    auto it = d_compositor_data.find(widget_id);
+    DCHECK(it != d_compositor_data.end());
+
+    it->second.invalidated = true;
 }
 
 void RenderFrameSinkProviderImpl::UnregisterCompositor(
@@ -546,6 +566,7 @@ void RenderFrameSinkProviderImpl::UnregisterCompositor(
     auto it = d_compositor_data.find(widget_id);
     DCHECK(it != d_compositor_data.end());
 
+    d_compositor_data_by_surface_handle.erase(it->second.gpu_surface_handle);
     d_compositor_data.erase(widget_id);
 }
 
@@ -613,6 +634,12 @@ std::unique_ptr<viz::OutputSurface> RenderFrameSinkProviderImpl::CreateOutputSur
     const viz::RendererSettings& renderer_settings)
 {
     std::unique_ptr<viz::OutputSurface> output_surface;
+
+    auto it = d_compositor_data_by_surface_handle.find(surface_handle);
+    if (it == d_compositor_data_by_surface_handle.end() ||
+        it->second->second.invalidated) {
+        return output_surface;
+    }
 
     if (gpu_compositing) {
         constexpr bool automatic_flushes = false;
