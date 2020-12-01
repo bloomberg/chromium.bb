@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>title</title>
+	<style type="text/css">
+		div {
+			font-size: 29pt;
+		}
+		
+		body {
+			transform: scale(1.1, 1.1);
+			transform-origin:left top;
+			font-family: Courier New;
+			background-color: yellow;
+			font-weight: bold;
+		}
+		
+		#p1 {
+
+		}
+		#p1 {
+			zoom: 1.06829;
+			--window-stretch-scale-x: 1.06829;
+    		--window-stretch-scale-y: 1.06806;
+		}
+		
+		#p2 {
+			zoom: 1;
+			--window-stretch-scale-x: 1.0823;
+    		--window-stretch-scale-y: 1.06806;
+			transform: scale(1.0823, 1.06806);
+		}
+
+		
+		#t1 {
+			transform: translate(0px, 1px);
+		}
+		
+		#t2 {
+			transform: translate3d(0px,1px,0px);
+		}
+
+	</style>
+  </head>
+  <body>
+	<div id="p1">
+		<div id="t1">12345 omrhgsuw zoomed text translate</div>
+	</div>
+	<div id="p2">
+		<div id="t2"> 0012345 omrhgsuw scaled text translate3d</div>
+	</div>
+	<div id="t1">12345 omrhgsuw text (translate)</div>
+	<div id="t2">12345 omrhgsuw text (translate3d)</div>
+  </body>
+</html>
