@@ -305,6 +305,13 @@ class RenderWebView final : public WebView
     void stopPerformanceTiming() override;
 #endif
 
+#if defined(BLPWTK2_FEATURE_MEMORY_DIAGNOSTIC)
+    std::size_t getDefaultTileMemoryLimit() const override;
+    std::size_t getTileMemoryBytes() const override;
+    void overrideTileMemoryLimit(std::size_t limit) override;
+    void setTag(const char* pTag) override;
+#endif
+
     // WebViewProxyDelegate overrides:
     void notifyRoutingId(int id) override;
 

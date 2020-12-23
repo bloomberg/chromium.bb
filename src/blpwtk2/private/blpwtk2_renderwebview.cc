@@ -2329,6 +2329,47 @@ void RenderWebView::OnSetRubberbandRect(const gfx::Rect& rect)
 }
 #endif
 
+#if defined(BLPWTK2_FEATURE_MEMORY_DIAGNOSTIC)
+std::size_t RenderWebView::getDefaultTileMemoryLimit() const{
+    if (!d_renderViewRoutingId) {
+        return 0;
+    }
+    if (content::RenderWidget* rw = content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId)) {
+        return rw->getDefaultTileMemoryLimit();
+    }
+    return 0;
+}
+
+std::size_t RenderWebView::getTileMemoryBytes() const
+{
+    if (!d_renderViewRoutingId) {
+        return 0;
+    }
+    if (content::RenderWidget* rw = content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId)) {
+        return rw->getTileMemoryBytes();
+    }
+    return 0;
+}
+
+void RenderWebView::overrideTileMemoryLimit(std::size_t limit) {
+    if (!d_renderViewRoutingId) {
+        return;
+    }
+    if (content::RenderWidget* rw = content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId)) {
+        rw->overrideTileMemoryLimit(limit);
+    }
+}
+
+void RenderWebView::setTag(const char* pTag) {
+    if (!d_renderViewRoutingId) {
+        return;
+    }
+    if (content::RenderWidget* rw = content::RenderWidget::FromRoutingID(*d_renderWidgetRoutingId)) {
+        rw->setTag(std::string(pTag));
+    }
+}
+#endif
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
