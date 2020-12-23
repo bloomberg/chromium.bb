@@ -697,6 +697,43 @@ bool WebViewProxy::validateClient()
     return true;
 }
 
+content::RenderWidget* WebViewProxy::getRenderWidget() const {
+    content::RenderView *rv =
+        content::RenderView::FromRoutingID(d_renderViewRoutingId);
+    blink::WebFrame *webFrame = rv->GetWebView()->MainFrame();
+    blink::WebLocalFrame* localWebFrame = webFrame->ToWebLocalFrame();
+    content::RenderFrameImpl* render_frame =
+        content::RenderFrameImpl::FromWebFrame(localWebFrame);
+    return render_frame->GetLocalRootRenderWidget();
+}
+
+std::size_t WebViewProxy::getDefaultTileMemoryLimit() const {
+    if(content::RenderWidget* render_widget = getRenderWidget()) {
+        return render_widget->getDefaultTileMemoryLimit();
+    }
+    return 0;
+}
+
+std::size_t WebViewProxy::getTileMemoryBytes() const
+{
+    if(content::RenderWidget* render_widget = getRenderWidget()) {
+        return render_widget->getTileMemoryBytes();
+    }
+    return 0;
+}
+
+void WebViewProxy::overrideTileMemoryLimit(std::size_t limit) {
+    if(content::RenderWidget* render_widget = getRenderWidget()) {
+        return render_widget->overrideTileMemoryLimit(limit);
+    }
+}
+
+void WebViewProxy::setTag(const char* pTag) {
+    if(content::RenderWidget* render_widget = getRenderWidget()) {
+        return render_widget->setTag(std::string(pTag));
+    }
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
