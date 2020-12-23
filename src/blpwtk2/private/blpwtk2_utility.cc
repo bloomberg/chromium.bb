@@ -30,6 +30,7 @@
 #include <content/browser/gpu/compositor_util.h>
 #include <content/browser/gpu/gpu_data_manager_impl.h>
 #include <content/browser/gpu/gpu_internals_ui.h>
+#include <content/browser/gpu/gpu_process_host.h>
 #include <third_party/angle/src/common/version.h>
 
 #include <fstream>
@@ -70,11 +71,21 @@ std::string getGpuInfo() {
     gpuInfo.Set("memoryBufferInfo", content::GpuInternalsUI::GetGpuMemoryBufferInfo());
     gpuInfo.Set("LogMessage", content::GpuDataManagerImpl::GetInstance()->GetLogMessages());
     
-    gpuInfo.SetString("gpu_device_string", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().device_string);
-    gpuInfo.SetString("gpu_vendor", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().vendor_string);
-    gpuInfo.SetString("gpu_driver_vendor", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().driver_vendor);
+    gpuInfo.SetInteger("gpu_process_crash_count", content::GpuProcessHost::GetGpuCrashCount());
+    gpuInfo.SetBoolean("in_process_gpu", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().in_process_gpu);
+    gpuInfo.SetBoolean("direct_composition", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().overlay_info.direct_composition);
     gpuInfo.SetBoolean("gpu_active", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().active);
     gpuInfo.SetBoolean("software_rendering", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().software_rendering);
+
+    gpuInfo.SetInteger("gpu_device_id", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().device_id);
+    gpuInfo.SetString("gpu_device_string", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().device_string);
+    gpuInfo.SetInteger("gpu_vendor_id", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().vendor_id);
+    gpuInfo.SetString("gpu_driver_vendor", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().driver_vendor);
+    gpuInfo.SetString("gpu_driver_version", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().active_gpu().driver_version);
+
+    gpuInfo.SetString("gl_vendor", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().gl_vendor);
+    gpuInfo.SetString("gl_renderer", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().gl_renderer);
+    gpuInfo.SetString("gl_version", content::GpuDataManagerImpl::GetInstance()->GetGPUInfoForHardwareGpu().gl_version);
 
     gpuInfo.SetString("command_line",
         base::CommandLine::ForCurrentProcess()->GetCommandLineString());
