@@ -700,6 +700,12 @@ bool WebViewProxy::validateClient()
 
 
 // patch section: devtools integration
+void WebViewProxy::didInterceptMessage()
+{
+    if (d_delegate) {
+        d_delegate->didInterceptMessage(this);
+    }
+}
 
 
 // patch section: memory diagnostics
