@@ -70,6 +70,12 @@ struct ToolkitCreateParamsImpl final
 
 
 
+    // patch section: discardable sharedmem
+
+
+    // patch section: memory diagnostics
+
+
     // patch section: embedder ipc
 
 
@@ -104,6 +110,13 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
     , d_delegate(nullptr)
     , d_rendererIOThreadEnabled(false)
     , d_isNativeViewManipulationAsync(false)
+
+
+
+    // patch section: discardable sharedmem
+
+
+    // patch section: memory diagnostics
 
 
     // patch section: embedder ipc

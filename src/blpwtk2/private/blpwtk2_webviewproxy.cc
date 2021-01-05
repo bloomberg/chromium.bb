@@ -697,6 +697,15 @@ bool WebViewProxy::validateClient()
     return true;
 }
 
+
+
+// patch section: devtools integration
+
+
+// patch section: memory diagnostics
+
+
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

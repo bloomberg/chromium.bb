@@ -235,6 +235,15 @@ class WebView
         // Calling this function does not modify the security token of
         // any already-loaded frames.
 
+
+
+    // patch section: doc printer
+
+
+    // patch section: memory diagnostics
+
+
+
   protected:
     virtual ~WebView();
         // Destroy this WebView.  Note that clients of blpwtk2 should use the
