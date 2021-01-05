@@ -222,7 +222,12 @@ class ToolkitCreateParams
         // whenever it sends a sync-ipc message. Enabling the renderer IO
         // thread will cause the IO thread to issue the 'wait' call instead.
 
-
+    BLPWTK2_EXPORT void setDiscardableSharedMemorySizeLimit(size_t limit);
+        // The maximum number of bytes of memory that may be allocated. This will
+        // cause memory usage to be reduced if currently above |limit|.
+        // If set to 0 then it will use the standard default value.
+        // do not set this too high! Chromium's default limit is 25% of physical RAM
+        // or 512MB, whichever is less.
 
     // patch section: embedder ipc
 
@@ -252,6 +257,7 @@ class ToolkitCreateParams
     NativeColor inactiveTextSearchHighlightColor() const;
     NativeColor activeTextSearchColor() const;
     StringRef headerFooterHTMLContent() const;
+    size_t getDiscardableSharedMemorySizeLimit() const;
     bool isPrintBackgroundGraphicsEnabled() const;
     StringRef subProcessModule() const;
     bool isInProcessResizeOptimizationDisabled() const;
