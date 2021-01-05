@@ -191,6 +191,7 @@ class ProfileImpl : public Profile {
     // patch section: web cache
 
 
+    std::size_t getDiscardableSharedMemoryBytes() override;
 
 };
 
