@@ -315,6 +315,7 @@ class CONTENT_EXPORT RenderWidget
   bool SupportsBufferedTouchEvents() override;
 
   // RenderWidgetScreenMetricsEmulatorDelegate
+  void Redraw() override;
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
@@ -508,6 +509,8 @@ class CONTENT_EXPORT RenderWidget
       mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
 
   mojom::WidgetInputHandlerHost* GetInputHandlerHost();
+
+  void LockSize(bool val);
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 
@@ -1000,6 +1003,8 @@ class CONTENT_EXPORT RenderWidget
   uint32_t last_capture_sequence_number_ = 0u;
 
   std::unique_ptr<blink::scheduler::WebWidgetScheduler> widget_scheduler_;
+
+  bool lock_size_ = false;
 
   bool bb_OnHandleInputEvent_no_ack_{false};
   base::WeakPtrFactory<RenderWidget> weak_ptr_factory_{this};
