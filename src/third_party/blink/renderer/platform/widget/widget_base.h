@@ -56,7 +56,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   void InitializeCompositing(
       cc::TaskGraphRunner* task_graph_runner,
       const cc::LayerTreeSettings& settings,
-      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
+      std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+      int view_id);
 
   // Shutdown the compositor.
   void Shutdown(scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner,
