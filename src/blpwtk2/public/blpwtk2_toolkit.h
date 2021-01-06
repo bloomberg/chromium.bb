@@ -194,6 +194,9 @@ class Toolkit {
     // patch section: multi-heap tracer
 
 
+    // patch section: memory diagnostics
+
+
 
   protected:
     virtual ~Toolkit();

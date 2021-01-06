@@ -230,6 +230,9 @@ class ToolkitCreateParams
     // patch section: renderer ui
 
 
+    // patch section: memory diagnostics
+
+
 
     // ACCESSORS
     ThreadMode threadMode() const;

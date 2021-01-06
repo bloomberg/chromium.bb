@@ -152,6 +152,9 @@ class Profile
     // patch section: web cache
 
 
+    // patch section: memory diagnostics
+
+
 
   protected:
     virtual ~Profile();

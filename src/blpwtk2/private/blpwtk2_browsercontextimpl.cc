@@ -455,6 +455,9 @@ void BrowserContextImpl::setPacUrl(const StringRef& url)
 // patch section: web cache
 
 
+// patch section: memory diagnostics
+
+
 
 // content::BrowserContext overrides
 std::unique_ptr<content::ZoomLevelDelegate>

@@ -191,6 +191,9 @@ class ProfileImpl : public Profile {
     // patch section: web cache
 
 
+    // patch section: memory diagnostics
+
+
 
 };
 
