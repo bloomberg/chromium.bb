@@ -231,6 +231,12 @@ class ToolkitCreateParams
 
 
 
+    BLPWTK2_EXPORT void setTotalTileMemoryLimit(std::size_t limit);
+        // Set the tile rasterization memory limit used by all webviews
+
+    std::size_t getTotalTileMemoryLimit() const;
+        // Get the tile rasterization memory limit used by all webviews
+
     // ACCESSORS
     ThreadMode threadMode() const;
     bool useDefaultPrintSettings() const;

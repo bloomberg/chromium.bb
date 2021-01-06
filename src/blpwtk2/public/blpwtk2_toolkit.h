@@ -194,6 +194,8 @@ class Toolkit {
     // patch section: multi-heap tracer
 
 
+    virtual std::size_t getDiscardableSharedMemoryBytes() const = 0;
+        // Get the discardable shared memory usage
 
   protected:
     virtual ~Toolkit();

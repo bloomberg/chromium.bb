@@ -169,6 +169,7 @@ class ToolkitImpl : public Toolkit {
     // patch section: multi-heap tracer
 
 
+    std::size_t getDiscardableSharedMemoryBytes() const override;
 
 };
 

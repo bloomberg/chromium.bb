@@ -151,6 +151,8 @@ class Profile
 
     // patch section: web cache
 
+    virtual std::size_t getDiscardableSharedMemoryBytes() = 0;
+        // Get the discardable shared memory usage
 
 
   protected:

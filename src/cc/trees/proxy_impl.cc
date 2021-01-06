@@ -793,4 +793,24 @@ void ProxyImpl::SetRenderFrameObserver(
   host_impl_->SetRenderFrameObserver(std::move(observer));
 }
 
+std::size_t  ProxyImpl::getTileMemoryBytes() const {
+  if (!host_impl_) {
+    return 0;
+  }
+  const ResourcePool* rp = host_impl_->resource_pool();
+  return rp ? rp->memory_usage_bytes() : 0;
+}
+
+std::size_t ProxyImpl::getDefaultTileMemoryLimit() const {
+  return host_impl_->tile_manager()->getDefaultTileMemoryLimit();
+}
+
+void ProxyImpl::overrideTileMemoryLimit(std::size_t limit) {
+  host_impl_->tile_manager()->overrideTileMemoryLimit(limit);
+}
+
+void ProxyImpl::setTag(std::string tag) {
+  host_impl_->tile_manager()->setTag(std::move(tag));
+}
+
 }  // namespace cc

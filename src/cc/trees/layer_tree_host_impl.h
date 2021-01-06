@@ -479,6 +479,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void DidNotNeedBeginFrame();
 
   // TileManagerClient implementation.
+  void onTileMemoryError() override;
+
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
   void NotifyAllTileTasksCompleted() override;
