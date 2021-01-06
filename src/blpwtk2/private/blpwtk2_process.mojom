@@ -124,14 +124,13 @@ interface ProcessHost {
 
     // patch section: embedder ipc
 
-    [Sync]
-    getDiscardableSharedMemoryBytes() => (uint32 bytes);
-
 
     // patch section: renderer ui
 
 
     // patch section: memory diagnostics
+    [Sync]
+    getDiscardableSharedMemoryBytes() => (uint32 bytes);
 
 
 

@@ -249,12 +249,15 @@ class WebViewImpl final : public WebView,
 
     // patch section: print to pdf
 
+
+    // patch section: memory diagnostics
     std::size_t getDefaultTileMemoryLimit() const override;
     std::size_t getTileMemoryBytes() const override;
     void overrideTileMemoryLimit(std::size_t limit) override;
     void setTag(const char* pTag) override;
 
     // patch section: memory diagnostics
+
 
 
 

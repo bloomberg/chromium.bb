@@ -505,6 +505,9 @@ void ProcessHostImpl::setPacUrl(const std::string& url) {
   d_impl->context().setPacUrl(StringRef(url));
 }
 
+
+
+// patch section: memory diagnostics
 void ProcessHostImpl::getDiscardableSharedMemoryBytes(getDiscardableSharedMemoryBytesCallback callback)
 {
     std::size_t bytes = 0;
@@ -513,10 +516,6 @@ void ProcessHostImpl::getDiscardableSharedMemoryBytes(getDiscardableSharedMemory
     }
     std::move(callback).Run(bytes);
 }
-
-
-
-// patch section: memory diagnostics
 
 
 // patch section: spellcheck

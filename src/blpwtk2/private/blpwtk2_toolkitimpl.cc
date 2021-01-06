@@ -755,6 +755,12 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
     d_messagePump->setTraceThreshold(timeoutMS);
 }
 
+
+
+// patch section: custom timezone
+
+
+// patch section: memory diagnostics
 std::size_t ToolkitImpl::getDiscardableSharedMemoryBytes() const
 {
     if(Profile* prof = ProfileImpl::anyInstance()) {
@@ -762,13 +768,6 @@ std::size_t ToolkitImpl::getDiscardableSharedMemoryBytes() const
     }
     return 0;
 }
-
-
-
-// patch section: custom timezone
-
-
-// patch section: memory diagnostics
 
 
 // patch section: embedder ipc
