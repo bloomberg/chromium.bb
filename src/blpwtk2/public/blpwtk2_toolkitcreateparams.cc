@@ -67,11 +67,11 @@ struct ToolkitCreateParamsImpl final
     ToolkitDelegate* d_delegate;
     bool d_rendererIOThreadEnabled;
     bool d_isNativeViewManipulationAsync;
-    size_t d_discardableSharedMemorySizeLimit;
 
 
 
     // patch section: discardable sharedmem
+    size_t d_discardableSharedMemorySizeLimit;
 
 
     // patch section: memory diagnostics
@@ -111,11 +111,11 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
     , d_delegate(nullptr)
     , d_rendererIOThreadEnabled(false)
     , d_isNativeViewManipulationAsync(false)
-    , d_discardableSharedMemorySizeLimit(0)
 
 
 
     // patch section: discardable sharedmem
+    , d_discardableSharedMemorySizeLimit(0)
 
 
     // patch section: memory diagnostics
