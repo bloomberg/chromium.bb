@@ -265,6 +265,7 @@ blink_core_sources("dom") {
     "visited_link_state.cc",
     "visited_link_state.h",
     "weak_identifier_map.h",
+    "web_script_bindings.cc",
     "whitespace_attacher.cc",
     "whitespace_attacher.h",
     "xml_document.cc",

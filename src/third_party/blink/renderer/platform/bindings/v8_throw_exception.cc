@@ -55,6 +55,7 @@ DEFINE_CREATE_AND_THROW_ERROR_FUNC(WasmLinkError, WasmLinkError, "Link error")
 DEFINE_CREATE_AND_THROW_ERROR_FUNC(WasmRuntimeError,
                                    WasmRuntimeError,
                                    "Runtime error")
+DEFINE_CREATE_AND_THROW_ERROR_FUNC(AccessError, ReferenceError, "Access error")
 
 #undef DEFINE_CREATE_AND_THROW_ERROR_FUNC
 

@@ -133,6 +133,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
 
  protected:
   explicit DOMWindow(Frame&);
+  explicit DOMWindow();
 
   virtual void SchedulePostMessage(MessageEvent*,
                                    scoped_refptr<const SecurityOrigin> target,
