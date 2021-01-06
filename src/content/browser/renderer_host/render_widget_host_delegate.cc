@@ -51,6 +51,14 @@ double RenderWidgetHostDelegate::GetPendingPageZoomLevel() {
   return 0.0;
 }
 
+bool RenderWidgetHostDelegate::ShouldSetKeyboardFocusOnMouseDown() {
+  return true;
+}
+
+bool RenderWidgetHostDelegate::ShouldSetLogicalFocusOnMouseDown() {
+  return true;
+}
+
 BrowserAccessibilityManager*
     RenderWidgetHostDelegate::GetRootBrowserAccessibilityManager() {
   return nullptr;

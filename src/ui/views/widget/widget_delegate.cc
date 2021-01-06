@@ -192,6 +192,10 @@ bool WidgetDelegate::WillProcessWorkAreaChange() const {
   return false;
 }
 
+aura::Window* WidgetDelegate::GetDefaultActivationWindow() {
+  return NULL;
+}
+
 bool WidgetDelegate::WidgetHasHitTestMask() const {
   return false;
 }
