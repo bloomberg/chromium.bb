@@ -699,6 +699,9 @@ bool WebViewProxy::validateClient()
 
 
 
+// patch section: msg interception
+
+
 // patch section: devtools integration
 
 
