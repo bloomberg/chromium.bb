@@ -32,6 +32,7 @@
 
 
 // patch section: embedder ipc
+#include <blpwtk2_processhostdelegate.h>
 
 
 // patch section: multi-heap tracer
@@ -54,6 +55,14 @@ class MessageLoop;
 namespace content {
 class ContentMainRunner;
 }  // close namespace content
+
+namespace gin {
+class IsolateHolder;
+
+#if defined(BLPWTK2_FEATURE_MULTIHEAPTRACER)
+class MultiHeapTracer;
+#endif
+}  // close namespace gin
 
 namespace blpwtk2 {
 
@@ -97,6 +106,15 @@ class ToolkitImpl : public Toolkit {
 
 
     // patch section: embedder ipc
+    std::unique_ptr<gin::IsolateHolder> d_isolateHolder;
+        // Only used for ORIGINAL thread mode and when the toolkit is created with
+        // browserV8Enabled flag
+
+#if defined(BLPWTK2_FEATURE_MULTIHEAPTRACER)
+    std::unique_ptr<gin::MultiHeapTracer> d_multiHeapTracerForBrowserV8;
+        // Only used for ORIGINAL thread mode and when the toolkit is created with
+        // browserV8Enabled flag
+#endif
 
 
     // patch section: gpu
@@ -143,6 +161,7 @@ class ToolkitImpl : public Toolkit {
                          const std::string&              hostChannel,
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
+                         bool                            browserV8Enabled,
                          const std::string&              profileDir);
 
     // blpwtk2::Toolkit overrides
@@ -161,6 +180,8 @@ class ToolkitImpl : public Toolkit {
 
 
     // patch section: embedder ipc
+    void opaqueMessageToRendererAsync(int pid, const StringRef &message) override;
+    void setIPCDelegate(ProcessHostDelegate *delegate) override;
 
 
     // patch section: expose v8 platform
