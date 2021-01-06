@@ -228,6 +228,7 @@ class ToolkitCreateParams
 
 
     // patch section: renderer ui
+    BLPWTK2_EXPORT void setRendererUIEnabled(bool rendererUIEnabled);
 
 
     // patch section: memory diagnostics
@@ -269,7 +270,7 @@ class ToolkitCreateParams
 
 
     // patch section: renderer ui
-
+    bool rendererUIEnabled() const;
 
 
 };
