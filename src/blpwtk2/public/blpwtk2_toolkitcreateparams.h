@@ -230,6 +230,9 @@ class ToolkitCreateParams
     // patch section: renderer ui
 
 
+    // patch section: log message handler
+
+
     // patch section: memory diagnostics
 
 
