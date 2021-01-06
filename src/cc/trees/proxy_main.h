@@ -102,6 +102,11 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;
 
+  std::size_t getTileMemoryBytes() const override;
+  std::size_t getDefaultTileMemoryLimit() const override;
+  void overrideTileMemoryLimit(std::size_t limit) override;
+  void setTag(std::string tag) override;
+
   // Returns |true| if the request was actually sent, |false| if one was
   // already outstanding.
   bool SendCommitRequestToImplThreadIfNeeded(
