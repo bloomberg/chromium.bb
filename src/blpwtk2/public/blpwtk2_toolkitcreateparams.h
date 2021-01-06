@@ -225,6 +225,7 @@ class ToolkitCreateParams
 
 
     // patch section: embedder ipc
+    BLPWTK2_EXPORT void setBrowserV8Enabled(bool browserV8Enabled);
 
 
     // patch section: renderer ui
@@ -266,6 +267,7 @@ class ToolkitCreateParams
 
 
     // patch section: embedder ipc
+    bool browserV8Enabled() const;
 
 
     // patch section: renderer ui
