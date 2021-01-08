@@ -8,6 +8,8 @@
 #ifndef SkTypeface_win_DEFINED
 #define SkTypeface_win_DEFINED
 
+#include <windows.h>
+#include <winnt.h>
 #include "include/core/SkTypeface.h"
 #include "include/core/SkTypes.h"
 
@@ -53,6 +55,9 @@ struct IDWriteFontCollection;
 struct IDWriteFontFallback;
 
 SK_API sk_sp<SkFontMgr> SkFontMgr_New_GDI();
+SK_API void SkFontMgr_SetFontCollectionToUse(IDWriteFontCollection* fontCollection);
+SK_API HRESULT SkFontMgr_GetFontCollectionToUse(IDWriteFontCollection** fontCollection,
+                                                IDWriteFactory* factory);
 SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory = NULL,
                                                   IDWriteFontCollection* collection = NULL);
 SK_API sk_sp<SkFontMgr> SkFontMgr_New_DirectWrite(IDWriteFactory* factory,
