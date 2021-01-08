@@ -813,6 +813,26 @@ void RenderWidget::OnUpdateVisualProperties(
             size_, visual_properties.screen_info.device_scale_factor));
       }
 
+      // blpwtk2:
+      //   In RendererUI mode, the renderer owns the OS window that is visible
+      //   on screen. The browser still creates and owns a window but it
+      //   remains hidden and is mostly unused. When the display settings
+      //   change in the OS, a WM_DISPLAYCHANGE event is broadcasted to all
+      //   windows, including the browser's hidden window. The browser uses
+      //   this event as a trigger to send the size information of its window
+      //   to the renderer. Since this window is unused, it doesn't have the
+      //   correct size of the webview. When the renderer receives this size
+      //   information, it incorrectly resizes the surface to which the
+      //   compositor draws onto.
+      //
+      //   Given that in the RendererUI mode, the renderer owns and maintains
+      //   the visible window, it doesn't need to accept the size information
+      //   from the browser.
+      //
+      //  NOTE: I didn't indent the code inside the if-block to reduce the
+      //  patch size
+      if (!lock_size_) {
+
       UpdateSurfaceAndScreenInfo(
           visual_properties.local_surface_id_allocation.value_or(
               viz::LocalSurfaceIdAllocation()),
@@ -840,6 +860,9 @@ void RenderWidget::OnUpdateVisualProperties(
       if (!auto_resize_mode_) {
         size_ = visual_properties.new_size;
         ResizeWebWidget();
+      }
+
+
       }
     }
   }
@@ -1415,6 +1438,11 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 bool RenderWidget::SupportsBufferedTouchEvents() {
   // Buffered touch events aren't supported for pepper.
   return !pepper_fullscreen_;
+}
+
+void RenderWidget::Redraw() {
+  if (layer_tree_host_)
+    layer_tree_host_->SetNeedsRedrawRect(gfx::Rect(size_));
 }
 
 void RenderWidget::ResizeWebWidget() {
@@ -3189,6 +3217,10 @@ void RenderWidget::SetupWidgetInputHandler(
     mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
   widget_input_handler_manager_->AddInterface(std::move(receiver),
                                               std::move(host));
+}
+
+void RenderWidget::LockSize(bool val) {
+  lock_size_ = val;
 }
 
 void RenderWidget::SetWidgetReceiver(
