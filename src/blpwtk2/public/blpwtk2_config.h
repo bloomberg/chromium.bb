@@ -80,6 +80,7 @@
 // feature 36
 // feature 37
 // feature 38
+#define BLPWTK2_FEATURE_MEMORY_DIAGNOSTIC
 // feature 39
 
 

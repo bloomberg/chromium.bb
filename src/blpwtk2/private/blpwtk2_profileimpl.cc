@@ -317,6 +317,11 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: memory diagnostics
+std::size_t ProfileImpl::getDiscardableSharedMemoryBytes()
+{
+    uint32_t bytes;
+    return d_hostPtr->getDiscardableSharedMemoryBytes(&bytes) ? bytes: 0;
+}
 
 
 
