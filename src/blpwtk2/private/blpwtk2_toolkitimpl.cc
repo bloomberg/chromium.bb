@@ -621,6 +621,9 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
 ToolkitImpl::~ToolkitImpl()
 {
     LOG(INFO) << "Shutting down threads...";
+
+    Statics::isTerminating = true;
+
     ScopeExitGuard exit_guard{EXIT_TIME_OUT_MS};
 
     if (Statics::isRendererMainThreadMode()) {
@@ -772,6 +775,10 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 // patch section: multi-heap tracer
 
 
+void ToolkitImpl::onTerminating()
+{
+    Statics::isTerminating = true;
+}
 
 }  // close namespace blpwtk2
 

@@ -35,6 +35,7 @@ ResourceLoader* Statics::inProcessResourceLoader = 0;
 scoped_refptr<base::SingleThreadTaskRunner> Statics::browserMainTaskRunner;
 ToolkitCreateParams::ChannelErrorHandler Statics::channelErrorHandler = 0;
 bool Statics::hasDevTools = false;
+bool Statics::isTerminating = false;
 bool Statics::isInProcessRendererEnabled = true;
 bool Statics::inProcessResizeOptimizationDisabled = false;
 bool Statics::isNativeViewManipulationAsync = false;

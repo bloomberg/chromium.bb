@@ -123,6 +123,8 @@ struct Statics {
     static void initBrowserMainThread();
 
     static int getUniqueRoutingId();
+
+    static bool isTerminating;
 };
 
 }  // close namespace blpwtk2

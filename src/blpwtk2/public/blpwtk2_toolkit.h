@@ -183,6 +183,11 @@ class Toolkit {
         // If non-zero, defines the time threshold for enabling trace
         // (in milliseconds)
 
+    virtual void onTerminating() = 0;
+        // Notify this Toolkit object that we are in the process of terminating.
+        // This will allow us to avoid doing anything unnecessary. e.g. handling
+        // new request to load resources.
+
 
 
     // patch section: embedder ipc
