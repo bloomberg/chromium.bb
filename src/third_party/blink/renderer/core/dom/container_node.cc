@@ -822,7 +822,9 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
       SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(GetDocument());
       StyleEngine::DOMRemovalScope style_scope(GetDocument().GetStyleEngine());
       EventDispatchForbiddenScope assert_no_event_dispatch;
-      ScriptForbiddenScope forbid_script;
+
+      // blpwtk2: We need to run script for plugins
+      //ScriptForbiddenScope forbid_script;
 
       while (Node* child = first_child_) {
         RemoveBetween(nullptr, child->nextSibling(), *child);
