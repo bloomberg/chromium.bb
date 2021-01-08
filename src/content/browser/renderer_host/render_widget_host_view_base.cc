@@ -376,6 +376,12 @@ void RenderWidgetHostViewBase::ChildDidAckGestureEvent(
     const blink::WebGestureEvent& event,
     blink::mojom::InputEventResultState ack_result) {}
 
+void RenderWidgetHostViewBase::SetRubberbandRect(const gfx::Rect& rect) {
+}
+
+void RenderWidgetHostViewBase::HideRubberbandRect() {
+}
+
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
     blink::mojom::InputEventResultState ack_result) {
