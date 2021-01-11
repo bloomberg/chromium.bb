@@ -3345,4 +3345,32 @@ base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+std::size_t RenderWidget::getTileMemoryBytes() const {
+  if (!layer_tree_host_ || !layer_tree_host_->proxy()) {
+    return 0;
+  }
+  return layer_tree_host_->proxy() ? layer_tree_host_->proxy()->getTileMemoryBytes() : 0;
+}
+
+std::size_t RenderWidget::getDefaultTileMemoryLimit() const {
+  if (!layer_tree_host_ || !layer_tree_host_->proxy()) {
+    return 0;
+  }
+  return layer_tree_host_->proxy()->getDefaultTileMemoryLimit();
+}
+
+void RenderWidget::overrideTileMemoryLimit(std::size_t limit) {
+  if (!layer_tree_host_ || !layer_tree_host_->proxy()) {
+    return;
+  }
+  return layer_tree_host_->proxy()->overrideTileMemoryLimit(limit);
+}
+
+void RenderWidget::setTag(std::string tag) {
+  if (!layer_tree_host_ || !layer_tree_host_->proxy()) {
+    return;
+  }
+  return layer_tree_host_->proxy()->setTag(std::move(tag));
+}
+
 }  // namespace content
