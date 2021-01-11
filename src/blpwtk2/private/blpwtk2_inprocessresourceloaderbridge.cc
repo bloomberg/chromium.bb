@@ -415,7 +415,7 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::startLoad() {
   DCHECK(!d_started);
   DCHECK(!d_canceled);
 
-  if (d_waitingForCancelLoad) {
+  if (d_waitingForCancelLoad || Statics::isTerminating) {
     // We got canceled before we even started the resource on the loader.
     // We should wait for 'cancelLoad()' to get called, where we will
     // destroy ourself.

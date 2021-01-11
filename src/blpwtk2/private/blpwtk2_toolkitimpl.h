@@ -156,10 +156,13 @@ class ToolkitImpl : public Toolkit {
     void postHandleMessage(const NativeMsg *msg) override;
     void addOriginToTrustworthyList(const StringRef& originString) override;
     void setWebViewHostObserver(WebViewHostObserver* observer) override;
+    void onTerminating() override;
     void setTraceThreshold(unsigned int timeoutMS) override;
 
+    // patch section: custom-timezone
     // set the default time zone in ICU using zoneId
     int setTimeZone(const StringRef& zoneId) override;
+
 
     // patch section: embedder ipc
 
