@@ -179,15 +179,18 @@ class Toolkit {
         // Sets the observer that will be called by the browser thread when
         // WebView's are created and destroyed.
 
-    virtual void setTraceThreshold(unsigned int timeoutMS) = 0;
-        // If non-zero, defines the time threshold for enabling trace
-        // (in milliseconds)
-
     virtual void onTerminating() = 0;
         // Notify this Toolkit object that we are in the process of terminating.
         // This will allow us to avoid doing anything unnecessary. e.g. handling
         // new request to load resources.
 
+    virtual void setTraceThreshold(unsigned int timeoutMS) = 0;
+        // If non-zero, defines the time threshold for enabling trace
+        // (in milliseconds)
+
+
+
+    // patch section: custom-timezone
 
 
     // patch section: embedder ipc

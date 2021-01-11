@@ -753,6 +753,11 @@ void ToolkitImpl::setWebViewHostObserver(WebViewHostObserver* observer)
     }
 }
 
+void ToolkitImpl::onTerminating()
+{
+    Statics::isTerminating = true;
+}
+
 void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 {
     d_messagePump->setTraceThreshold(timeoutMS);
@@ -775,10 +780,6 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 // patch section: multi-heap tracer
 
 
-void ToolkitImpl::onTerminating()
-{
-    Statics::isTerminating = true;
-}
 
 }  // close namespace blpwtk2
 
