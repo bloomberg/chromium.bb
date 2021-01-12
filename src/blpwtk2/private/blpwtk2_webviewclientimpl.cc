@@ -188,7 +188,7 @@ void WebViewClientImpl::setParent(NativeView parent)
         int status = 0;
         if (!::SetParent(d_nativeView, parentView)) {
             status = ::GetLastError();
-            LOG(ERROR) << "WebViewClientImpl::setParent failed: hwnd =" << d_nativeView << ", parent = " << (void*)parentView << ", status = " << status;
+            LOG(ERROR) << "WebViewClientImpl::setParent failed: hwnd =(" << d_nativeView << "), parent = (" << (void*)parentView << "), status = " << status;
         }
         setParentStatusUpdate(status, static_cast<unsigned int>(reinterpret_cast<intptr_t>(parentView)));
     }
