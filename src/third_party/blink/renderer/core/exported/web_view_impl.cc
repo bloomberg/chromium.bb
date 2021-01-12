@@ -285,6 +285,7 @@ WebViewImpl::WebViewImpl(
       minimum_zoom_level_(PageZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
+      hwnd_(0),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)),
       lifecycle_state_(mojom::blink::PageLifecycleState::New()),
       receiver_(this, std::move(page_handle)) {
@@ -3430,6 +3431,14 @@ WebSize WebViewImpl::GetPreferredSizeForTest() {
 void WebViewImpl::StopDeferringMainFrameUpdate() {
   DCHECK(MainFrameImpl());
   scoped_defer_main_frame_update_ = nullptr;
+}
+
+HWND WebViewImpl::GetHwnd() {
+  return hwnd_;
+}
+
+void WebViewImpl::SetHwnd(HWND hwnd) {
+  hwnd_ = hwnd;
 }
 
 }  // namespace blink
