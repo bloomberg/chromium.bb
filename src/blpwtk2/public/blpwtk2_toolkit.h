@@ -203,6 +203,8 @@ class Toolkit {
 
 
     // patch section: memory diagnostics
+    virtual std::size_t getDiscardableSharedMemoryBytes() const = 0;
+        // Get the discardable shared memory usage
 
 
 

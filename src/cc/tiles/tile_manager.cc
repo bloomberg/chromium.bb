@@ -33,8 +33,16 @@
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
+#include "base/lazy_instance.h"
+#include <unordered_set>
+
 namespace cc {
 namespace {
+
+typedef std::unordered_set<TileManager*> TileManagers;
+static base::LazyInstance<TileManagers>::Leaky g_tileManagers =
+    LAZY_INSTANCE_INITIALIZER;
+static base::Optional<size_t> g_totalTileMemoryLimit;
 
 // Flag to indicate whether we should try and detect that
 // a tile is of solid color.
@@ -380,6 +388,24 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
   return std::move(state);
 }
 
+void TileManager::setTotalTileMemoryLimit(size_t limit)
+{
+  g_totalTileMemoryLimit = limit;
+}
+
+std::size_t TileManager::getDefaultTileMemoryLimit() const {
+  return global_state_.hard_memory_limit_in_bytes;
+}
+
+void TileManager::overrideTileMemoryLimit(size_t limit) {
+  tile_memory_limit_override_ = limit;
+}
+
+void TileManager::setTag(std::string tag)
+{
+  tag_ = std::move(tag);
+}
+
 TileManager::TileManager(
     TileManagerClient* client,
     base::SequencedTaskRunner* origin_task_runner,
@@ -413,9 +439,12 @@ TileManager::TileManager(
                               base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
       prepare_tiles_count_(0u),
-      next_tile_id_(0u) {}
+      next_tile_id_(0u) {
+        g_tileManagers.Get().insert(this);
+      }
 
 TileManager::~TileManager() {
+  g_tileManagers.Get().erase(this);
   FinishTasksAndCleanUp();
 }
 
@@ -684,9 +713,22 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
   all_tiles_that_need_to_be_rasterized_are_scheduled_ = true;
   bool had_enough_memory_to_schedule_tiles_needed_now = true;
 
-  MemoryUsage hard_memory_limit(global_state_.hard_memory_limit_in_bytes,
+  size_t memoryUsedByOtherTileManagers = 0;
+  if (g_totalTileMemoryLimit) {
+    for (const TileManager* tm: g_tileManagers.Get()) {
+      if (tm != this && tm->resource_pool_) {
+        memoryUsedByOtherTileManagers += tm->resource_pool_->memory_usage_bytes();
+      }
+    }
+  }
+  std::size_t hard_memory_limit_in_bytes = tile_memory_limit_override_ ?
+    tile_memory_limit_override_ : global_state_.hard_memory_limit_in_bytes;
+  std::size_t soft_memory_limit_in_bytes = tile_memory_limit_override_ ?
+    tile_memory_limit_override_ : global_state_.soft_memory_limit_in_bytes;
+
+  MemoryUsage hard_memory_limit(hard_memory_limit_in_bytes,
                                 global_state_.num_resources_limit);
-  MemoryUsage soft_memory_limit(global_state_.soft_memory_limit_in_bytes,
+  MemoryUsage soft_memory_limit(soft_memory_limit_in_bytes,
                                 global_state_.num_resources_limit);
   MemoryUsage memory_usage(resource_pool_->memory_usage_bytes(),
                            resource_pool_->resource_count());
@@ -786,9 +828,38 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     bool memory_usage_is_within_limit =
         !memory_usage.Exceeds(scheduled_tile_memory_limit);
 
+    bool memory_usage_is_within_total_limit = true;
+    if (g_totalTileMemoryLimit) {
+      size_t totalToBeUsed =
+          memoryUsedByOtherTileManagers + memory_usage.memory_bytes() +
+          memory_required_by_tile_to_be_scheduled.memory_bytes();
+      if (*g_totalTileMemoryLimit < totalToBeUsed) {
+        memory_usage_is_within_total_limit = false;
+        LOG(ERROR) << "WebView Tag = " << tag_
+          << " out of total tile memory limit of " << *g_totalTileMemoryLimit
+          << "; Expected total memory = " << totalToBeUsed;
+      }
+    }
+    if (!memory_usage_is_within_limit) {
+      LOG(ERROR) << "TileManager !memory_usage_is_within_limit WebView tag = " << tag_;
+    }
+
     // If we couldn't fit the tile into our current memory limit, then we're
     // done.
-    if (!memory_usage_is_within_limit) {
+    if (!memory_usage_is_within_limit || !memory_usage_is_within_total_limit) {
+      client_->onTileMemoryError();
+      LOG(ERROR) << "TileManager" << ":"
+        << "Default hard_memory_limit_in_bytes = " << global_state_.hard_memory_limit_in_bytes << ";"
+        << "Default soft_memory_limit_in_bytes = " << global_state_.soft_memory_limit_in_bytes << ";"
+        << "tile_memory_limit_override_ = " << tile_memory_limit_override_ << ";"
+        << "num_resources_limit = " << global_state_.num_resources_limit << ";"
+        << "memory_usage = " << memory_usage.memory_bytes() << ";"
+        << "tile_memory_limit = " << tile_memory_limit.memory_bytes()  << ";"
+        << "memory_required_by_tile_to_be_scheduled = " << memory_required_by_tile_to_be_scheduled.memory_bytes() << ";"
+        << "tile->desired_texture_size = {" << tile->desired_texture_size().width() << ", " << tile->desired_texture_size().height() << "};"
+        << "resource_pool_->memory_usage_bytes() =" << resource_pool_->memory_usage_bytes() << ";"
+        << "resource_pool_->resource_count() =" << resource_pool_->resource_count();
+
       if (tile_is_needed_now) {
         LOG(ERROR) << "WARNING: tile memory limits exceeded, some content may "
                       "not draw";
@@ -871,8 +942,7 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
                         !had_enough_memory_to_schedule_tiles_needed_now);
   did_oom_on_last_assign_ = !had_enough_memory_to_schedule_tiles_needed_now;
 
-  memory_stats_from_last_assign_.total_budget_in_bytes =
-      global_state_.hard_memory_limit_in_bytes;
+  memory_stats_from_last_assign_.total_budget_in_bytes = hard_memory_limit_in_bytes;
   memory_stats_from_last_assign_.total_bytes_used = memory_usage.memory_bytes();
   DCHECK_GE(memory_stats_from_last_assign_.total_bytes_used, 0);
   memory_stats_from_last_assign_.had_enough_memory =
