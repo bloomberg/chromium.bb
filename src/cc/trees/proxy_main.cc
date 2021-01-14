@@ -683,4 +683,32 @@ void ProxyMain::SetRenderFrameObserver(
                      base::Unretained(proxy_impl_.get()), std::move(observer)));
 }
 
+// Note that getTileMemoryBytes may get the values that might be slightly unsynchronized to
+// that exact time value since the calling thread (etc main thread) is different from the
+// compositor thread that proxy_impl_ usually runs. But the slightly unsynchronized values
+// are acceptable for diagnostics with better performance.
+std::size_t ProxyMain::getTileMemoryBytes() const {
+  return proxy_impl_ ? proxy_impl_->getTileMemoryBytes() : 0;
+}
+
+// Note that getDefaultTileMemoryLimit may get the values that might be slightly unsynchronized to
+// that exact time value since the calling thread (etc main thread) is different from the
+// compositor thread that proxy_impl_ usually runs. But the slightly unsynchronized values
+// are acceptable for diagnostics with better performance.
+std::size_t ProxyMain::getDefaultTileMemoryLimit() const {
+  return proxy_impl_ ? proxy_impl_->getDefaultTileMemoryLimit() : 0;
+}
+
+void ProxyMain::overrideTileMemoryLimit(std::size_t limit) {
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyImpl::overrideTileMemoryLimit,
+                                base::Unretained(proxy_impl_.get()), limit));
+}
+
+void ProxyMain::setTag(std::string tag) {
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyImpl::setTag,
+                                base::Unretained(proxy_impl_.get()), std::move(tag)));
+}
+
 }  // namespace cc
