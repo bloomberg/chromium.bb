@@ -348,6 +348,17 @@ void WebViewClientImpl::didFailLoadForFrame(int   routingId,
     }
 }
 
+void WebViewClientImpl::didInterceptMessage(didInterceptMessageCallback callback)
+{
+    DCHECK(d_delegate);
+
+    if (d_delegate) {
+        d_delegate->didInterceptMessage();
+    }
+
+    std::move(callback).Run();
+}
+
 // Mojo callbacks
 void WebViewClientImpl::loadStatus(int status)
 {
