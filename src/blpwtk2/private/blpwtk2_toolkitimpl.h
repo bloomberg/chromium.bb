@@ -168,6 +168,7 @@ class ToolkitImpl : public Toolkit {
 
 
     // patch section: expose v8 platform
+    v8::Platform *getV8Platform() override;
 
 
     // patch section: multi-heap tracer
