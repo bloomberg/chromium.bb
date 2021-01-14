@@ -15,6 +15,7 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/frame_rate_decider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/viz_service_export.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -39,7 +40,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
                                     public DisplayClient {
  public:
   // Creates a new RootCompositorFrameSinkImpl.
-  static std::unique_ptr<RootCompositorFrameSinkImpl> Create(
+  static VIZ_SERVICE_EXPORT std::unique_ptr<RootCompositorFrameSinkImpl> Create(
       mojom::RootCompositorFrameSinkParamsPtr params,
       FrameSinkManagerImpl* frame_sink_manager,
       OutputSurfaceProvider* output_surface_provider,

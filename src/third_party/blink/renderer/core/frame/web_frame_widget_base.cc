@@ -702,6 +702,11 @@ void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {
   widget_base_->SetCursor(cursor);
 }
 
+void WebFrameWidgetBase::ResetWidgetHostInterface(
+  CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {
+  widget_base_->ResetWidgetHostInterface(std::move(widgetHost));
+}
+
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
   GetAssociatedFrameWidgetHost()->AutoscrollStart(std::move(position));
 }
