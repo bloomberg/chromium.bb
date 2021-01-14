@@ -524,6 +524,9 @@ void ProcessHostImpl::setPacUrl(const std::string& url) {
 // patch section: renderer ui
 
 
+// patch section: gpu
+
+
 
 }  // namespace blpwtk2
 

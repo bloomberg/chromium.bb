@@ -205,6 +205,9 @@ class Toolkit {
     // patch section: memory diagnostics
 
 
+    // patch section: gpu
+
+
 
   protected:
     virtual ~Toolkit();

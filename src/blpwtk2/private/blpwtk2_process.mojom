@@ -131,6 +131,9 @@ interface ProcessHost {
     // patch section: memory diagnostics
 
 
+    // patch section: gpu
+
+
 
 };
 

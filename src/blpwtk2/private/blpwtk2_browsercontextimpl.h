@@ -146,6 +146,9 @@ class BrowserContextImpl final : public base::RefCounted<BrowserContextImpl>
     // patch section: memory diagnostics
 
 
+    // patch section: gpu
+
+
 
     // content::BrowserContext overrides
     std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(

@@ -777,6 +777,9 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 // patch section: expose v8 platform
 
 
+// patch section: gpu
+
+
 // patch section: multi-heap tracer
 
 

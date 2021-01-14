@@ -319,6 +319,9 @@ void ProfileImpl::setPacUrl(const StringRef& url)
 // patch section: memory diagnostics
 
 
+// patch section: gpu
+
+
 
 }  // close namespace blpwtk2
 

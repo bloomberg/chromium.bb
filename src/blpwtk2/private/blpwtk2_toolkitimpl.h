@@ -176,6 +176,9 @@ class ToolkitImpl : public Toolkit {
     // patch section: memory diagnostics
 
 
+    // patch section: gpu
+
+
 
 };
 
