@@ -112,6 +112,7 @@ base::subtle::Atomic32 GpuProcessHost::gpu_crash_count_ = 0;
 bool GpuProcessHost::crashed_before_ = false;
 int GpuProcessHost::recent_crash_count_ = 0;
 gpu::GpuMode GpuProcessHost::last_crash_mode_ = gpu::GpuMode::UNKNOWN;
+base::Optional<gpu::GpuMode> startupGpuMode_;
 
 namespace {
 
@@ -664,6 +665,11 @@ int GpuProcessHost::GetGpuCrashCount() {
   return static_cast<int>(base::subtle::NoBarrier_Load(&gpu_crash_count_));
 }
 
+//static
+base::Optional<gpu::GpuMode> GpuProcessHost::GetStartupGpuMode() {
+  return startupGpuMode_;
+}
+
 // static
 void GpuProcessHost::IncrementCrashCount(gpu::GpuMode gpu_mode) {
   int forgive_minutes = GetForgiveMinutes(gpu_mode);
@@ -885,6 +891,9 @@ bool GpuProcessHost::Init() {
 
   mode_ = GpuDataManagerImpl::GetInstance()->GetGpuMode();
   DCHECK_NE(mode_, gpu::GpuMode::DISABLED);
+  if (!startupGpuMode_) {
+    startupGpuMode_ = mode_;
+  }
 
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -187,6 +187,7 @@ class ToolkitImpl : public Toolkit {
 
 
     // patch section: gpu
+    void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const override;
 
 
 

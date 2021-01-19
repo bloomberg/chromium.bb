@@ -8,6 +8,7 @@
 #include "base/process/kill.h"
 #include "content/common/content_export.h"
 #include "content/public/common/three_d_api_types.h"
+#include "gpu/config/gpu_mode.h"
 #include <string>
 
 class GURL;
@@ -36,6 +37,9 @@ class CONTENT_EXPORT GpuDataManagerObserver {
                               int render_process_id,
                               int render_frame_id,
                               ThreeDAPIType requester) {}
+
+  // Indicate GPU mode is updated.
+  virtual void OnGpuModeUpdated(gpu::GpuMode mode) {}
 
  protected:
   virtual ~GpuDataManagerObserver() {}

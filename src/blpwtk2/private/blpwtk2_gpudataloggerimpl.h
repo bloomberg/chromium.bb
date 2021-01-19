@@ -28,7 +28,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/Optional.h"
 #include "blpwtk2/public/blpwtk2_gpudatalogger.h"
+#include "blpwtk2/public/blpwtk2_profile.h"
+
 #include <string>
 
 namespace blpwtk2 {
@@ -40,9 +43,12 @@ class GpuDataLoggerImpl : public GpuDataLogger {
   // Called for any observers whenever there is a log message added to the GPU data.
   void OnAddLogMessage(int level, const std::string& header, const std::string& message) override;
 
+  void OnGpuModeUpdated(gpu::GpuMode mode) override;
 
  private:
   ~GpuDataLoggerImpl() override;
+
+  base::Optional<GpuMode> gpuMode_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataLoggerImpl);
 };

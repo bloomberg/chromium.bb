@@ -761,6 +761,9 @@ void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate(
 
 void GpuDataManagerImplPrivate::AddObserver(GpuDataManagerObserver* observer) {
   observer_list_->AddObserver(observer);
+  if (gpu_mode_ != gpu::GpuMode::UNKNOWN) {
+    observer->OnGpuModeUpdated(gpu_mode_);
+  }
 }
 
 void GpuDataManagerImplPrivate::RemoveObserver(
@@ -1437,6 +1440,7 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
       gpu_mode_ == gpu::GpuMode::DISABLED) {
     OnGpuBlocked();
   }
+  observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::OnGpuModeUpdated, gpu_mode_);
 }
 
 void GpuDataManagerImplPrivate::RecordCompositingMode() {

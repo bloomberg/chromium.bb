@@ -26,4 +26,40 @@ namespace blpwtk2 {
 
 GpuDataLogger::~GpuDataLogger() {}
 
+GpuMode GpuDataLogger::toWtk2GpuMode(gpu::GpuMode mode)
+{
+   // Alert us in case of upstream gpu::GpuMode update
+   static_assert((int)gpu::GpuMode::DISABLED == 6, "gpu::GpuMode should only have 6 types");
+   GpuMode wtk2Mode;
+   switch(mode) {
+        case gpu::GpuMode::HARDWARE_GL:
+        case gpu::GpuMode::HARDWARE_METAL:
+        case gpu::GpuMode::HARDWARE_VULKAN:
+            wtk2Mode = GpuMode::kOOPHardwareAccelerated;
+            break;
+        case gpu::GpuMode::SWIFTSHADER:
+            wtk2Mode = GpuMode::kOOPSoftware;
+            break;
+        case gpu::GpuMode::DISABLED:
+            wtk2Mode = GpuMode::kDisabled;
+            break;
+        default:
+            wtk2Mode = GpuMode::kUnknown;
+    }
+    return wtk2Mode;
+}
+
+const std::string& GpuDataLogger::getGpuModeDescription(GpuMode mode)
+{
+    static_assert((int)GpuMode::kDisabled == 3, "GpuMode should only have 4 types");
+	static std::string modeDescriptions[] = {
+		"Unknown",
+		"GPU hardware accelerated",
+		"Software based",
+		"Disabled"
+	};
+    return modeDescriptions[(int)mode];
+}
+
+
 }  // namespace content

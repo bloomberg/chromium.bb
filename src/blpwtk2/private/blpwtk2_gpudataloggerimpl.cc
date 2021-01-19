@@ -28,6 +28,7 @@
 #include <blpwtk2_webviewclient.h>
 #include <blpwtk2_findonpage.h>
 #include <blpwtk2/private/blpwtk2_webview.mojom.h>
+#include <blpwtk2/private/blpwtk2_browsercontextimpl.h>
 
 #include <base/compiler_specific.h>
 #include <ipc/ipc_sender.h>
@@ -38,6 +39,7 @@
 #include <vector>
 #include <blpwtk2_gpudataloggerImpl.h>
 #include "build/build_config.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include <iostream>
@@ -84,6 +86,23 @@ void GpuDataLoggerImpl::OnAddLogMessage(int level, const std::string& header, co
 			VLOG(level) << "gpu log: [" << header << "] " << message;
 			break;
 	}
+}
+
+void GpuDataLoggerImpl::OnGpuModeUpdated(gpu::GpuMode mode)
+{
+	GpuMode wtk2Mode = GpuDataLogger::toWtk2GpuMode(mode);
+	if (!gpuMode_) {
+        LOG(INFO) << "GPU process is started in the mode of '"
+                  << GpuDataLogger::getGpuModeDescription(wtk2Mode) <<"'";
+    } else {
+        LOG(INFO) << "GPU process is changed from the mode of '"
+                  << GpuDataLogger::getGpuModeDescription(*gpuMode_)
+                  << "' to the mode of '"
+                  << GpuDataLogger::getGpuModeDescription(wtk2Mode) << "'";
+		int crashCount = content::GpuProcessHost::GetGpuCrashCount();
+        LOG(INFO) << "# GPU process crashes = " << crashCount;
+	}
+	gpuMode_ = wtk2Mode;
 }
 
 }  // namespace blpwtk2

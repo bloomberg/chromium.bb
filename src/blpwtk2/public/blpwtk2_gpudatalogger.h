@@ -5,9 +5,11 @@
 #ifndef INCLUDED_BLPWTK2_GPUDATALOGGER_H
 #define INCLUDED_BLPWTK2_GPUDATALOGGER_H
 
+#include "blpwtk2_profile.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+#include "gpu/config/gpu_mode.h"
 #include <string>
 
 namespace blpwtk2 {
@@ -16,6 +18,8 @@ class GpuDataLogger : public base::RefCountedThreadSafe<GpuDataLogger>, public c
  public:
 
   static scoped_refptr<GpuDataLogger> Create();
+  static GpuMode toWtk2GpuMode(gpu::GpuMode mode);
+  static const std::string& getGpuModeDescription(GpuMode mode);
 
  protected:
   friend class base::RefCountedThreadSafe<GpuDataLogger>;
