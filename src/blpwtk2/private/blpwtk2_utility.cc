@@ -23,6 +23,10 @@
 #include <blpwtk2_utility.h>
 #include <blpwtk2_webviewproxy.h>
 #include "blpwtk2_version.h"
+#include "blpwtk2_profile.h"
+#if defined(BLPWTK2_FEATURE_GPU)
+    #include "blpwtk2_gpudatalogger.h"
+#endif
 
 #include <base/command_line.h>
 #include <base/json/json_writer.h>
@@ -57,7 +61,7 @@ std::string createSourcePermalink(const std::string& revisionIdentifier,
   return g_chromiumGitUrlBase + revisionIdentifier + "/" + filepath;
 }
 
-std::string getGpuInfo() {
+std::string getGpuInfo(const Profile* profile) {
     base::DictionaryValue gpuInfo;
     gpuInfo.Set("featureStatus", content::GetFeatureStatus());
     gpuInfo.Set("problems", content::GetProblems());
@@ -104,21 +108,31 @@ std::string getGpuInfo() {
     gpuInfo.SetString(
         "gpu_driver_bug_list_url",
         createSourcePermalink(g_gpuListVersion, g_gpuDriverBugList));
+
+#if defined(BLPWTK2_FEATURE_GPU)
+    GpuMode curMode, startupMode;
+    int crashCount;
+    profile->getGpuMode(curMode, startupMode, crashCount);
+    gpuInfo.SetString("current_gpu_mode", GpuDataLogger::getGpuModeDescription(curMode));
+    gpuInfo.SetString("startup_gpu_mode", GpuDataLogger::getGpuModeDescription(startupMode));
+    gpuInfo.SetInteger("gpu_process_crash_count", crashCount);
+#endif
+
     std::string json;
     base::JSONWriter::Write(gpuInfo, &json);
     return json;
 }
 }  // namespace
 
-void DumpGpuInfo(const std::string& path) {
-    std::string json = getGpuInfo();
+void DumpGpuInfo(const Profile* profile, const std::string& path) {
+    std::string json = getGpuInfo(profile);
     std::ofstream file(path, std::ios::binary);
     file << json;
     file.close();
 }
 
-std::string GetGpuInfo() {
-    return getGpuInfo();
+std::string GetGpuInfo(const Profile* profile) {
+    return getGpuInfo(profile);
 }
 }  // close namespace blpwtk2
 

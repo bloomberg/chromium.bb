@@ -26,8 +26,10 @@
 #include <string>
 
 namespace blpwtk2 {
-void DumpGpuInfo(const std::string& path);
-std::string GetGpuInfo();
+class Profile;
+
+void DumpGpuInfo(const Profile* profile, const std::string& path);
+std::string GetGpuInfo(const Profile* profile);
 }  // close namespace blpwtk2
 
 

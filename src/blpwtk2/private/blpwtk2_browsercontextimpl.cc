@@ -452,13 +452,13 @@ void BrowserContextImpl::dumpDiagnostics(DiagnosticInfoType type,
                                          const StringRef&   path)
 {
     if (DiagnosticInfoType::GPU == type) {
-        DumpGpuInfo(std::string(path.data(), path.size()));
+        DumpGpuInfo(this, std::string(path.data(), path.size()));
     }
 }
 
 std::string BrowserContextImpl::getGpuInfo()
 {
-    return GetGpuInfo();
+    return GetGpuInfo(this);
 }
 
 
