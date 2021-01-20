@@ -202,6 +202,11 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
   if (request.GetNavigationPolicy() != kNavigationPolicyCurrentTab)
     return FindResult(current_frame, false);
 
+  // Making the navigation request with target="_blank" a no-op.
+  if (EqualIgnoringASCIICase(name, "_blank")) {
+    return FindResult(nullptr, false);
+  }
+
   const KURL& url = request.GetResourceRequest().Url();
   Frame* frame = FindFrameForNavigationInternal(name, url);
   bool new_window = false;
