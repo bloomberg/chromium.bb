@@ -62,10 +62,11 @@ std::unique_ptr<RenderWidget> CreateWebWidgetTestProxy(
     CompositorDependencies* compositor_deps,
     bool hidden,
     bool never_composited,
-    mojo::PendingReceiver<mojom::Widget> widget_receiver) {
+    mojo::PendingReceiver<mojom::Widget> widget_receiver,
+    int32_t view_id) {
   return std::make_unique<WebWidgetTestProxy>(routing_id, compositor_deps,
                                               /*hidden=*/true, never_composited,
-                                              std::move(widget_receiver));
+                                              std::move(widget_receiver), view_id);
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
