@@ -195,6 +195,7 @@ class ProfileImpl : public Profile {
 
 
     // patch section: gpu
+    void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const override;
 
 
 
