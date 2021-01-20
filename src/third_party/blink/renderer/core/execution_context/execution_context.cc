@@ -182,11 +182,17 @@ void ExecutionContext::DispatchErrorEvent(
 bool ExecutionContext::DispatchErrorEventInternal(
     ErrorEvent* error_event,
     SanitizeScriptErrors sanitize_script_errors) {
+  // blpwtk2: for embedder's log
+  if (SourceLocation* sourceLocation = error_event->Location()) {
+    LOG(ERROR) << error_event->message()
+               << "\nCallstack: " << sourceLocation->ToString();
+  }
+
   EventTarget* target = ErrorEventTarget();
   if (!target)
     return false;
 
-  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize) {
+  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize && ToScriptState(this, *error_event->World())) {
     error_event = ErrorEvent::CreateSanitizedError(
         ToScriptState(this, *error_event->World()));
   }
