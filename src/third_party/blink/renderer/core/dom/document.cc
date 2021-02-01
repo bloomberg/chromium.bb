@@ -969,6 +969,15 @@ ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
   if (v8_context.IsEmpty())
     return GetContentSecurityPolicy();
 
+  // When doing asynchronous tasks, such as HTML resource loading, it's
+  // possible for the embedder to have entered a V8 Context that wasn't
+  // created by blink. Such V8 Context doesn't have an associated
+  // ScriptState. DOMWrapperWorld::Current() call later will try to
+  // access V8 Context's ScriptState and trigger crash. The check added
+  // here is to detect such situation and return early.
+  if (!ScriptState::AccessCheck(v8_context))
+    return GetContentSecurityPolicy();
+
   DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
   if (!world.IsIsolatedWorld())
     return GetContentSecurityPolicy();
