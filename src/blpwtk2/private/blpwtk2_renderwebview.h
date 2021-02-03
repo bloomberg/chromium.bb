@@ -229,6 +229,9 @@ class RenderWebView final : public WebView
     void deleteSelection() override;
     void enableNCHitTest(bool enabled) override;
     void onNCHitTestResult(int x, int y, int result) override;
+#if defined(BLPWTK2_FEATURE_FULLSCREEN_MODE)
+    void onEnterFullscreenModeResult(bool isFullscreen) override;
+#endif
     void setNCHitTestRegion(NativeRegion region) override;
     void performCustomContextMenuAction(int actionId) override;
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
@@ -284,6 +287,10 @@ class RenderWebView final : public WebView
     void blurred(WebView* source) override;
     void showContextMenu(WebView                  *source,
                          const ContextMenuParams&  params) override;
+#if defined(BLPWTK2_FEATURE_FULLSCREEN_MODE)
+    void enterFullscreenMode(WebView *source) override;
+    void exitFullscreenMode(WebView *source) override;
+#endif
     void requestNCHitTest(WebView *source) override;
     void ncDragBegin(WebView      *source,
                      int           hitTestCode,

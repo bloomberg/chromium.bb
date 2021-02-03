@@ -1383,6 +1383,14 @@ void RenderWebView::onNCHitTestResult(int x, int y, int result)
     d_ncHitTestResult = result;
 }
 
+#if defined(BLPWTK2_FEATURE_FULLSCREEN_MODE)
+void RenderWebView::onEnterFullscreenModeResult(bool isFullscreen)
+{
+    DCHECK(Statics::isInApplicationMainThread());
+    d_proxy->onEnterFullscreenModeResult(isFullscreen);
+}
+#endif
+
 void RenderWebView::setNCHitTestRegion(NativeRegion region)
 {
     DCHECK(Statics::isInApplicationMainThread());
@@ -1570,6 +1578,22 @@ void RenderWebView::showContextMenu(
         d_delegate->showContextMenu(this, params);
     }
 }
+
+#if defined(BLPWTK2_FEATURE_FULLSCREEN_MODE)
+void RenderWebView::enterFullscreenMode(WebView *source)
+{
+    if (d_delegate) {
+        d_delegate->enterFullscreenMode(source);
+    }
+}
+
+void RenderWebView::exitFullscreenMode(WebView *source)
+{
+    if (d_delegate) {
+        d_delegate->exitFullscreenMode(source);
+    }
+}
+#endif
 
 void RenderWebView::requestNCHitTest(WebView *source)
 {
