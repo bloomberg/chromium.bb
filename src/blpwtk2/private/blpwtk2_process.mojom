@@ -32,6 +32,13 @@ enum ProxyConfigType {
     kHTTPS
 };
 
+enum GpuMode {
+    kUnknown,
+    kOOPHardwareAccelerated,
+    kOOPSoftware,
+    kDisabled
+};
+
 struct WebViewCreateParams {
     bool domPasteEnabled;
     bool javascriptCanAccessClipboard;
@@ -132,6 +139,8 @@ interface ProcessHost {
 
 
     // patch section: gpu
+    [Sync]
+    getGpuMode() => (GpuMode mode, GpuMode startupMode, int32 crashCount);
 
 
 
