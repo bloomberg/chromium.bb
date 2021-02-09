@@ -219,6 +219,7 @@ public:
     POINT d_contextMenuPoint;
     std::string d_findText;
     std::vector<std::string> d_contextMenuSpellReplacements;
+    WINDOWPLACEMENT d_wpPrev;
 
 
 
@@ -447,6 +448,45 @@ public:
                        params.pointOnScreen().x, params.pointOnScreen().y,
                        0, d_mainWnd, NULL);
         DestroyMenu(menu);
+    }
+
+    void enterFullscreenMode(blpwtk2::WebView *source) override
+    {
+        HWND hwnd = d_mainWnd;
+        DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+    
+        if (dwStyle & WS_OVERLAPPEDWINDOW) {
+            MONITORINFO mi = { sizeof(mi) };
+            if (GetWindowPlacement(hwnd, &d_wpPrev) &&
+                GetMonitorInfo(MonitorFromWindow(hwnd,
+                            MONITOR_DEFAULTTOPRIMARY), &mi)) {
+                SetWindowLong(hwnd, GWL_STYLE,
+                                dwStyle & ~WS_OVERLAPPEDWINDOW);
+                SetWindowPos(hwnd, HWND_TOP,
+                            mi.rcMonitor.left, mi.rcMonitor.top,
+                            mi.rcMonitor.right - mi.rcMonitor.left,
+                            mi.rcMonitor.bottom - mi.rcMonitor.top,
+                            SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+            }
+        } 
+        bool isFullscreen = !(GetWindowLong(hwnd, GWL_STYLE) & WS_OVERLAPPEDWINDOW);
+
+        source->onEnterFullscreenModeResult(isFullscreen);
+    }
+
+    void exitFullscreenMode(blpwtk2::WebView *source) override
+    {
+        HWND hwnd = d_mainWnd;
+        DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+
+        if (!(dwStyle & WS_OVERLAPPEDWINDOW)) {
+            SetWindowLong(hwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
+            SetWindowPlacement(hwnd, &d_wpPrev);
+            SetWindowPos(hwnd, NULL, 0, 0, 0, 0,
+                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                        SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+        }
+        source->onEnterFullscreenModeResult(false);
     }
 
     void requestNCHitTest(blpwtk2::WebView* source) override
