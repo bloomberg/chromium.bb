@@ -730,7 +730,8 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
       "contentsHeightBeforeLayout", contents_height_before_layout);
   PrepareLayoutAnalyzer();
 
-  ScriptForbiddenScope forbid_script;
+  // blpwtk2: We need to run script for plugins
+  //ScriptForbiddenScope forbid_script;
 
   if (in_subtree_layout && HasOrthogonalWritingModeRoots()) {
     // If we're going to lay out from each subtree root, rather than once from
@@ -797,7 +798,8 @@ void LocalFrameView::UpdateLayout() {
   DCHECK_EQ(frame_->View(), this);
   DCHECK(frame_->GetPage());
 
-  ScriptForbiddenScope forbid_script;
+  // blpwtk2: We need to run script for plugins
+  // ScriptForbiddenScope forbid_script;
 
   if (IsInPerformLayout() || ShouldThrottleRendering() ||
       !frame_->GetDocument()->IsActive() || frame_->IsProvisional())
