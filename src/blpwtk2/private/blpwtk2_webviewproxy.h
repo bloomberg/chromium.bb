@@ -32,6 +32,10 @@ namespace gfx {
 class Point;
 }  // close namespace gfx
 
+namespace content {
+class RenderWidget;
+}
+
 namespace blpwtk2 {
 
 class WebFrameImpl;
@@ -101,6 +105,12 @@ class WebViewProxy final : public WebView
 
     void setSecurityToken(v8::Isolate *isolate,
                           v8::Local<v8::Value> token) override;
+
+    std::size_t getDefaultTileMemoryLimit() const override;
+    std::size_t getTileMemoryBytes() const override;
+    void overrideTileMemoryLimit(std::size_t limit) override;
+    void setTag(const char* pTag) override;
+    content::RenderWidget* getRenderWidget() const;
 
     bool validateClient();
 
