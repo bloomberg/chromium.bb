@@ -50,6 +50,8 @@
 #include "third_party/blink/renderer/core/editing/markers/text_fragment_marker_list_impl.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker_list_impl.h"
+#include "third_party/blink/renderer/core/editing/markers/highlight_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/highlight_marker_list_impl.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
@@ -78,6 +80,8 @@ DocumentMarker::MarkerTypeIndex MarkerTypeToMarkerIndex(
       return DocumentMarker::kSuggestionMarkerIndex;
     case DocumentMarker::kTextFragment:
       return DocumentMarker::kTextFragmentMarkerIndex;
+    case DocumentMarker::kHighlight:
+      return DocumentMarker::kHighlightMarkerIndex;
   }
 
   NOTREACHED();
@@ -100,6 +104,8 @@ DocumentMarkerList* CreateListForType(DocumentMarker::MarkerType type) {
       return MakeGarbageCollected<TextMatchMarkerListImpl>();
     case DocumentMarker::kTextFragment:
       return MakeGarbageCollected<TextFragmentMarkerListImpl>();
+    case DocumentMarker::kHighlight:
+      return MakeGarbageCollected<HighlightMarkerListImpl>();
   }
 
   NOTREACHED();
@@ -202,6 +208,19 @@ void DocumentMarkerController::AddCompositionMarker(
                           start_offset, end_offset, underline_color, thickness,
                           underline_style, text_color, background_color);
                     });
+}
+
+void DocumentMarkerController::AddHighlightMarker(
+    const EphemeralRange& range,
+    Color foreground_color,
+    Color background_color,
+    bool include_nonselectable_text) {
+  DCHECK(!document_->NeedsLayoutTreeUpdate());
+  AddMarkerInternal(range, [foreground_color, background_color, include_nonselectable_text](
+                               int start_offset, int end_offset) {
+    return MakeGarbageCollected<HighlightMarker>(
+      start_offset, end_offset, foreground_color, background_color, include_nonselectable_text);
+  });
 }
 
 void DocumentMarkerController::AddActiveSuggestionMarker(
