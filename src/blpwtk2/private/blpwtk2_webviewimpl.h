@@ -256,7 +256,8 @@ class WebViewImpl final : public WebView,
     // patch section: gpu
 
 
-    // patch section: print to pdf
+    // patch section: docprinter
+    String printToPDF() override;
 
 
     // patch section: memory diagnostics
