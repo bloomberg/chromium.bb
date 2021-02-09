@@ -25,6 +25,7 @@
 #include <base/bind.h>
 #include <base/lazy_instance.h>
 #include <base/threading/thread_local.h>
+#include <third_party/blink/renderer/platform/bindings/script_forbidden_scope.h>
 #include <float.h>
 
 namespace blpwtk2 {
@@ -134,6 +135,14 @@ void RendererIOThread::Wait(
   ready_handles_ = ready_handles;
   ready_results_ = ready_results;
   signals_states_ = signals_states;
+
+  // Allow running script since ::SendMessage may trigger the embedder to invoke
+  // script callbacks for Windows sent events such as WM_ACTIVATE
+  bool wasScriptForbidden = blink::ScriptForbiddenScope::IsScriptForbidden();
+  blink::ScriptForbiddenScope::AllowUserAgentScript allowScript;
+  if (wasScriptForbidden) {
+    LOG(INFO) << "Blpwtk2 overrides to allow script in mojo wait although Blink prefers script forbidden";
+  }
   ::SendMessage(window_, WM_USER + 1, 0, 0);
 }
 
