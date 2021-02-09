@@ -180,6 +180,7 @@ class ProfileImpl : public Profile {
 
 
     // patch section: printing
+    void setDefaultPrinter(const StringRef& name) override;
 
 
     // patch section: diagnostics
