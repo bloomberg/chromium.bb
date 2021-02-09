@@ -80,6 +80,15 @@ class WebViewProxy final : public WebView
     void onNCHitTestResult(int x, int y, int result) override;
     void setNCHitTestRegion(NativeRegion region) override;
     void performCustomContextMenuAction(int actionId) override;
+
+    // Begin Rubber Banding
+    void enableAltDragRubberbanding(bool enabled) override;
+    bool forceStartRubberbanding(int x, int y) override;
+    bool isRubberbanding() const override;
+    void abortRubberbanding() override;
+    String getTextInRubberband(const NativeRect&) override;
+    // End Rubber Banding
+
     void find(const StringRef& text, bool matchCase, bool forward) override;
     void stopFind(bool preserveSelection) override;
     void replaceMisspelledRange(const StringRef& text) override;
