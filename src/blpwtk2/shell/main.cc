@@ -225,11 +225,11 @@ public:
     POINT d_contextMenuPoint;
     std::string d_findText;
     std::vector<std::string> d_contextMenuSpellReplacements;
-    std::string d_misspelledWord;
 
 
 
     // patch section: spellcheck
+    std::string d_misspelledWord;
 
 
     // patch section: fullscreen mode
