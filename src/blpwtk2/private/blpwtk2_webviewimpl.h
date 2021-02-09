@@ -100,6 +100,15 @@ class WebViewImpl final : public WebView,
     int d_lastNCHitTestResult;
     int d_hostId;
 
+
+
+    // patch section: renderer ui
+
+
+    // patch section: fullscreen mode
+
+
+
     int createWidget(blpwtk2::NativeView parent);
 
     // blpwtk2::NativeViewWidgetDelegate overrides

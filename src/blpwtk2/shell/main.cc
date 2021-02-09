@@ -220,6 +220,15 @@ public:
     std::string d_findText;
     std::vector<std::string> d_contextMenuSpellReplacements;
 
+
+
+    // patch section: spellcheck
+
+
+    // patch section: fullscreen mode
+
+
+
     Shell(HWND mainWnd,
           HWND urlEntryWnd,
           HWND findEntryHwnd,
