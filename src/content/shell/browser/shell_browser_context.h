@@ -61,6 +61,7 @@ class ShellBrowserContext : public BrowserContext {
   PushMessagingService* GetPushMessagingService() override;
   StorageNotificationService* GetStorageNotificationService() override;
   SSLHostStateDelegate* GetSSLHostStateDelegate() override;
+  bool AllowDictionaryDownloads() override;
   PermissionControllerDelegate* GetPermissionControllerDelegate() override;
   BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
