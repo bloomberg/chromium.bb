@@ -102,7 +102,7 @@ class WebViewImpl final : public WebView,
 
 
 
-    // patch section: renderer ui
+    // patch section: gpu
 
 
     // patch section: fullscreen mode
