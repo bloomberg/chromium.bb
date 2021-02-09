@@ -153,6 +153,11 @@ class CONTENT_EXPORT RenderWidget
 
   ~RenderWidget() override;
 
+  std::size_t getTileMemoryBytes() const;
+  std::size_t getDefaultTileMemoryLimit() const;
+  void overrideTileMemoryLimit(std::size_t limit);
+  void setTag(std::string tag);
+
   using ShowCallback =
       base::OnceCallback<void(RenderWidget* widget_to_show,
                               blink::WebNavigationPolicy policy,

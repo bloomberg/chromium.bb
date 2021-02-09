@@ -6269,4 +6269,18 @@ base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void LayerTreeHostImpl::onTileMemoryError() {
+  gfx::Rect activeVP = active_tree_->GetDeviceViewport();
+  gfx::Rect pendingVP = pending_tree_->GetDeviceViewport();
+  LOG(ERROR) << "onTileMemoryError active viewport x:" << activeVP.x()
+             << ", y:" << activeVP.y() << ", width:" << activeVP.width()
+             << ", height:" << activeVP.height()
+             << "; pending viewport x:" << pendingVP.x()
+             << ", y:" << pendingVP.y() << ", width:" << pendingVP.width()
+             << ", height:" << pendingVP.height()
+             << ", active scale factor: " << active_tree_->device_scale_factor()
+             << ", pending scale factor: "
+             << pending_tree_->device_scale_factor();
+}
+
 }  // namespace cc
