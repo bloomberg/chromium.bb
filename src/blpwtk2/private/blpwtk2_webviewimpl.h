@@ -99,7 +99,6 @@ class WebViewImpl final : public WebView,
     bool d_ncHitTestPendingAck;
     int d_lastNCHitTestResult;
     int d_hostId;
-    bool d_isFullscreen;
 
 
 
@@ -107,6 +106,7 @@ class WebViewImpl final : public WebView,
 
 
     // patch section: fullscreen mode
+    bool d_isFullscreen;
 
 
 

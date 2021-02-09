@@ -219,7 +219,6 @@ public:
     POINT d_contextMenuPoint;
     std::string d_findText;
     std::vector<std::string> d_contextMenuSpellReplacements;
-    WINDOWPLACEMENT d_wpPrev;
 
 
 
@@ -227,6 +226,7 @@ public:
 
 
     // patch section: fullscreen mode
+    WINDOWPLACEMENT d_wpPrev;
 
 
 
