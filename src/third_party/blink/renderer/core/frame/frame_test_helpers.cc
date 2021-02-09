@@ -274,7 +274,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
         widget_client->task_graph_runner(),
         GetSynchronousSingleThreadLayerTreeSettings(),
-        std::make_unique<cc::TestUkmRecorderFactory>()));
+        std::make_unique<cc::TestUkmRecorderFactory>(), 0));
     frame_widget->SetCompositorVisible(true);
   } else if (frame->Parent()->IsWebRemoteFrame()) {
     widget_client = std::make_unique<TestWebWidgetClient>();
@@ -289,7 +289,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
         widget_client->task_graph_runner(),
         GetSynchronousSingleThreadLayerTreeSettings(),
-        std::make_unique<cc::TestUkmRecorderFactory>()));
+        std::make_unique<cc::TestUkmRecorderFactory>(), 0));
     frame_widget->SetCompositorVisible(true);
     frame_widget->Resize(WebSize());
   }
@@ -350,7 +350,7 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
       widget_client->task_graph_runner(),
       GetSynchronousSingleThreadLayerTreeSettings(),
-      std::make_unique<cc::TestUkmRecorderFactory>()));
+      std::make_unique<cc::TestUkmRecorderFactory>(), 0));
   frame_widget->SetCompositorVisible(true);
   // Set an initial size for subframes.
   if (frame->Parent())
@@ -433,7 +433,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   test_web_widget_client_->set_layer_tree_host(widget->InitializeCompositing(
       test_web_widget_client_->task_graph_runner(),
       GetSynchronousSingleThreadLayerTreeSettings(),
-      std::make_unique<cc::TestUkmRecorderFactory>()));
+      std::make_unique<cc::TestUkmRecorderFactory>(), 0));
   widget->SetCompositorVisible(true);
 
   // We inform the WebView when it has a local main frame attached once the
