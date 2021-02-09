@@ -122,6 +122,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
                            mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,
+                           unsigned column_number,
                            const String&,
                            const String&) override {
 #ifndef NDEBUG
