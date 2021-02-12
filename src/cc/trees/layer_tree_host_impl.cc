@@ -6270,20 +6270,17 @@ base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {
 }
 
 void LayerTreeHostImpl::onTileMemoryError() {
-  std::stringstream ss;
+  constexpr int bufSize = 256;
+  char buf[bufSize];
   gfx::Rect activeVP = active_tree_->GetDeviceViewport();
-  ss << "onTileMemoryError active viewport x:" << activeVP.x()
-    << ", y:" << activeVP.y() << ", width:" << activeVP.width()
-    << ", height:" << activeVP.height()
-    << ", scale factor: " << active_tree_->device_scale_factor();
+  int charCount = sprintf(buf, "onTileMemoryError active viewport x:%d, y:%d, width:%d, height:%d, scale factor:%f",
+    activeVP.x(), activeVP.y(), activeVP.width(), activeVP.height(), active_tree_->device_scale_factor());
   if (pending_tree_) {
     gfx::Rect pendingVP = pending_tree_->GetDeviceViewport();
-    ss << "; pending viewport x:" << pendingVP.x()
-      << ", y:" << pendingVP.y() << ", width:" << pendingVP.width()
-      << ", height:" << pendingVP.height()
-      << ", scale factor: " << pending_tree_->device_scale_factor();
+    sprintf(buf + charCount, "; pending viewport x:%d, y:%d, width:%d, height:%d, scale factor:%f",
+    pendingVP.x(), pendingVP.y(), pendingVP.width(), pendingVP.height(), pending_tree_->device_scale_factor());
   }
-  LOG(ERROR) << ss.str();
+  LOG(ERROR) << buf;
 }
 
 }  // namespace cc
