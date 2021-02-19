@@ -55,7 +55,19 @@ const int kMaxGpuIdleTimeMs = 40;
 const int kMaxKeepAliveTimeMs = 200;
 #endif
 #if defined(OS_WIN)
+
+// blpwtk2: When under memory pressure, TrimD3DResources might be called repeatly
+// (5 seconds defined by MemoryPressureMonitor::kUMAMemoryPressureLevelPeriod).
+// To prevent massive D3D query failures resulting in GPU errors,
+// gWasD3DQueryFailed is used to prevent future queries in case of failure.
+bool gWasD3DQueryFailed = false;
+
 void TrimD3DResources() {
+
+  if (gWasD3DQueryFailed) {
+    return;
+  }
+
   // Graphics drivers periodically allocate internal memory buffers in
   // order to speed up subsequent rendering requests. These memory allocations
   // in general lead to increased memory usage by the overall system.
@@ -75,6 +87,8 @@ void TrimD3DResources() {
       dxgi_device->Trim();
     }
   }
+
+  gWasD3DQueryFailed = !(d3d11_device);
 }
 #endif
 
